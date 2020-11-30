@@ -14,8 +14,7 @@ THRESHOLD = 0.5
 def main():
     net = cv2.dnn.readNetFromCaffe(PROTO_TXT, MODEL)
 
-
-    cam = cv2.VideoCapture(0)
+    cam = cv2.VideoCapture(2)
     while True:
         _, frame = cam.read()
         #frame = imutils.resize(frame, width=400)
@@ -34,7 +33,8 @@ def main():
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
             start_x , start_y, end_x, end_y = box.astype("int")
 
-            cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), (0, 0, 255), 2)
+            #cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), (0, 0, 255), 2)
+            frame = crop_img(frame, start_x, start_y, end_x, end_y)
 
         cv2.imshow('Webcam', frame)
 
@@ -51,6 +51,12 @@ def detect(image, net):
     detections = net.forward()
     return detections
 
+
+def crop_img(img, start_x, start_y, end_x, end_y):
+    height, width = end_y - start_y, end_x - start_x
+    crop_img = img[start_y:start_y+height, start_x:start_x+width]
+    crop_img = cv2.resize(crop_img, (400, 400))
+    return crop_img
 
 
     
