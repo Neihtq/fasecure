@@ -132,3 +132,7 @@ dmypy.json
 # PyTorch models
 *.pt
 *.pth
+/SSD_model/deploy.prototxt
+/SSD_model/res10_300x300_ssd_iter_140000.caffemodel
+/yolov3.cfg
+/yolov3-wider_16000.weights
