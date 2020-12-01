@@ -14,6 +14,9 @@ THRESHOLD = 0.5
 def main():
     net = cv2.dnn.readNetFromCaffe(PROTO_TXT, MODEL)
 
+    prev_frame_time = 0
+    new_frame_time = 0
+
     cam = cv2.VideoCapture(2)
     while True:
         _, frame = cam.read()
@@ -35,6 +38,12 @@ def main():
 
             #cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), (0, 0, 255), 2)
             frame = crop_img(frame, start_x, start_y, end_x, end_y)
+
+        new_frame_time = time.time()
+        fps = 1 / (new_frame_time - prev_frame_time)
+        prev_frame_time = new_frame_time
+        fps = str(int(fps))
+        cv2.putText(frame, fps, (7, 70), cv2.FONT_HERSHEY_SIMPLEX, 3, (100, 255, 0), 3, cv2.LINE_AA)
 
         cv2.imshow('Webcam', frame)
 
