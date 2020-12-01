@@ -20,7 +20,6 @@ def main():
     cam = cv2.VideoCapture(2)
     while True:
         _, frame = cam.read()
-        #frame = imutils.resize(frame, width=400)
         
         h, w = frame.shape[:2]
         
