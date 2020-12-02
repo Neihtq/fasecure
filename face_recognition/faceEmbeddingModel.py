@@ -19,7 +19,7 @@ def load_state():
     
     return state_dict
 
-def faceRecognitionModel(pretrained=True):
+def faceEmbeddingModel(pretrained=True):
     model = FaceNetModel()
     if pretrained:
         state = load_state()
