@@ -5,6 +5,8 @@ import torch
 from torchvision import transforms
 from PIL import Image
 from sklearn.neighbors import NearestNeighbors
+import numpy as np
+from statistics import mode
 
 # - implement database class which stores the labels and embeddings (pandas dataframe)
 #       attibutes: pandas dataframe, faceRecognitionModel
@@ -73,8 +75,23 @@ class RegistrationDatabase():
         # Calculate length of embeddings list and embeddings list itself
         self.len_embeddings_list = len(self.database.index)
         self.embeddings_list = [self.database.iloc[i,1][0] for i in range(self.len_embeddings_list)]
+        # self.name_list = np.array([self.database.iloc[i,0] for i in range(self.len_embeddings_list)])
 
         # In the end after running constructor: saved database as pickle file and database attribute contains registration database
+
+    def load_and_transform_img(self, path):
+        #prepare preprocess pipeline
+        preprocess_pipelines = [transforms.Resize(224),  
+                            transforms.ToTensor(), 
+                            transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                                    std=[0.229, 0.224, 0.225])]
+
+        trfrm = transforms.Compose(preprocess_pipelines)
+
+        # read the image and transform it into tensor then normalize it with our trfrm function pipeline
+        img = trfrm(Image.open(path)).unsqueeze(0)
+    
+        return img
 
     # Either pass image in shape 1x3x244x244 or path to image
     def face_recognition(self, new_img=None, path=None):
@@ -94,23 +111,16 @@ class RegistrationDatabase():
         neigh.fit(self.embeddings_list)
         print(neigh.kneighbors(img_embedding))
 
+        label_indices = neigh.kneighbors(img_embedding)[1].tolist()[0]
+
+        nearest_labels = self.database.iloc[label_indices,0]
+        print(type(nearest_labels))
+        # print(self.name_list[label_indices])
+        # print(mode(self.name_list[label_indices]))
+
         # Calculate distance to nearest neighbor and check, if it´s below threshold
 
         # return label or unknown
-
-    def load_and_transform_img(self, path):
-        #prepare preprocess pipeline
-        preprocess_pipelines = [transforms.Resize(224),  
-                            transforms.ToTensor(), 
-                            transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                                                    std=[0.229, 0.224, 0.225])]
-
-        trfrm = transforms.Compose(preprocess_pipelines)
-
-        # read the image and transform it into tensor then normalize it with our trfrm function pipeline
-        img = trfrm(Image.open(path)).unsqueeze(0)
-    
-        return img
 
     def face_registration(self):
 
