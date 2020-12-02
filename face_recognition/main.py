@@ -10,7 +10,7 @@
 # - train (finetune) model on sample images (different ways) and calculate accuracy again
     # - what means "model.module.forward_classifier"
 
-# - model training/finetuning
+# - model training/finetuning (use data augmentation (random flix, rotate?, ...))
 # - model evaluation
 # - face recognition: implement KNN with fixed threshold for face recognition
 # - face registration: one-shot learning (add to database)
@@ -21,17 +21,29 @@
 # imports
 import torch.nn.functional as F
 import torch
-from faceRecognitionModel import faceRecognitionModel
+from faceEmbeddingModel import faceEmbeddingModel
 from prep import load_and_transform_img, show_tensor_img
 from reg_database import RegistrationDatabase
 from reg_dataset import RegistrationDataset
 import sys
+import numpy as np
+
+# Questions to Omar:
+# - Do we get like 20 images (10 persons, each 2 images) for the registered people?
+# -> our idea: load pretrained model and finetune it with few images we get from you?
+# - In order to compare a new person with the registered people, we have to compare the embeddings:
+#       - Therefore, we have to store the embeddings of the registered people?
+#       - As we store the embeddings, do we store just one embedding per person, or if we have multiple images, then also multiple embeddings?
+#           When we have multiple embeddings, we could also store the center of all the embeddings for one person
+#           (Results in a KNN classifier in the end to find the nearest embedding. However, if above threshold, then unknown)
 
 
-#### TESTS #####
+
+
+# sys.exit()
 
 # Create dataset
-reg_dataset = RegistrationDataset("./faces_db", "ppm")
+reg_dataset = RegistrationDataset("./registered_images", "ppm")
 
 # Create dataloader with batch_size = 1
 reg_loader = torch.utils.data.DataLoader(dataset=reg_dataset,
@@ -40,18 +52,18 @@ reg_loader = torch.utils.data.DataLoader(dataset=reg_dataset,
                                            shuffle=False, sampler=None,
                                            collate_fn=None)
 
-# sys.exit()
-#### TESTS END #####
 
 
-model = faceRecognitionModel()
+
+embedding_model = faceEmbeddingModel()
 
 # If new dataset: pass dataloader to RegistrationDatabase, then it will rewrite Database
 # Otherwise, it trys to return existing database
-database = RegistrationDatabase(model, reg_loader)
-# print(database.database)
+database = RegistrationDatabase(embedding_model)
+# print(database.database.iloc[5,1])
 
 
+database.face_recognition(path='./test_images/Aaron_04.ppm')
 
 
 
