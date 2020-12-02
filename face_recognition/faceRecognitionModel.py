@@ -39,7 +39,11 @@ class FaceNetModel(nn.Module):
         # Parameters are loaded by download from github
         self.model = resnet50(pretrained)
         embedding_size = 128
+
+        # Adapt for our case
         num_classes = 500
+
+
         self.cnn = nn.Sequential(
             self.model.conv1,
             self.model.bn1,
@@ -69,39 +73,39 @@ class FaceNetModel(nn.Module):
         output = _output.view(input_size)
         return output
 
-#     def freeze_all(self):
-#         for param in self.model.parameters():
-#             param.requires_grad = False
+    def freeze_all(self):
+        for param in self.model.parameters():
+            param.requires_grad = False
 
-#     def unfreeze_all(self):
-#         for param in self.model.parameters():
-#             param.requires_grad = True
+    def unfreeze_all(self):
+        for param in self.model.parameters():
+            param.requires_grad = True
 
-#     def freeze_fc(self):
-#         for param in self.model.fc.parameters():
-#             param.requires_grad = False
+    def freeze_fc(self):
+        for param in self.model.fc.parameters():
+            param.requires_grad = False
 
-#     def unfreeze_fc(self):
-#         for param in self.model.fc.parameters():
-#             param.requires_grad = True
+    def unfreeze_fc(self):
+        for param in self.model.fc.parameters():
+            param.requires_grad = True
 
-#     def freeze_only(self, freeze):
-#         for name, child in self.model.named_children():
-#             if name in freeze:
-#                 for param in child.parameters():
-#                     param.requires_grad = False
-#             else:
-#                 for param in child.parameters():
-#                     param.requires_grad = True
+    def freeze_only(self, freeze):
+        for name, child in self.model.named_children():
+            if name in freeze:
+                for param in child.parameters():
+                    param.requires_grad = False
+            else:
+                for param in child.parameters():
+                    param.requires_grad = True
 
-#     def unfreeze_only(self, unfreeze):
-#         for name, child in self.model.named_children():
-#             if name in unfreeze:
-#                 for param in child.parameters():
-#                     param.requires_grad = True
-#             else:
-#                 for param in child.parameters():
-#                     param.requires_grad = False
+    def unfreeze_only(self, unfreeze):
+        for name, child in self.model.named_children():
+            if name in unfreeze:
+                for param in child.parameters():
+                    param.requires_grad = True
+            else:
+                for param in child.parameters():
+                    param.requires_grad = False
 
     # returns face embedding(embedding_size)
     def forward(self, x):
@@ -114,9 +118,9 @@ class FaceNetModel(nn.Module):
         features = features * alpha
         return features
 
-#     def forward_classifier(self, x):
-#         features = self.forward(x)
-#         res = self.model.classifier(features)
-#         return res
+    def forward_classifier(self, x):
+        features = self.forward(x)
+        res = self.model.classifier(features)
+        return res
 
 
