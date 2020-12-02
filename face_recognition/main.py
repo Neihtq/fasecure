@@ -62,6 +62,7 @@ embedding_model = faceEmbeddingModel()
 database = RegistrationDatabase(embedding_model)
 # print(database.database.iloc[5,1])
 
+#print(database.name_list[[1,5,9,22]])
 
 database.face_recognition(path='./test_images/Aaron_04.ppm')
 
