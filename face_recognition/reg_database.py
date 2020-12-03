@@ -13,22 +13,20 @@ from statistics import mode
 #       main methods:   - constructor
 #                       - face recognition
 #                       - face registration (one-shot learning)
-#                       - face unregistration
-
-# Calculate embeddings list in face_recognition in init and update in face_registration / unregistration and not for every face_recognition
-# same for length of embedding list and KNN Definition
-# -> pack them into methods!!
+#                       - face deregistration
 
 # open questions:
-# to handle the case, that different amounts of images are availabe for one person, who has to be registered:
+# to handle the case, that different amounts of images are availabe for one person in the registration process:
 # -> batch size one and then store all the embeddings with the same label in a list, then calculate the mean
 
 class RegistrationDatabase():
 
     # Register people or load registered people
-    def __init__(self, faceRecognitionModel, dataloader=None):
+    def __init__(self, faceEmbeddingModel, dataloader=None):
 
-        self.model = faceRecognitionModel
+        # Set model to eval, as training is over when we use it here for inference
+        self.embedding_model = faceEmbeddingModel.eval()
+        self.recognition_model = NearestNeighbors(n_neighbors=5)
 
         # have a look if database (pickle file) already available, if yes, load it and save it into pandas dataframe and return
         model_dir = "./reg_database"
@@ -63,19 +61,18 @@ class RegistrationDatabase():
                 #     label = target.to("cuda")
 
                 # Calculate embedding and convert to numpy array
-                img_embedding = self.model(img).detach().cpu().numpy()
+                # detach() to remove computational graph from tensor
+                img_embedding = self.calculate_embedding(img)
 
                 # use img_folder_path to get labels and embeddings
                 self.database = self.database.append({'label': label[0], 'embedding': img_embedding}, ignore_index=True)
 
 
             # Save it as a pickle file
-            self.database.to_pickle(self.database_file)
+            self.save_database()
 
         # Calculate length of embeddings list and embeddings list itself
-        self.len_embeddings_list = len(self.database.index)
-        self.embeddings_list = [self.database.iloc[i,1][0] for i in range(self.len_embeddings_list)]
-        # self.name_list = np.array([self.database.iloc[i,0] for i in range(self.len_embeddings_list)])
+        self.update_embeddings()
 
         # In the end after running constructor: saved database as pickle file and database attribute contains registration database
 
@@ -93,32 +90,47 @@ class RegistrationDatabase():
     
         return img
 
+    # Save database as pickle file
+    def save_database(self):
+        self.database.to_pickle(self.database_file)
+
+    # Update length of embedding list and embedding list itself
+    def update_embeddings(self):
+        self.len_embeddings_list = len(self.database.index)
+        self.embeddings_list = [self.database.iloc[i,1][0] for i in range(self.len_embeddings_list)]
+        # self.name_list = np.array([self.database.iloc[i,0] for i in range(self.len_embeddings_list)])
+        self.recognition_model.fit(self.embeddings_list)
+
+    # Get tensor img as input and output numpy array of embedding
+    def calculate_embedding(self, img):
+        return self.embedding_model(img).detach().cpu().numpy()
+
     # Either pass image in shape 1x3x244x244 or path to image
     def face_recognition(self, new_img=None, path=None):
         # get new image -> calculate embedding
         if isinstance(new_img, torch.Tensor) and path == None:
             print("Image passed as Tensor")
-            img_embedding = self.model(img).detach().cpu().numpy()
+            img_embedding = self.calculate_embedding(new_img)
         elif new_img == None and isinstance(path, str):
             print("Path passed as String")
-            img = self.load_and_transform_img(path)
-            img_embedding = self.model(img).detach().cpu().numpy()
+            new_img = self.load_and_transform_img(path)
+            img_embedding = self.calculate_embedding(new_img)
         else:
             raise Exception('You have to pass either a img as a tensor (1x3x224x224) or a path (string) where the image is located')
 
         # Use KNN based on database to find nearest neighbor
-        neigh = NearestNeighbors(n_neighbors=5)
-        neigh.fit(self.embeddings_list)
-        print(neigh.kneighbors(img_embedding))
+        print(self.recognition_model.kneighbors(img_embedding))
 
-        label_indices = neigh.kneighbors(img_embedding)[1].tolist()[0]
-
+        label_indices = self.recognition_model.kneighbors(img_embedding)[1].tolist()[0]
         nearest_labels = self.database.iloc[label_indices,0]
-        print(type(nearest_labels))
-        # print(self.name_list[label_indices])
-        # print(mode(self.name_list[label_indices]))
+        print(nearest_labels)
 
         # Calculate distance to nearest neighbor and check, if it´s below threshold
+        closest_embedding_dist = self.recognition_model.kneighbors(img_embedding)[0].tolist()[0][0]
+        print("Closest embedding: ", closest_embedding_dist)
+
+        if closest_embedding_dist > 1.5:
+            print("Unknown person")
 
         # return label or unknown
 
@@ -126,19 +138,43 @@ class RegistrationDatabase():
         # name: Name of the new person who should be registred
         # reg_img: Tensor (shape 1x3x224x224) of a new person who should be registered
 
+        # Check, if name already in database available. If yes, then return
+        # Extend and check, if embedding already in database: distance to Nearest Neighbor should be at least 1.5? Possible at all?
+        if (self.database['label'] == name).any():
+            print('Specified name already in database registered. User can not be registered again!')
+            return            
+
         # Calculate embedding and convert to numpy array
-        img_embedding = self.model(img).detach().cpu().numpy()
+        img_embedding = self.calculate_embedding(reg_img)
 
         # use img_folder_path to get labels and embeddings
         self.database = self.database.append({'label': name, 'embedding': img_embedding}, ignore_index=True)
 
         # Save it as a pickle file
-        self.database.to_pickle(self.database_file)
+        self.save_database()
 
         # Update length of embeddings list and embeddings list itself
-        self.len_embeddings_list = len(self.database.index)
-        self.embeddings_list = [self.database.iloc[i,1][0] for i in range(self.len_embeddings_list)]
+        self.update_embeddings()
 
+        print(self.database)
+
+    def face_deregistration(self, name):
+        # name: Name of the person who should be deregistered
+
+        # delete all entries in database with specified name
+        drop_indices = self.database[ self.database['label'] == name ].index
+        if len(drop_indices) == 0:
+            print('Specified name not in database registered. User can not be deregistered!')
+            return
+        self.database.drop(drop_indices, inplace=True)
+
+        # Save it as a pickle file
+        self.save_database()
+
+        # Update length of embeddings list and embeddings list itself
+        self.update_embeddings() 
+
+        print(self.database)
         
         
 

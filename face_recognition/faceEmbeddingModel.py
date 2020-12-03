@@ -55,6 +55,7 @@ class FaceNetModel(nn.Module):
             self.model.layer4)
 
         # modify fc layer based on https://arxiv.org/abs/1703.07737
+        # if include linear, batchNorm1d and ReLU
         self.model.fc = nn.Sequential(
             Flatten(),
             # nn.Linear(100352, 1024),
