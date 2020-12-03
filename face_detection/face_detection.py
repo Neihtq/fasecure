@@ -7,17 +7,17 @@ import numpy as np
 from os.path import join, dirname, abspath
 
 dirname = dirname(abspath(__file__))
-PROTO_TXT = join(dirname, "..", "SSD_model", "deploy.prototxt")
-MODEL = join(dirname, "..", "SSD_model", "res10_300x300_ssd_iter_140000.caffemodel")
+PROTO_TXT = join(dirname, "model", "deploy.prototxt")
+MODEL = join(dirname, "model", "res10_300x300_ssd_iter_140000.caffemodel")
 THRESHOLD = 0.5
 
-def main():
+def face_detection(callback=None):
     net = cv2.dnn.readNetFromCaffe(PROTO_TXT, MODEL)
 
     prev_frame_time = 0
     new_frame_time = 0
 
-    cam = cv2.VideoCapture(2)
+    cam = cv2.VideoCapture(0)
     while True:
         _, frame = cam.read()
         
@@ -34,9 +34,19 @@ def main():
             
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
             start_x , start_y, end_x, end_y = box.astype("int")
+                
 
             #cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), (0, 0, 255), 2)
-            frame = crop_img(frame, start_x, start_y, end_x, end_y)
+            frame = crop_img(frame, start_x-10, start_y-10, end_x+10, end_y+10)
+
+            if callback:
+                tensor = callback(frame)
+                print(tensor.shape)
+                print(tensor)
+                cam.release()
+                cv2.destroyAllWindows()
+                return
+
 
         new_frame_time = time.time()
         fps = 1 / (new_frame_time - prev_frame_time)
@@ -71,5 +81,5 @@ def crop_img(img, start_x, start_y, end_x, end_y):
 
 
 if __name__ == '__main__':
-    main()
+    face_detection()
     

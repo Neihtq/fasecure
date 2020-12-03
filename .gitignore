@@ -132,6 +132,11 @@ dmypy.json
 # PyTorch models
 *.pt
 *.pth
+
+# images
+*.ppm
+*.pkl
+
 /yolov3.cfg
 /yolov3-wider_16000.weights
 .vscode
