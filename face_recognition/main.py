@@ -36,9 +36,6 @@ import numpy as np
 # -> or e. g. create 4 samples per registered name
 
 
-# - pretrained model auf drive laden und nicht auf github
-# - auf main branch mergen
-
 
 
 
@@ -60,35 +57,14 @@ embedding_model = faceEmbeddingModel()
 # If new dataset: pass dataloader to RegistrationDatabase, then it will rewrite Database
 # Otherwise, it trys to return existing database
 database = RegistrationDatabase(embedding_model)
-# print(database.database.iloc[5,1])
+# print(database.database)
 
 #print(database.name_list[[1,5,9,22]])
 
-database.face_recognition(path='./test_images/Aaron_04.ppm')
+database.face_recognition(path='./test_recognition_images/Yashwant_04.ppm')
 
-# path = './test_images/Aaron_04.ppm'
+# path = './test_registration_images/John_02.ppm'
 # img = database.load_and_transform_img(path)
-# img_embedding = database.model(img).detach().cpu().numpy()
+# database.face_registration('John',img)
 
-
-# # adapt folders
-# path1 = './faces_db/Lleyton_Hewitt_0003.ppm'
-# path2 = './faces_db/Lleyton_Hewitt_0004.ppm'
-
-# img1, img2 = load_and_transform_img(path1, path2)
-
-# # do forward pass (128 dimensional embedding)
-# embed1, embed2 = model(img1), model(img2)
-
-# # compute the distance using euclidean distance of image embeddings (0 if the same)
-# euclidean_distance = F.pairwise_distance(embed1, embed2)
-
-
-# # we use 1.5 threshold to decide whether images are genuine or impostor
-# threshold = 1.5
-
-# genuine = euclidean_distance <= threshold
-
-# print(genuine)
-
-# print(euclidean_distance)
+database.face_deregistration('John')
