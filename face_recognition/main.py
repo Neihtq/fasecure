@@ -29,13 +29,15 @@ import sys
 import numpy as np
 
 # Questions to Omar:
-# - Do we get like 20 images (10 persons, each 2 images) for the registered people?
-# -> our idea: load pretrained model and finetune it with few images we get from you?
-# - In order to compare a new person with the registered people, we have to compare the embeddings:
-#       - Therefore, we have to store the embeddings of the registered people?
-#       - As we store the embeddings, do we store just one embedding per person, or if we have multiple images, then also multiple embeddings?
-#           When we have multiple embeddings, we could also store the center of all the embeddings for one person
-#           (Results in a KNN classifier in the end to find the nearest embedding. However, if above threshold, then unknown)
+# - Face registration dann das gleiche wie One-Shot learning?
+# - one-shot learning: Just with one example? But could also create with one examples e.g. 4 other examples (and store them into DB)
+# - Number per class (registered name) should be equal (balanced dataset) when we use KNN
+# -> either per name just one embedding (but can not just calculate mean of embeddings, as embeddings are then no longer on hypersqhere)
+# -> or e. g. create 4 samples per registered name
+
+
+# - pretrained model auf drive laden und nicht auf github
+# - auf main branch mergen
 
 
 
@@ -53,8 +55,6 @@ reg_loader = torch.utils.data.DataLoader(dataset=reg_dataset,
                                            collate_fn=None)
 
 
-
-
 embedding_model = faceEmbeddingModel()
 
 # If new dataset: pass dataloader to RegistrationDatabase, then it will rewrite Database
@@ -66,8 +66,9 @@ database = RegistrationDatabase(embedding_model)
 
 database.face_recognition(path='./test_images/Aaron_04.ppm')
 
-
-
+# path = './test_images/Aaron_04.ppm'
+# img = database.load_and_transform_img(path)
+# img_embedding = database.model(img).detach().cpu().numpy()
 
 
 # # adapt folders
