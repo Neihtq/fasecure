@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 # Requirement for the library is the the faces are not already completly cropped out, however just a face detector which shows whole head would be fine
 
-def facealignment(imgname):
+def face_alignment(imgname):
     detected_face = DeepFace.detectFace(imgname)
     #plt.imshow(detected_face)
     return detected_face

@@ -79,7 +79,7 @@ class RegistrationDatabase():
 
         # In the end after running constructor: saved database as pickle file and database attribute contains registration database
 
-    def load_and_transform_img(self, path):
+    def load_and_transform_img(self, image):
         #prepare preprocess pipeline
         preprocess_pipelines = [transforms.Resize(224),  
                             transforms.ToTensor(), 
@@ -89,7 +89,13 @@ class RegistrationDatabase():
         trfrm = transforms.Compose(preprocess_pipelines)
 
         # read the image and transform it into tensor then normalize it with our trfrm function pipeline
-        img = trfrm(Image.open(path)).unsqueeze(0)
+
+        if isinstance(image, str):
+            image = Image.open(image)
+        else:
+            image = Image.fromarray(image)
+
+        img = trfrm(image).unsqueeze(0)
     
         return img
 
