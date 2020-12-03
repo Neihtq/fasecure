@@ -122,10 +122,24 @@ class RegistrationDatabase():
 
         # return label or unknown
 
-    def face_registration(self):
+    def face_registration(self, name, reg_img):
+        # name: Name of the new person who should be registred
+        # reg_img: Tensor (shape 1x3x224x224) of a new person who should be registered
 
-        # update self.len_embedding_list and self.embedding_list
-        pass
+        # Calculate embedding and convert to numpy array
+        img_embedding = self.model(img).detach().cpu().numpy()
+
+        # use img_folder_path to get labels and embeddings
+        self.database = self.database.append({'label': name, 'embedding': img_embedding}, ignore_index=True)
+
+        # Save it as a pickle file
+        self.database.to_pickle(self.database_file)
+
+        # Update length of embeddings list and embeddings list itself
+        self.len_embeddings_list = len(self.database.index)
+        self.embeddings_list = [self.database.iloc[i,1][0] for i in range(self.len_embeddings_list)]
+
+        
         
 
  
