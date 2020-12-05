@@ -28,7 +28,7 @@ from reg_dataset import RegistrationDataset
 import sys
 import numpy as np
 
-# Questions to Omar:
+# Questions:
 # - Face registration dann das gleiche wie One-Shot learning?
 # - one-shot learning: Just with one example? But could also create with one examples e.g. 4 other examples (and store them into DB)
 # - Number per class (registered name) should be equal (balanced dataset) when we use KNN
@@ -37,7 +37,8 @@ import numpy as np
 
 
 
-
+# pytorch lightning anschauen
+# error handling: what happens, if reg_database is empty and I try to recognize a face? -> directy unknown
 
 # sys.exit()
 
@@ -67,4 +68,4 @@ database.face_recognition(path='./test_recognition_images/Yashwant_04.ppm')
 # img = database.load_and_transform_img(path)
 # database.face_registration('John',img)
 
-database.face_deregistration('John')
+# database.face_deregistration('John')

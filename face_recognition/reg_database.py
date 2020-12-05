@@ -26,7 +26,7 @@ class RegistrationDatabase():
 
         # Set model to eval, as training is over when we use it here for inference
         self.embedding_model = faceEmbeddingModel.eval()
-        self.recognition_model = NearestNeighbors(n_neighbors=5)
+        self.recognition_model = NearestNeighbors(n_neighbors=1)
 
         # have a look if database (pickle file) already available, if yes, load it and save it into pandas dataframe and return
         model_dir = "./reg_database"
@@ -105,6 +105,39 @@ class RegistrationDatabase():
     def calculate_embedding(self, img):
         return self.embedding_model(img).detach().cpu().numpy()
 
+    # Get the label of the person by providing the index of the dataframe
+    def get_label(self, index):
+        nearest_label = self.database.iloc[index,0].reset_index(drop=True)[0]
+        return nearest_label
+    
+    # Find closest embedding based on euclidean distance (use KNN with k=1) and fixed threshold
+    # Can also adapt to adaptive threshold (see paper)
+    def closest_embedding_euclidean_distance(self, img_embedding):
+        # print(self.recognition_model.kneighbors(img_embedding))
+
+        label_index = self.recognition_model.kneighbors(img_embedding)[1].tolist()[0]
+        closest_label = self.get_label(label_index)
+        print("Closest person: ", closest_label)
+
+        # Calculate distance to nearest neighbor and check, if it´s below threshold
+        closest_embedding_dist = self.recognition_model.kneighbors(img_embedding)[0].tolist()[0][0]
+        print("Closest embedding: ", closest_embedding_dist)
+
+        if closest_embedding_dist > 1.5:
+            print("Unknown person")
+
+    # Find closest embedding based on inner product and adaptive thresholds and thus decide, if person known or unknown
+    def closest_embedding_inner_product(self, img_embedding):
+        # calculate the inner product to all other embeddings
+        inner_products = np.inner(img_embedding,self.embeddings_list)
+
+        # Get index with hightest value (which is the closest vector) and convert it into a list (so get_label works for knn and inner product)
+        label_index = [np.argmax(inner_products)]
+
+        # Use index to get the label
+        closest_label = self.get_label(label_index)
+        print("Closest person: ", closest_label)
+
     # Either pass image in shape 1x3x244x244 or path to image
     def face_recognition(self, new_img=None, path=None):
         # get new image -> calculate embedding
@@ -118,19 +151,10 @@ class RegistrationDatabase():
         else:
             raise Exception('You have to pass either a img as a tensor (1x3x224x224) or a path (string) where the image is located')
 
-        # Use KNN based on database to find nearest neighbor
-        print(self.recognition_model.kneighbors(img_embedding))
-
-        label_indices = self.recognition_model.kneighbors(img_embedding)[1].tolist()[0]
-        nearest_labels = self.database.iloc[label_indices,0]
-        print(nearest_labels)
-
-        # Calculate distance to nearest neighbor and check, if it´s below threshold
-        closest_embedding_dist = self.recognition_model.kneighbors(img_embedding)[0].tolist()[0][0]
-        print("Closest embedding: ", closest_embedding_dist)
-
-        if closest_embedding_dist > 1.5:
-            print("Unknown person")
+        
+        # Use KNN based on database to find nearest neighbor (with fixed threshold)
+        # self.closest_embedding_euclidean_distance(img_embedding)
+        self.closest_embedding_inner_product(img_embedding)
 
         # return label or unknown
 
