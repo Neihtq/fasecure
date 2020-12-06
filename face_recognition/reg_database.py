@@ -8,6 +8,8 @@ from sklearn.neighbors import NearestNeighbors
 import numpy as np
 from statistics import mode
 
+import sys
+
 # - implement database class which stores the labels and embeddings (pandas dataframe)
 #       attibutes: pandas dataframe, faceRecognitionModel
 #       main methods:   - constructor
@@ -27,6 +29,8 @@ class RegistrationDatabase():
         # Set model to eval, as training is over when we use it here for inference
         self.embedding_model = faceEmbeddingModel.eval()
         self.recognition_model = NearestNeighbors(n_neighbors=1)
+
+        self.len_embeddings_list = 0
 
         # have a look if database (pickle file) already available, if yes, load it and save it into pandas dataframe and return
         model_dir = "./reg_database"
@@ -60,12 +64,8 @@ class RegistrationDatabase():
                 #     img = img.to("cuda")
                 #     label = target.to("cuda")
 
-                # Calculate embedding and convert to numpy array
-                # detach() to remove computational graph from tensor
-                img_embedding = self.calculate_embedding(img)
-
-                # use img_folder_path to get labels and embeddings
-                self.database = self.database.append({'label': label[0], 'embedding': img_embedding}, ignore_index=True)
+                # Face registration
+                self.face_registration(label[0], img)
 
 
             # Save it as a pickle file
@@ -101,14 +101,39 @@ class RegistrationDatabase():
         # self.name_list = np.array([self.database.iloc[i,0] for i in range(self.len_embeddings_list)])
         self.recognition_model.fit(self.embeddings_list)
 
+        # Calculate and update inner product thresholds (+add pseudo embeddings to avoid problem with to less registered embeddings for adaptive threshold)
+        # Adapt threshold for first embedding
+        if self.len_embeddings_list == 1:
+            threshold_inner_product = 99.0
+            #print(self.database)
+        elif self.len_embeddings_list > 1:
+            # Loop over all embeddings in the database
+            for i in range(self.len_embeddings_list):
+
+                # Calculate the similarity score between a selected embedding and all the other embeddings
+                temp_embeddings_list = self.embeddings_list.copy()
+                temp_embedding = temp_embeddings_list.pop(i)
+
+                # Inner product is 100, when two vectors are identical (as vectors lie on a hypersphere scaled by alpha=10 -> length(vector)^2)
+                inner_products = np.inner(temp_embedding,temp_embeddings_list)
+
+                # Set the inner product threshold of the corresponding embedding...
+                # as the maximum value among all facial embeddings not belonging to the same person                  
+                self.database.iloc[i,2] = np.max(inner_products) 
+
     # Get tensor img as input and output numpy array of embedding
     def calculate_embedding(self, img):
+        # detach() to remove computational graph from tensor
         return self.embedding_model(img).detach().cpu().numpy()
 
     # Get the label of the person by providing the index of the dataframe
     def get_label(self, index):
-        nearest_label = self.database.iloc[index,0].reset_index(drop=True)[0]
-        return nearest_label
+        label = self.database.iloc[index,0].reset_index(drop=True)[0]
+        return label
+
+    def get_similarity_threshold(self, index):
+        similarity_threshold = self.database.iloc[index,2].reset_index(drop=True)[0]
+        return similarity_threshold
     
     # Find closest embedding based on euclidean distance (use KNN with k=1) and fixed threshold
     # Can also adapt to adaptive threshold (see paper)
@@ -138,6 +163,18 @@ class RegistrationDatabase():
         closest_label = self.get_label(label_index)
         print("Closest person: ", closest_label)
 
+        # Check, if the maximal computed similarity higher is then the threshold similarity of that person
+        # If yes, then it is that person. Otherwise, it´s an intruder and the authentification request will be rejected
+        max_similarity = np.max(inner_products)
+        similarity_threshold = self.get_similarity_threshold(label_index)
+        # print("sim thres of closest person: ", similarity_threshold)
+        # print("sim: ", max_similarity)
+        if max_similarity >= similarity_threshold:
+            print("Access")
+        else:
+            print("intruder")
+        
+
     # Either pass image in shape 1x3x244x244 or path to image
     def face_recognition(self, new_img=None, path=None):
         # get new image -> calculate embedding
@@ -163,7 +200,7 @@ class RegistrationDatabase():
         # reg_img: Tensor (shape 1x3x224x224) of a new person who should be registered
 
         # Check, if name already in database available. If yes, then return
-        # Extend and check, if embedding already in database: distance to Nearest Neighbor should be at least 1.5? Possible at all?
+        # Extend and check, if embedding already in database: distance to Nearest Neighbor is 0, then image already exists. 
         if (self.database['label'] == name).any():
             print('Specified name already in database registered. User can not be registered again!')
             return            
@@ -171,16 +208,16 @@ class RegistrationDatabase():
         # Calculate embedding and convert to numpy array
         img_embedding = self.calculate_embedding(reg_img)
 
-        # use img_folder_path to get labels and embeddings
-        self.database = self.database.append({'label': name, 'embedding': img_embedding}, ignore_index=True)
-
-        # Save it as a pickle file
-        self.save_database()
+        # Add label, embedding and threshold to database (threshold first of all set to 0, will be udpated later on)
+        self.database = self.database.append({'label': name, 'embedding': img_embedding, 'threshold': 0}, ignore_index=True)
 
         # Update length of embeddings list and embeddings list itself
         self.update_embeddings()
 
-        print(self.database)
+        # Save it as a pickle file
+        self.save_database()
+
+        #print(self.database)
 
     def face_deregistration(self, name):
         # name: Name of the person who should be deregistered
@@ -198,7 +235,7 @@ class RegistrationDatabase():
         # Update length of embeddings list and embeddings list itself
         self.update_embeddings() 
 
-        print(self.database)
+        #print(self.database)
         
         
 
