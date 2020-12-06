@@ -39,6 +39,8 @@ import numpy as np
 
 # pytorch lightning anschauen
 # error handling: what happens, if reg_database is empty and I try to recognize a face? -> directy unknown
+# Modify code so that can also start with just registering one person and then add person by person
+# Look how adaptive threshold behaves when just a few registered people
 
 # sys.exit()
 
@@ -58,14 +60,17 @@ embedding_model = faceEmbeddingModel()
 # If new dataset: pass dataloader to RegistrationDatabase, then it will rewrite Database
 # Otherwise, it trys to return existing database
 database = RegistrationDatabase(embedding_model)
-# print(database.database)
 
 #print(database.name_list[[1,5,9,22]])
 
-database.face_recognition(path='./test_recognition_images/Yashwant_04.ppm')
 
-# path = './test_registration_images/John_02.ppm'
+database.face_recognition(path='./test_recognition_images/Lleyton_04.ppm')
+
+# path = './test_registration_images/John_01.ppm'
 # img = database.load_and_transform_img(path)
 # database.face_registration('John',img)
 
+
 # database.face_deregistration('John')
+
+# print(database.database)
