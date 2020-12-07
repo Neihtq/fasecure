@@ -17,9 +17,8 @@ import sys
 #                       - face registration (one-shot learning)
 #                       - face deregistration
 
-# open questions:
-# to handle the case, that different amounts of images are availabe for one person in the registration process:
-# -> batch size one and then store all the embeddings with the same label in a list, then calculate the mean
+# with newer torchvision version, one can also transform tensor batches (but cannot update torchvision)
+# Thus, I have to convert it to an PIL image first
 
 class RegistrationDatabase():
 
@@ -31,6 +30,28 @@ class RegistrationDatabase():
         self.recognition_model = NearestNeighbors(n_neighbors=1)
 
         self.len_embeddings_list = 0
+
+        self.pil_transforms = transforms.Compose([
+            transforms.Resize(224),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])])
+
+        self.augmentation_1 = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0),
+            transforms.ToTensor()])       
+
+        self.augmentation_2 = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.RandomHorizontalFlip(p=1),
+            transforms.ToTensor()])   
+
+        self.augmentation_3 = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.RandomPerspective(distortion_scale=0.1, p=1),
+            transforms.ToTensor()]) 
+                             
 
         # have a look if database (pickle file) already available, if yes, load it and save it into pandas dataframe and return
         model_dir = "./reg_database"
@@ -46,16 +67,20 @@ class RegistrationDatabase():
                 # load pickle file and save it into class attribute database
                 print('Database already exists. Pickle file will be loaded...')
                 self.database = pd.read_pickle(self.database_file)
+                # For the case, that the pickle file was changed externally
+                self.update_embeddings()
             else: 
-                raise Exception('No database availabe. You have to specifiy a dataloader containing all the images for registration (Batch-size: 1)')
+                #raise Exception('No database availabe. You have to specifiy a dataloader containing all the images for registration (Batch-size: 1)')
+                self.database = pd.DataFrame(columns=['label','embedding','threshold'])
+                print("No database availabe. Empty database will be created...")
 
 
         # If dataloader specified, then overwrite database (or create a new one, if none existing)
         else:
-            print('A dataloader was specified. A new pickle file containing the images in the dataloader will be created...')
+            print('A dataloader was specified. A new database file containing the images in the dataloader will be created...')
 
             # create pandas dataframe 
-            self.database = pd.DataFrame(columns=['label','embedding'])
+            self.database = pd.DataFrame(columns=['label','embedding','threshold'])
 
             for i, data in enumerate(dataloader):
                 img, label = data
@@ -71,22 +96,11 @@ class RegistrationDatabase():
             # Save it as a pickle file
             self.save_database()
 
-        # Calculate length of embeddings list and embeddings list itself
-        self.update_embeddings()
-
         # In the end after running constructor: saved database as pickle file and database attribute contains registration database
 
     def load_and_transform_img(self, path):
-        #prepare preprocess pipeline
-        preprocess_pipelines = [transforms.Resize(224),  
-                            transforms.ToTensor(), 
-                            transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                                                    std=[0.229, 0.224, 0.225])]
-
-        trfrm = transforms.Compose(preprocess_pipelines)
-
         # read the image and transform it into tensor then normalize it with our trfrm function pipeline
-        img = trfrm(Image.open(path)).unsqueeze(0)
+        img = self.pil_transforms(Image.open(path)).unsqueeze(0)
     
         return img
 
@@ -99,20 +113,35 @@ class RegistrationDatabase():
         self.len_embeddings_list = len(self.database.index)
         self.embeddings_list = [self.database.iloc[i,1][0] for i in range(self.len_embeddings_list)]
         # self.name_list = np.array([self.database.iloc[i,0] for i in range(self.len_embeddings_list)])
-        self.recognition_model.fit(self.embeddings_list)
+
+        if self.len_embeddings_list > 0:
+            self.recognition_model.fit(self.embeddings_list)
 
         # Calculate and update inner product thresholds (+add pseudo embeddings to avoid problem with to less registered embeddings for adaptive threshold)
         # Adapt threshold for first embedding
-        if self.len_embeddings_list == 1:
-            threshold_inner_product = 99.0
+        if self.database['label'].nunique() == 1:
+            self.database.iloc[:,2] = 98.0
             #print(self.database)
-        elif self.len_embeddings_list > 1:
+        elif self.database['label'].nunique() > 1:
             # Loop over all embeddings in the database
             for i in range(self.len_embeddings_list):
 
                 # Calculate the similarity score between a selected embedding and all the other embeddings
                 temp_embeddings_list = self.embeddings_list.copy()
-                temp_embedding = temp_embeddings_list.pop(i)
+                temp_embedding = temp_embeddings_list[i]
+
+                # get label from index, then get all indices from database with that label
+                cur_label = self.get_label([i])
+                cur_label_indices = self.database[self.database['label']==cur_label].index.values.astype(int).tolist()
+
+                # print("current label: ", cur_label)
+                # print("current label indices: ", cur_label_indices)
+
+                # delete all these labels from temp_embeddings_list (compare to all others, but not belonging to the same person)
+                # reverse order so that one don´t throw off the subsequent indices
+                for index in sorted(cur_label_indices, reverse=True):
+                    del temp_embeddings_list[index]
+
 
                 # Inner product is 100, when two vectors are identical (as vectors lie on a hypersphere scaled by alpha=10 -> length(vector)^2)
                 inner_products = np.inner(temp_embedding,temp_embeddings_list)
@@ -177,6 +206,11 @@ class RegistrationDatabase():
 
     # Either pass image in shape 1x3x244x244 or path to image
     def face_recognition(self, new_img=None, path=None):
+        
+        if self.len_embeddings_list == 0:
+            print("Person is unkown")
+            return
+        
         # get new image -> calculate embedding
         if isinstance(new_img, torch.Tensor) and path == None:
             print("Image passed as Tensor")
@@ -201,23 +235,33 @@ class RegistrationDatabase():
 
         # Check, if name already in database available. If yes, then return
         # Extend and check, if embedding already in database: distance to Nearest Neighbor is 0, then image already exists. 
-        if (self.database['label'] == name).any():
-            print('Specified name already in database registered. User can not be registered again!')
-            return            
+        # if (self.database['label'] == name).any():
+        #     print('Specified name already in database registered. User can not be registered again!')
+        #     return            
+
+        # Data augmentation: random noise, horizontal/vertical flip
+        reg_img_1 = reg_img
+        reg_img_2 = self.augmentation_1(reg_img.squeeze(0)).unsqueeze(0)
+        reg_img_3 = self.augmentation_2(reg_img.squeeze(0)).unsqueeze(0)
+        reg_img_4 = self.augmentation_3(reg_img.squeeze(0)).unsqueeze(0)
 
         # Calculate embedding and convert to numpy array
-        img_embedding = self.calculate_embedding(reg_img)
+        img_embedding_1 = self.calculate_embedding(reg_img_1)
+        img_embedding_2 = self.calculate_embedding(reg_img_2)
+        img_embedding_3 = self.calculate_embedding(reg_img_3)
+        img_embedding_4 = self.calculate_embedding(reg_img_4)
 
         # Add label, embedding and threshold to database (threshold first of all set to 0, will be udpated later on)
-        self.database = self.database.append({'label': name, 'embedding': img_embedding, 'threshold': 0}, ignore_index=True)
+        self.database = self.database.append({'label': name, 'embedding': img_embedding_1, 'threshold': 0}, ignore_index=True)
+        self.database = self.database.append({'label': name, 'embedding': img_embedding_2, 'threshold': 0}, ignore_index=True)
+        self.database = self.database.append({'label': name, 'embedding': img_embedding_3, 'threshold': 0}, ignore_index=True)
+        self.database = self.database.append({'label': name, 'embedding': img_embedding_4, 'threshold': 0}, ignore_index=True)
 
         # Update length of embeddings list and embeddings list itself
         self.update_embeddings()
 
         # Save it as a pickle file
         self.save_database()
-
-        #print(self.database)
 
     def face_deregistration(self, name):
         # name: Name of the person who should be deregistered
@@ -227,15 +271,16 @@ class RegistrationDatabase():
         if len(drop_indices) == 0:
             print('Specified name not in database registered. User can not be deregistered!')
             return
+        # print(drop_indices)
         self.database.drop(drop_indices, inplace=True)
+        # reset index, so that it counts again from zero if person is deregistered from the middle
+        self.database.reset_index(drop=True,inplace=True)
 
         # Save it as a pickle file
         self.save_database()
 
         # Update length of embeddings list and embeddings list itself
         self.update_embeddings() 
-
-        #print(self.database)
         
         
 
