@@ -11,48 +11,44 @@
     # - what means "model.module.forward_classifier"
 
 # - model training/finetuning (use data augmentation (random flix, rotate?, ...))
-# - model evaluation
-# - face recognition: implement KNN with fixed threshold for face recognition
-# - face registration: one-shot learning (add to database)
-# - implement adaptive threshold (for every person own threshold which can change if new person is added)
 
-# Naming convention for images used for registration: name_#.(jpg,png,ppm,...)
+# - transformation of input images has to be handled by faceEmbeddingModel and not by database (in face registration and face recognition)
 
 # imports
 import torch.nn.functional as F
 import torch
 from faceEmbeddingModel import faceEmbeddingModel
-from prep import load_and_transform_img, show_tensor_img
+# from prep import load_and_transform_img, show_tensor_img
 from reg_database import RegistrationDatabase
 from reg_dataset import RegistrationDataset
 import sys
 import numpy as np
 
-# Questions:
-# - Face registration dann das gleiche wie One-Shot learning?
-# - one-shot learning: Just with one example? But could also create with one examples e.g. 4 other examples (and store them into DB)
-# - Number per class (registered name) should be equal (balanced dataset) when we use KNN
-# -> either per name just one embedding (but can not just calculate mean of embeddings, as embeddings are then no longer on hypersqhere)
-# -> or e. g. create 4 samples per registered name
+# face recognition = face embedding (Model trained with Siamese Network) + embedding comparison (not trainable, analytic) 
 
 
 
-# pytorch lightning anschauen
-# error handling: what happens, if reg_database is empty and I try to recognize a face? -> directy unknown
-# Modify code so that can also start with just registering one person and then add person by person
-# Look how adaptive threshold behaves when just a few registered people
+# - pytorch lightning anschauen
+# - Look how adaptive threshold behaves when just a few registered people
+#  --> as expected: e. g. if 2 stored embeddings and if embeddings far away, then is tolerance also big -> everyone gets accepted!
+#   but also according to paper it´s quite bad for less images (-> store e.g. 5000 pseudo embeddings?)
+#   why are fixed threshold so low? around 0.3
+#   run their implementation according to github and print database?
+#   Update matplotlib, numpy and so on afterwards again
+#  --> add more embeddings per person (e.g. 12 or so)
+
+# - implement adaptive threshold also for euclidean distance
+# - create very simple model to have reference (instead of embeddings, reshape image itself and calculate inner product)
+# - create evaluation of model performance (according to paper of adaptive threshold)
 
 # sys.exit()
 
 # Create dataset
+# Naming convention for images used for registration with dataloader: name_#.(jpg,png,ppm,...)
 reg_dataset = RegistrationDataset("./registered_images", "ppm")
 
 # Create dataloader with batch_size = 1
-reg_loader = torch.utils.data.DataLoader(dataset=reg_dataset,
-                                           batch_size=1,
-                                           num_workers=0,
-                                           shuffle=False, sampler=None,
-                                           collate_fn=None)
+reg_loader = torch.utils.data.DataLoader(dataset=reg_dataset, batch_size=1, num_workers=0, shuffle=False, sampler=None, collate_fn=None)
 
 
 embedding_model = faceEmbeddingModel()
@@ -61,16 +57,22 @@ embedding_model = faceEmbeddingModel()
 # Otherwise, it trys to return existing database
 database = RegistrationDatabase(embedding_model)
 
-#print(database.name_list[[1,5,9,22]])
-
-
-database.face_recognition(path='./test_recognition_images/Lleyton_04.ppm')
 
 # path = './test_registration_images/John_01.ppm'
 # img = database.load_and_transform_img(path)
 # database.face_registration('John',img)
 
+# path = './test_registration_images/John_02.ppm'
+# img = database.load_and_transform_img(path)
+# database.face_registration('John',img)
 
-# database.face_deregistration('John')
+# path = './test_registration_images/John_03.ppm'
+# img = database.load_and_transform_img(path)
+# database.face_registration('John',img)
+
+
+database.face_recognition(path='./test_recognition_images/Kofi_04.ppm')
+
+# database.face_deregistration('Kofi')
 
 # print(database.database)
