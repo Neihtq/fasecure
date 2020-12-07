@@ -12,6 +12,8 @@
 
 # - model training/finetuning (use data augmentation (random flix, rotate?, ...))
 
+# - when final pipeline is ready, then compare all settings with performance metrics (with augmentation, without augmentation,...)
+
 # - transformation of input images has to be handled by faceEmbeddingModel and not by database (in face registration and face recognition)
 
 # imports
@@ -26,6 +28,10 @@ import numpy as np
 
 # face recognition = face embedding (Model trained with Siamese Network) + embedding comparison (not trainable, analytic) 
 
+# What I have done since last time:
+# - implemented adaptive threshold
+# - added three images per person and per image 4 data augmentations -> 12 images per registered person
+# - implemented similarity calculation with inner product and euclidean distance
 
 
 # - pytorch lightning anschauen
@@ -41,8 +47,6 @@ import numpy as np
 # - create very simple model to have reference (instead of embeddings, reshape image itself and calculate inner product)
 # - create evaluation of model performance (according to paper of adaptive threshold)
 
-# sys.exit()
-
 # Create dataset
 # Naming convention for images used for registration with dataloader: name_#.(jpg,png,ppm,...)
 reg_dataset = RegistrationDataset("./registered_images", "ppm")
@@ -55,23 +59,23 @@ embedding_model = faceEmbeddingModel()
 
 # If new dataset: pass dataloader to RegistrationDatabase, then it will rewrite Database
 # Otherwise, it trys to return existing database
-database = RegistrationDatabase(embedding_model)
+database = RegistrationDatabase(faceEmbeddingModel=embedding_model,mode='euclidean_distance')
+# 
+
+path = './test_registration_images/John_01.ppm'
+img = database.load_and_transform_img(path)
+database.face_registration('John',img)
+
+path = './test_registration_images/John_02.ppm'
+img = database.load_and_transform_img(path)
+database.face_registration('John',img)
+
+path = './test_registration_images/John_03.ppm'
+img = database.load_and_transform_img(path)
+database.face_registration('John',img)
 
 
-# path = './test_registration_images/John_01.ppm'
-# img = database.load_and_transform_img(path)
-# database.face_registration('John',img)
-
-# path = './test_registration_images/John_02.ppm'
-# img = database.load_and_transform_img(path)
-# database.face_registration('John',img)
-
-# path = './test_registration_images/John_03.ppm'
-# img = database.load_and_transform_img(path)
-# database.face_registration('John',img)
-
-
-database.face_recognition(path='./test_recognition_images/Kofi_04.ppm')
+database.face_recognition(path='./test_recognition_images/John_04.ppm')
 
 # database.face_deregistration('Kofi')
 
