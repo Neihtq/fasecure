@@ -23,11 +23,16 @@ import sys
 class RegistrationDatabase():
 
     # Register people or load registered people
-    def __init__(self, faceEmbeddingModel, dataloader=None):
+    def __init__(self, faceEmbeddingModel, dataloader=None, mode='inner_product'):
 
         # Set model to eval, as training is over when we use it here for inference
         self.embedding_model = faceEmbeddingModel.eval()
-        self.recognition_model = NearestNeighbors(n_neighbors=1)
+        
+        self.mode = mode
+        if self.mode == 'euclidean_distance':
+            self.recognition_model = NearestNeighbors(n_neighbors=1)
+
+        
 
         self.len_embeddings_list = 0
 
@@ -114,9 +119,6 @@ class RegistrationDatabase():
         self.embeddings_list = [self.database.iloc[i,1][0] for i in range(self.len_embeddings_list)]
         # self.name_list = np.array([self.database.iloc[i,0] for i in range(self.len_embeddings_list)])
 
-        if self.len_embeddings_list > 0:
-            self.recognition_model.fit(self.embeddings_list)
-
         # Calculate and update inner product thresholds (+add pseudo embeddings to avoid problem with to less registered embeddings for adaptive threshold)
         # Adapt threshold for first embedding
         if self.database['label'].nunique() == 1:
@@ -143,12 +145,25 @@ class RegistrationDatabase():
                     del temp_embeddings_list[index]
 
 
-                # Inner product is 100, when two vectors are identical (as vectors lie on a hypersphere scaled by alpha=10 -> length(vector)^2)
-                inner_products = np.inner(temp_embedding,temp_embeddings_list)
+                if self.mode == 'inner_product':
+                    # Inner product is 100, when two vectors are identical (as vectors lie on a hypersphere scaled by alpha=10 -> length(vector)^2)
+                    inner_products = np.inner(temp_embedding,temp_embeddings_list)
 
-                # Set the inner product threshold of the corresponding embedding...
-                # as the maximum value among all facial embeddings not belonging to the same person                  
-                self.database.iloc[i,2] = np.max(inner_products) 
+                    # Set the inner product threshold of the corresponding embedding...
+                    # as the maximum value among all facial embeddings not belonging to the same person                  
+                    self.database.iloc[i,2] = np.max(inner_products) 
+
+                elif self.mode == 'euclidean_distance':
+                    # print(type(temp_embedding))
+                    # print(temp_embedding.reshape((1,128)).shape)
+                    # sys.exit()
+                    self.recognition_model.fit(temp_embeddings_list)
+                    closest_embedding_dist = self.recognition_model.kneighbors(temp_embedding.reshape((1,128)))[0].tolist()[0][0]
+                    self.database.iloc[i,2] = closest_embedding_dist
+
+
+        if self.len_embeddings_list > 0 and self.mode == 'euclidean_distance':
+            self.recognition_model.fit(self.embeddings_list)
 
     # Get tensor img as input and output numpy array of embedding
     def calculate_embedding(self, img):
@@ -174,11 +189,15 @@ class RegistrationDatabase():
         print("Closest person: ", closest_label)
 
         # Calculate distance to nearest neighbor and check, if it´s below threshold
-        closest_embedding_dist = self.recognition_model.kneighbors(img_embedding)[0].tolist()[0][0]
-        print("Closest embedding: ", closest_embedding_dist)
+        max_similarity = self.recognition_model.kneighbors(img_embedding)[0].tolist()[0][0]
+        print("Closest embedding: ", max_similarity)
+        similarity_threshold = self.get_similarity_threshold(label_index)
 
-        if closest_embedding_dist > 1.5:
-            print("Unknown person")
+        # Here it´s the opposite of the inner product
+        if max_similarity <= similarity_threshold:
+            print("Access")
+        else:
+            print("intruder")
 
     # Find closest embedding based on inner product and adaptive thresholds and thus decide, if person known or unknown
     def closest_embedding_inner_product(self, img_embedding):
@@ -222,10 +241,12 @@ class RegistrationDatabase():
         else:
             raise Exception('You have to pass either a img as a tensor (1x3x224x224) or a path (string) where the image is located')
 
-        
         # Use KNN based on database to find nearest neighbor (with fixed threshold)
-        # self.closest_embedding_euclidean_distance(img_embedding)
-        self.closest_embedding_inner_product(img_embedding)
+        if self.mode == 'inner_product':
+            self.closest_embedding_inner_product(img_embedding)
+        elif self.mode == 'euclidean_distance':
+            self.closest_embedding_euclidean_distance(img_embedding)
+        
 
         # return label or unknown
 
