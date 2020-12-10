@@ -12,5 +12,7 @@ def face_alignment(imgname):
     return detected_face
 
 
+
+face_alignment()
 # Example:
 #plt.imshow(facealignment('/exampleimg.jpg'))

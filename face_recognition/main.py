@@ -6,7 +6,7 @@
 # DOTO:
 # - calculate accuracy with current model
 #   1. Parse image info into .csv
-#   2. 
+#   2.
 # - train (finetune) model on sample images (different ways) and calculate accuracy again
     # - what means "model.module.forward_classifier"
 
@@ -65,10 +65,6 @@ database = RegistrationDatabase(embedding_model)
 #print(database.name_list[[1,5,9,22]])
 
 database.face_recognition(path='./test_images/Aaron_04.ppm')
-
-
-
-
 
 # # adapt folders
 # path1 = './faces_db/Lleyton_Hewitt_0003.ppm'
