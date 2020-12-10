@@ -16,6 +16,7 @@ ipywidgets = "*"
 imutils = "*"
 matplotlib = "*"
 scikit-learn = "*"
+jupyter = "*"
 
 [requires]
 python_version = "3.7"
