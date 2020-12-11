@@ -17,6 +17,7 @@ imutils = "*"
 matplotlib = "*"
 scikit-learn = "*"
 jupyter = "*"
+deepface = "*"
 
 [requires]
 python_version = "3.7"
