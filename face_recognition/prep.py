@@ -31,12 +31,14 @@ def load_and_transform_img(path):
     # read the image and transform it into tensor then normalize it with our trfrm function pipeline
     reg_img = trfrm(Image.open(path)).unsqueeze(0)
 
-    reg_img_1 = reg_img
-    reg_img_2 = augmentation_1(reg_img.squeeze(0)).unsqueeze(0)
-    reg_img_3 = augmentation_2(reg_img.squeeze(0)).unsqueeze(0)
-    reg_img_4 = augmentation_3(reg_img.squeeze(0)).unsqueeze(0)
+    # reg_img_1 = reg_img
+    # reg_img_2 = augmentation_1(reg_img.squeeze(0)).unsqueeze(0)
+    # reg_img_3 = augmentation_2(reg_img.squeeze(0)).unsqueeze(0)
+    # reg_img_4 = augmentation_3(reg_img.squeeze(0)).unsqueeze(0)
    
-    return reg_img_1, reg_img_2, reg_img_3, reg_img_4
+    # return reg_img_1, reg_img_2, reg_img_3, reg_img_4
+
+    return reg_img
 
 
 def show_tensor_img(img):
