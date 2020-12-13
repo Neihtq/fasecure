@@ -32,6 +32,8 @@ def load_and_transform_img(path):
     reg_img = trfrm(Image.open(path)).unsqueeze(0)
 
     # reg_img_1 = reg_img
+    # with newer torchvision version, one can also transform tensor batches (but cannot update torchvision)
+    # Thus, I have to convert it to an PIL image first
     # reg_img_2 = augmentation_1(reg_img.squeeze(0)).unsqueeze(0)
     # reg_img_3 = augmentation_2(reg_img.squeeze(0)).unsqueeze(0)
     # reg_img_4 = augmentation_3(reg_img.squeeze(0)).unsqueeze(0)
