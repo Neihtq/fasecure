@@ -8,7 +8,7 @@ from prep import load_and_transform_img
 import sys
 import numpy as np
 
-# to Cao, Simon and Thien: model.eval()!!!!!!!!!!!!!!!!!!!!!!!!!!
+# to Cao, Simon and Thien: model.eval()!
 # main results:
 # - euclidean distance or inner product no difference
 # - data augmentation so far no difference (-> look at images)
@@ -26,7 +26,7 @@ embedding_model = faceEmbeddingModel().eval()
 # mode='euclidean_distance'
 database = RegistrationDatabase()
 
-# RegestrationDatabase Description:
+# RegistrationDatabase Description:
 
 # input: 128 dim embedding as tensor (convert it internally to numpy array)
 #               - registration: embedding + name
