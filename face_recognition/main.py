@@ -19,10 +19,12 @@
 # imports
 import torch.nn.functional as F
 import torch
+from torchvision import transforms
 from faceEmbeddingModel import faceEmbeddingModel
 # from prep import load_and_transform_img, show_tensor_img
 from reg_database import RegistrationDatabase
 from reg_dataset import RegistrationDataset
+from prep import load_and_transform_img
 import sys
 import numpy as np
 
@@ -48,34 +50,133 @@ import numpy as np
 
 # Create dataset
 # Naming convention for images used for registration with dataloader: name_#.(jpg,png,ppm,...)
-reg_dataset = RegistrationDataset("./registered_images", "ppm")
+###reg_dataset = RegistrationDataset("./registered_images", "ppm")
 
 # Create dataloader with batch_size = 1
-reg_loader = torch.utils.data.DataLoader(dataset=reg_dataset, batch_size=1, num_workers=0, shuffle=False, sampler=None, collate_fn=None)
+###reg_loader = torch.utils.data.DataLoader(dataset=reg_dataset, batch_size=1, num_workers=0, shuffle=False, sampler=None, collate_fn=None)
 
 
 embedding_model = faceEmbeddingModel()
 
-# If new dataset: pass dataloader to RegistrationDatabase, then it will rewrite Database
-# Otherwise, it trys to return existing database
-database = RegistrationDatabase(faceEmbeddingModel=embedding_model,mode='euclidean_distance')
-# 
+# mode='euclidean_distance'
+database = RegistrationDatabase()
 
-path = './test_registration_images/John_01.ppm'
-img = database.load_and_transform_img(path)
-database.face_registration('John',img)
+# ----------------------------------------------------------------------------------
+def register_people():
 
-path = './test_registration_images/John_02.ppm'
-img = database.load_and_transform_img(path)
-database.face_registration('John',img)
+    paths = []
+    paths.append('./test_registration_images/Aaron_01.ppm')
+    paths.append('./test_registration_images/Aaron_02.ppm')
+    paths.append('./test_registration_images/Aaron_03.ppm')
+    paths.append('./test_registration_images/Abdoulaye_01.ppm')
+    paths.append('./test_registration_images/Abdoulaye_02.ppm')
+    paths.append('./test_registration_images/Abdoulaye_03.ppm')
+    paths.append('./test_registration_images/George_01.ppm')
+    paths.append('./test_registration_images/George_02.ppm')
+    paths.append('./test_registration_images/George_03.ppm')
+    paths.append('./test_registration_images/Hugo_01.ppm')
+    paths.append('./test_registration_images/Hugo_02.ppm')
+    paths.append('./test_registration_images/Hugo_03.ppm')
+    paths.append('./test_registration_images/Ian_01.ppm')
+    paths.append('./test_registration_images/Ian_02.ppm')
+    paths.append('./test_registration_images/Ian_03.ppm')
+    paths.append('./test_registration_images/Jennifer_01.ppm')
+    paths.append('./test_registration_images/Jennifer_02.ppm')
+    paths.append('./test_registration_images/Jennifer_03.ppm')
+    paths.append('./test_registration_images/Kofi_01.ppm')
+    paths.append('./test_registration_images/Kofi_02.ppm')
+    paths.append('./test_registration_images/Kofi_03.ppm')
+    paths.append('./test_registration_images/Lleyton_01.ppm')
+    paths.append('./test_registration_images/Lleyton_02.ppm')
+    paths.append('./test_registration_images/Lleyton_03.ppm')
+    paths.append('./test_registration_images/Vladimir_01.ppm')
+    paths.append('./test_registration_images/Vladimir_02.ppm')
+    paths.append('./test_registration_images/Vladimir_03.ppm')
+    paths.append('./test_registration_images/Yashwant_01.ppm')
+    paths.append('./test_registration_images/Yashwant_02.ppm')
+    paths.append('./test_registration_images/Yashwant_03.ppm')
 
-path = './test_registration_images/John_03.ppm'
-img = database.load_and_transform_img(path)
-database.face_registration('John',img)
+
+    names = []
+    names.append('Aaron')
+    names.append('Aaron')
+    names.append('Aaron')
+    names.append('Abdoulaye')
+    names.append('Abdoulaye')
+    names.append('Abdoulaye')
+    names.append('George')
+    names.append('George')
+    names.append('George')
+    names.append('Hugo')
+    names.append('Hugo')
+    names.append('Hugo')
+    names.append('Ian')
+    names.append('Ian')
+    names.append('Ian')
+    names.append('Jennifer')
+    names.append('Jennifer')
+    names.append('Jennifer')
+    names.append('Kofi')
+    names.append('Kofi')
+    names.append('Kofi')
+    names.append('Lleyton')
+    names.append('Lleyton')
+    names.append('Lleyton')
+    names.append('Vladimir')
+    names.append('Vladimir')
+    names.append('Vladimir')
+    names.append('Yashwant')
+    names.append('Yashwant')
+    names.append('Yashwant')
 
 
-database.face_recognition(path='./test_recognition_images/John_04.ppm')
+    for i in range(len(names)):
+        # data augmentation
+        reg_img_1, reg_img_2, reg_img_3, reg_img_4 = load_and_transform_img(paths[i])
+        img_embedding_tensor_1 = embedding_model(reg_img_1)
+        img_embedding_tensor_2 = embedding_model(reg_img_2)
+        img_embedding_tensor_3 = embedding_model(reg_img_3)
+        img_embedding_tensor_4 = embedding_model(reg_img_4)
+        database.face_registration(names[i],img_embedding_tensor_1)
+        database.face_registration(names[i],img_embedding_tensor_2)
+        database.face_registration(names[i],img_embedding_tensor_3)
+        database.face_registration(names[i],img_embedding_tensor_4)
 
-# database.face_deregistration('Kofi')
+# register_people()
+# ----------------------------------------------------------------------------------
 
 # print(database.database)
+
+# Face Recognition with data augmentation
+path = './test_recognition_images/Yashwant_04.ppm'
+img_1, img_2, img_3, img_4 = load_and_transform_img(path)
+img_embedding_tensor_1 = embedding_model(img_1)
+img_embedding_tensor_2 = embedding_model(img_2)
+img_embedding_tensor_3 = embedding_model(img_3)
+img_embedding_tensor_4 = embedding_model(img_4)
+closest_label, check = database.face_recognition(img_embedding_tensor_1)
+print("Closest person: ", closest_label, " --- ", check)
+# closest_label, check = database.face_recognition(img_embedding_tensor_2)
+# print("Closest person: ", closest_label, " --- ", check)
+# closest_label, check = database.face_recognition(img_embedding_tensor_3)
+# print("Closest person: ", closest_label, " --- ", check)
+# closest_label, check = database.face_recognition(img_embedding_tensor_4)
+# print("Closest person: ", closest_label, " --- ", check)
+
+# database.face_deregistration('Aaron')
+
+# print(database.database)
+
+
+# input: 128 dim embedding as tensor (convert it internally to numpy array)
+#               - registration: embedding + name
+#               - deregistration: name
+#               - recognition: embedding
+# ---------------------------------------------------------------------------
+# functions:    - registration
+#               - deregistration
+#               - recognition
+# ---------------------------------------------------------------------------
+# output:       - registration: "registered successfully"
+#               - deregistration: "deregistered successfully"
+#               - recognition: name + access/intruder

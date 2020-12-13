@@ -2,7 +2,6 @@
 import pandas as pd
 import os
 import torch
-from torchvision import transforms
 from PIL import Image
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
@@ -23,10 +22,10 @@ import sys
 class RegistrationDatabase():
 
     # Register people or load registered people
-    def __init__(self, faceEmbeddingModel, dataloader=None, mode='inner_product'):
+    def __init__(self, dataloader=None, mode='inner_product'):
 
         # Set model to eval, as training is over when we use it here for inference
-        self.embedding_model = faceEmbeddingModel.eval()
+        ###self.embedding_model = faceEmbeddingModel.eval()
         
         # Choose similarity calculation between "inner product" and "euclidean distance"
         self.mode = mode
@@ -37,26 +36,26 @@ class RegistrationDatabase():
 
         self.len_embeddings_list = 0
 
-        self.pil_transforms = transforms.Compose([
-            transforms.Resize(224),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                 std=[0.229, 0.224, 0.225])])
+        ###self.pil_transforms = transforms.Compose([
+        ###    transforms.Resize(224),
+        ###   transforms.ToTensor(),
+        ###    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+        ###                         std=[0.229, 0.224, 0.225])])
 
-        self.augmentation_1 = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0),
-            transforms.ToTensor()])       
+        ###self.augmentation_1 = transforms.Compose([
+        ###    transforms.ToPILImage(),
+        ###    transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0),
+        ###    transforms.ToTensor()])       
 
-        self.augmentation_2 = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.RandomHorizontalFlip(p=1),
-            transforms.ToTensor()])   
+        ###self.augmentation_2 = transforms.Compose([
+        ###    transforms.ToPILImage(),
+        ###    transforms.RandomHorizontalFlip(p=1),
+        ###    transforms.ToTensor()])   
 
-        self.augmentation_3 = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.RandomPerspective(distortion_scale=0.1, p=1),
-            transforms.ToTensor()]) 
+        ###self.augmentation_3 = transforms.Compose([
+        ###    transforms.ToPILImage(),
+        ###    transforms.RandomPerspective(distortion_scale=0.1, p=1),
+        ###    transforms.ToTensor()]) 
                              
 
         # have a look if database (pickle file) already available, if yes, load it and save it into pandas dataframe and return
@@ -76,9 +75,8 @@ class RegistrationDatabase():
                 # For the case, that the pickle file was changed externally
                 self.update_embeddings()
             else: 
-                #raise Exception('No database availabe. You have to specifiy a dataloader containing all the images for registration (Batch-size: 1)')
-                self.database = pd.DataFrame(columns=['label','embedding','threshold'])
                 print("No database availabe. Empty database will be created...")
+                self.database = pd.DataFrame(columns=['label','embedding','threshold'])
 
 
         # If dataloader specified, then overwrite database (or create a new one, if none existing)
@@ -104,11 +102,10 @@ class RegistrationDatabase():
 
         # In the end after running constructor: saved database as pickle file and database attribute contains registration database
 
-    def load_and_transform_img(self, path):
+    ###def load_and_transform_img(self, path):
         # read the image and transform it into tensor then normalize it with our trfrm function pipeline
-        img = self.pil_transforms(Image.open(path)).unsqueeze(0)
-    
-        return img
+    ###    img = self.pil_transforms(Image.open(path)).unsqueeze(0)
+    ###    return img
 
     # Save database as pickle file
     def save_database(self):
@@ -167,9 +164,9 @@ class RegistrationDatabase():
             self.recognition_model.fit(self.embeddings_list)
 
     # Get tensor img as input and output numpy array of embedding
-    def calculate_embedding(self, img):
+    def convert_to_numpy(self, img_embedding_tensor):
         # detach() to remove computational graph from tensor
-        return self.embedding_model(img).detach().cpu().numpy()
+        return img_embedding_tensor.detach().cpu().numpy()
 
     # Get the label of the person by providing the index of the dataframe
     def get_label(self, index):
@@ -187,18 +184,20 @@ class RegistrationDatabase():
 
         label_index = self.recognition_model.kneighbors(img_embedding)[1].tolist()[0]
         closest_label = self.get_label(label_index)
-        print("Closest person: ", closest_label)
+        #print("Closest person: ", closest_label)
 
         # Calculate distance to nearest neighbor and check, if it´s below threshold
         max_similarity = self.recognition_model.kneighbors(img_embedding)[0].tolist()[0][0]
-        print("Closest embedding: ", max_similarity)
+        # print("Closest embedding: ", max_similarity)
         similarity_threshold = self.get_similarity_threshold(label_index)
 
         # Here it´s the opposite of the inner product
         if max_similarity <= similarity_threshold:
-            print("Access")
+            check = "Access"
         else:
-            print("intruder")
+            check = "Intruder"
+
+        return closest_label, check
 
     # Find closest embedding based on inner product and adaptive thresholds and thus decide, if person known or unknown
     def closest_embedding_inner_product(self, img_embedding):
@@ -210,7 +209,7 @@ class RegistrationDatabase():
 
         # Use index to get the label
         closest_label = self.get_label(label_index)
-        print("Closest person: ", closest_label)
+        #print("Closest person: ", closest_label)
 
         # Check, if the maximal computed similarity higher is then the threshold similarity of that person
         # If yes, then it is that person. Otherwise, it´s an intruder and the authentification request will be rejected
@@ -219,39 +218,42 @@ class RegistrationDatabase():
         # print("sim thres of closest person: ", similarity_threshold)
         # print("sim: ", max_similarity)
         if max_similarity >= similarity_threshold:
-            print("Access")
+            check = "Access"
         else:
-            print("intruder")
-        
+            check = "Intruder"
 
-    # Either pass image in shape 1x3x244x244 or path to image
-    def face_recognition(self, new_img=None, path=None):
+        return closest_label, check
+        
+    # Find the closest person in the embedding space and decide then, whether access or intruder
+    def face_recognition(self, img_embedding_tensor):
         
         if self.len_embeddings_list == 0:
             print("Person is unkown")
             return
         
         # get new image -> calculate embedding
-        if isinstance(new_img, torch.Tensor) and path == None:
-            print("Image passed as Tensor")
-            img_embedding = self.calculate_embedding(new_img)
-        elif new_img == None and isinstance(path, str):
-            print("Path passed as String")
-            new_img = self.load_and_transform_img(path)
-            img_embedding = self.calculate_embedding(new_img)
-        else:
-            raise Exception('You have to pass either a img as a tensor (1x3x224x224) or a path (string) where the image is located')
+        ###if isinstance(new_img, torch.Tensor) and path == None:
+        ###    print("Image passed as Tensor")
+        ###    img_embedding = self.calculate_embedding(new_img)
+        ###elif new_img == None and isinstance(path, str):
+        ###    print("Path passed as String")
+        ###    new_img = self.load_and_transform_img(path)
+        ###    img_embedding = self.calculate_embedding(new_img)
+        ###else:
+        ###    raise Exception('You have to pass either a img as a tensor (1x3x224x224) or a path (string) where the image is located')
+
+        img_embedding_numpy = self.convert_to_numpy(img_embedding_tensor)
 
         # Use KNN based on database to find nearest neighbor (with fixed threshold)
         if self.mode == 'inner_product':
-            self.closest_embedding_inner_product(img_embedding)
+            closest_label, check = self.closest_embedding_inner_product(img_embedding_numpy)
         elif self.mode == 'euclidean_distance':
-            self.closest_embedding_euclidean_distance(img_embedding)
+            closest_label, check = self.closest_embedding_euclidean_distance(img_embedding_numpy)
         
 
-        # return label or unknown
+        return closest_label, check
 
-    def face_registration(self, name, reg_img):
+    def face_registration(self, name, img_embedding_tensor):
         # name: Name of the new person who should be registred
         # reg_img: Tensor (shape 1x3x224x224) of a new person who should be registered
 
@@ -261,23 +263,23 @@ class RegistrationDatabase():
         #     print('Specified name already in database registered. User can not be registered again!')
         #     return            
 
-        # Data augmentation: random noise, horizontal/vertical flip
-        reg_img_1 = reg_img
-        reg_img_2 = self.augmentation_1(reg_img.squeeze(0)).unsqueeze(0)
-        reg_img_3 = self.augmentation_2(reg_img.squeeze(0)).unsqueeze(0)
-        reg_img_4 = self.augmentation_3(reg_img.squeeze(0)).unsqueeze(0)
+        # Data augmentation: random noise, horizontal flip
+        ###reg_img_1 = reg_img
+        #####reg_img_2 = self.augmentation_1(reg_img.squeeze(0)).unsqueeze(0)
+        ###reg_img_3 = self.augmentation_2(reg_img.squeeze(0)).unsqueeze(0)
+        ###reg_img_4 = self.augmentation_3(reg_img.squeeze(0)).unsqueeze(0)
 
         # Calculate embedding and convert to numpy array
-        img_embedding_1 = self.calculate_embedding(reg_img_1)
-        img_embedding_2 = self.calculate_embedding(reg_img_2)
-        img_embedding_3 = self.calculate_embedding(reg_img_3)
-        img_embedding_4 = self.calculate_embedding(reg_img_4)
+        img_embedding_numpy = self.convert_to_numpy(img_embedding_tensor)
+        ###img_embedding_2 = self.calculate_embedding(reg_img_2)
+        ###img_embedding_3 = self.calculate_embedding(reg_img_3)
+        ###img_embedding_4 = self.calculate_embedding(reg_img_4)
 
         # Add label, embedding and threshold to database (threshold first of all set to 0, will be udpated later on)
-        self.database = self.database.append({'label': name, 'embedding': img_embedding_1, 'threshold': 0}, ignore_index=True)
-        self.database = self.database.append({'label': name, 'embedding': img_embedding_2, 'threshold': 0}, ignore_index=True)
-        self.database = self.database.append({'label': name, 'embedding': img_embedding_3, 'threshold': 0}, ignore_index=True)
-        self.database = self.database.append({'label': name, 'embedding': img_embedding_4, 'threshold': 0}, ignore_index=True)
+        self.database = self.database.append({'label': name, 'embedding': img_embedding_numpy, 'threshold': 0}, ignore_index=True)
+        ###self.database = self.database.append({'label': name, 'embedding': img_embedding_2, 'threshold': 0}, ignore_index=True)
+        ###self.database = self.database.append({'label': name, 'embedding': img_embedding_3, 'threshold': 0}, ignore_index=True)
+        ###self.database = self.database.append({'label': name, 'embedding': img_embedding_4, 'threshold': 0}, ignore_index=True)
 
         # Update length of embeddings list and embeddings list itself
         self.update_embeddings()
