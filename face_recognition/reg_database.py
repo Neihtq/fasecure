@@ -28,6 +28,7 @@ class RegistrationDatabase():
         # Set model to eval, as training is over when we use it here for inference
         self.embedding_model = faceEmbeddingModel.eval()
         
+        # Choose similarity calculation between "inner product" and "euclidean distance"
         self.mode = mode
         if self.mode == 'euclidean_distance':
             self.recognition_model = NearestNeighbors(n_neighbors=1)

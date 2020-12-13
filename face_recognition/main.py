@@ -31,7 +31,7 @@ import numpy as np
 # What I have done since last time:
 # - implemented adaptive threshold
 # - added three images per person and per image 4 data augmentations -> 12 images per registered person
-# - implemented similarity calculation with inner product and euclidean distance
+# - implemented similarity calculation with inner product and euclidean distance (both same results)
 
 
 # - pytorch lightning anschauen
@@ -43,7 +43,6 @@ import numpy as np
 #   Update matplotlib, numpy and so on afterwards again
 #  --> add more embeddings per person (e.g. 12 or so)
 
-# - implement adaptive threshold also for euclidean distance
 # - create very simple model to have reference (instead of embeddings, reshape image itself and calculate inner product)
 # - create evaluation of model performance (according to paper of adaptive threshold)
 
