@@ -30,6 +30,13 @@ import numpy as np
 
 # face recognition = face embedding (Model trained with Siamese Network) + embedding comparison (not trainable, analytic) 
 
+# to Cao, Simon and Thien: model.eval()!!!!!!!!!!!!!!!!!!!!!!!!!!
+# main results:
+# - euclidean distance or inner product no difference
+# - data augmentation so far no difference
+# - works bad for less persons
+# - works bad for one shot?
+
 # What I have done since last time:
 # - implemented adaptive threshold
 # - added three images per person and per image 4 data augmentations -> 12 images per registered person
@@ -56,7 +63,7 @@ import numpy as np
 ###reg_loader = torch.utils.data.DataLoader(dataset=reg_dataset, batch_size=1, num_workers=0, shuffle=False, sampler=None, collate_fn=None)
 
 
-embedding_model = faceEmbeddingModel()
+embedding_model = faceEmbeddingModel().eval()
 
 # mode='euclidean_distance'
 database = RegistrationDatabase()
@@ -132,35 +139,20 @@ def register_people():
 
     for i in range(len(names)):
         # data augmentation
-        reg_img_1, reg_img_2, reg_img_3, reg_img_4 = load_and_transform_img(paths[i])
-        img_embedding_tensor_1 = embedding_model(reg_img_1)
-        img_embedding_tensor_2 = embedding_model(reg_img_2)
-        img_embedding_tensor_3 = embedding_model(reg_img_3)
-        img_embedding_tensor_4 = embedding_model(reg_img_4)
-        database.face_registration(names[i],img_embedding_tensor_1)
-        database.face_registration(names[i],img_embedding_tensor_2)
-        database.face_registration(names[i],img_embedding_tensor_3)
-        database.face_registration(names[i],img_embedding_tensor_4)
+        reg_img = load_and_transform_img(paths[i])
+        img_embedding_tensor = embedding_model(reg_img)
+        database.face_registration(names[i],img_embedding_tensor)
 
-# register_people()
+register_people()
 # ----------------------------------------------------------------------------------
 
-# print(database.database)
+print(database.database)
 
 # Face Recognition with data augmentation
-path = './test_recognition_images/Yashwant_04.ppm'
-img_1, img_2, img_3, img_4 = load_and_transform_img(path)
-img_embedding_tensor_1 = embedding_model(img_1)
-img_embedding_tensor_2 = embedding_model(img_2)
-img_embedding_tensor_3 = embedding_model(img_3)
-img_embedding_tensor_4 = embedding_model(img_4)
-closest_label, check = database.face_recognition(img_embedding_tensor_1)
-print("Closest person: ", closest_label, " --- ", check)
-# closest_label, check = database.face_recognition(img_embedding_tensor_2)
-# print("Closest person: ", closest_label, " --- ", check)
-# closest_label, check = database.face_recognition(img_embedding_tensor_3)
-# print("Closest person: ", closest_label, " --- ", check)
-# closest_label, check = database.face_recognition(img_embedding_tensor_4)
+# path = './test_recognition_images/Hugo_04.ppm'
+# img = load_and_transform_img(path)
+# img_embedding_tensor = embedding_model(img)
+# closest_label, check = database.face_recognition(img_embedding_tensor)
 # print("Closest person: ", closest_label, " --- ", check)
 
 # database.face_deregistration('Aaron')
