@@ -123,5 +123,3 @@ class FaceNetModel(nn.Module):
         features = self.forward(x)
         res = self.model.classifier(features)
         return res
-
-
