@@ -40,6 +40,9 @@ class FaceNetModel(nn.Module):
         self.model = resnet50(pretrained)
         embedding_size = 128
 
+        # Adapt for our case
+        num_classes = 500
+
 
         self.cnn = nn.Sequential(
             self.model.conv1,
@@ -116,5 +119,9 @@ class FaceNetModel(nn.Module):
         features = features * alpha
         return features
 
+    def forward_classifier(self, x):
+        features = self.forward(x)
+        res = self.model.classifier(features)
+        return res
 
 

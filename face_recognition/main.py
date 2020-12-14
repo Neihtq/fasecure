@@ -113,9 +113,21 @@ def register_people():
 
     for i in range(len(names)):
         # data augmentation
-        reg_img = load_and_transform_img(paths[i])
-        img_embedding_tensor = embedding_model(reg_img)
-        database.face_registration(names[i],img_embedding_tensor)
+        reg_img_1, reg_img_2, reg_img_3, reg_img_4, reg_img_5, reg_img_6, reg_img_7 = load_and_transform_img(paths[i])
+        img_embedding_tensor_1 = embedding_model(reg_img_1)
+        img_embedding_tensor_2 = embedding_model(reg_img_2)
+        img_embedding_tensor_3 = embedding_model(reg_img_3)
+        img_embedding_tensor_4 = embedding_model(reg_img_4)
+        img_embedding_tensor_5 = embedding_model(reg_img_5)
+        img_embedding_tensor_6 = embedding_model(reg_img_6)
+        img_embedding_tensor_7 = embedding_model(reg_img_7)
+        database.face_registration(names[i],img_embedding_tensor_1)
+        database.face_registration(names[i],img_embedding_tensor_2)
+        database.face_registration(names[i],img_embedding_tensor_3)
+        database.face_registration(names[i],img_embedding_tensor_4)
+        database.face_registration(names[i],img_embedding_tensor_5)
+        database.face_registration(names[i],img_embedding_tensor_6)
+        database.face_registration(names[i],img_embedding_tensor_7)
 
 # ----------------------------------------------------------------------------------
 
@@ -127,8 +139,8 @@ def register_people():
 
 # Face Recognition with data augmentation
 path = './test_recognition_images/Yashwant_04.ppm'
-img = load_and_transform_img(path)
-img_embedding_tensor = embedding_model(img)
+img_1, img_2, img_3, img_4, img_5, img_6, img_7 = load_and_transform_img(path)
+img_embedding_tensor = embedding_model(img_1)
 closest_label, check = database.face_recognition(img_embedding_tensor)
 print("Closest person: ", closest_label, " --- ", check)
 
