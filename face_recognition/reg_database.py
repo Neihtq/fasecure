@@ -157,12 +157,16 @@ class RegistrationDatabase():
         # Calculate similarity to closest person
         max_similarity = np.max(inner_products)
 
+
+
         # Get threshold value of closest person
         similarity_threshold = self.get_similarity_threshold(label_index)
+
 
         # The larger the similarity the closer the embeddings to each other
         if max_similarity >= similarity_threshold:
             check = "Access"
+
         else:
             check = "Decline"
 

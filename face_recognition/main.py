@@ -8,6 +8,7 @@ from prep import load_and_transform_img
 import sys
 import numpy as np
 
+
 # to Cao, Simon and Thien: model.eval()!
 # main results:
 # - euclidean distance or inner product no difference
