@@ -138,7 +138,7 @@ class RegistrationDatabase():
         if max_similarity <= similarity_threshold:
             check = "Access"
         else:
-            check = "Intruder"
+            check = "Decline"
 
         return closest_label, check
 
@@ -164,7 +164,7 @@ class RegistrationDatabase():
         if max_similarity >= similarity_threshold:
             check = "Access"
         else:
-            check = "Intruder"
+            check = "Decline"
 
         return closest_label, check
         
