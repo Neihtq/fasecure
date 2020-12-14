@@ -7,15 +7,18 @@ verify_ssl = true
 pylint = "*"
 
 [packages]
-numpy = "*"
 jupyterlab = "*"
 opencv-python = "*"
 pytorch-lightning = "*"
-tensorboard = "*"
 ipywidgets = "*"
 imutils = "*"
 matplotlib = "*"
 scikit-learn = "*"
+jupyter = "*"
+deepface = "*"
+numpy = "*"
+facenet = "*"
+align = "*"
 
 [requires]
 python_version = "3.7"
