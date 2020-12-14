@@ -1,18 +1,13 @@
 import os
-import torch
-import torchvision
-import torch.nn
-import glob
 import random
-import numpy as np
+import requests
+import tarfile 
 
-from os import listdir, makedirs, listdir, mkdir
-from os.path import exists, join
-
+from os import listdir
 from PIL import Image
 from deepface import DeepFace
 
-from torch.utils.data import Dataset, Subset, random_split
+from torch.utils.data import Dataset
 from torchvision import transforms
 
 
@@ -20,64 +15,63 @@ def face_alignment(imgname):
     detected_face = DeepFace.detectFace(imgname)
     return detected_face
     
+
+def download_data(url):
+    req = requests.get(url, allow_redirects=True)
+    open("data.tgz", 'wb').write(req.content)
+
+    if not os.path.exists('./data'):
+        makedirs('./data/')
+
+    with tarfile.open('data.tgz', 'r') as f:
+        f.extractall('data')
+        f.close()
+    
     
 class LFWDataset(Dataset):
-    def __init__(self, image_filenames, target_folder):
-        self.image_filenames = image_filenames
-        self.target_folder = target_folder
+    def __init__(self, root, transform=None):
+        self.root = root
+        self.labels = []
+        for label in listdir(root):
+            img_path = os.path.join(root, label)
+            if len(listdir(img_path)) > 1:
+                self.labels.append(label)
+        self.transform = transform
         
     def __len__(self):
-        return len(self.image_filenames)
+        # returns amount of classes
+        return len(self.labels)
     
     def __getitem__(self, idx):
-        label, cropped_face = self.load_anchor(idx)
-        positive_cropped_face, positive_label = self.load_positive(label, idx)
-        negative_cropped_face, negative_label = self.load_negative(label)
+        label = self.labels[idx]
+        folder = os.path.join(self.root, label)
+        img_path = os.path.join(folder, listdir(folder)[0])
+        anchor = self.get_image(img_path)
+        img_path = os.path.join(folder, listdir(folder)[1])
+        positive = self.get_image(img_path)
+        negative = self.get_negative(idx)
         
-        return cropped_face, label, positive_cropped_face, positive_label, negative_cropped_face, negative_label
+        return label, anchor, positive, negative
         
-    def load_anchor(self, idx):
-        image = Image.open(self.image_filenames[idx])      
-        label_split = self.image_filenames[idx].split("\\")
-        image_label = label_split[0].split("/")[-1]    
+    def get_image(self, img_path):
+        img = Image.open(img_path)
+        img_tensor = transforms.ToTensor()(img)
         
-        cropped_face_numpy = face_alignment(self.image_filenames[idx])
-        np.transpose(cropped_face_numpy, (1, 2, 0))
-        cropped_face_tensor = torch.from_numpy(cropped_face_numpy.copy())
+        if self.transform:
+            img_tensor = self.transform(img_tensor)
         
-        return image_label, cropped_face_tensor       
-        
-    def load_positive(self, image_label, idx):   
-        #target_folder = './data/lfw-deepfunneled/lfw-deepfunneled/lfw-deepfunneled/'
-        target_folder = self.target_folder
-        list_person_faces = listdir(join(target_folder, image_label))        
-        
-        positive_image_filename = join(target_folder, image_label, random.choice(list_person_faces))
-        while positive_image_filename == self.image_filenames[idx]:
-            positive_image_filename = join(target_folder, image_label, random.choice(list_person_faces))
-
-        positive_image = Image.open(positive_image_filename)      
-        positive_label_split = positive_image_filename.split("\\")
-        positive_image_label = label_split[0].split("/")[-1]    
-        #(print(positive_image_label))
-        
-        positive_cropped_face_numpy = face_alignment(positive_image_filename)
-        np.transpose(positive_cropped_face_numpy, (1, 2, 0))
-        positive_cropped_face_tensor = torch.from_numpy(positive_cropped_face_numpy.copy())
-        
-        return positive_cropped_face_tensor, positive_image_label
-        
-    def load_negative(self, image_label)
-        target_folder = self.target_folder
-        list_person_faces = listdir(join(target_folder)
-        negative_image_label = random.choice(list_person_faces))
-        while negative_image_label == image_label:
-            negative_image_label = random.choice(listdir(join(target_folder)))
-        negative_image_filename = join(target_folder, negative_image_label, random.choice(listdir(join(target_folder, negative_image_label))))
-        
-        negative_image = Image.open(negative_image_filename)      
-        negative_cropped_face_numpy = face_alignment(negative_image_filename)
-        np.transpose(negative_cropped_face_numpy, (1, 2, 0))
-        negative_cropped_face_tensor = torch.from_numpy(negative_cropped_face_numpy.copy())
-        
-        return negative_cropped_face_tensor, negative_image_label
+        return img_tensor
+    
+    def get_negative(self, idx):
+        include = [n for n in range(0, len(self.labels)) if n != idx]
+        i = random.choice(include)
+        label = self.labels[i]
+        folder = os.path.join(self.root, label)
+        img_path = os.path.join(folder, listdir(folder)[0])
+    
+        return self.get_image(img_path)
+    
+    
+if __name__ == '__main__':
+    url = "http://vis-www.cs.umass.edu/lfw/lfw-deepfunneled.tgz"
+    download_data(url)

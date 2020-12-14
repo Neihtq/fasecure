@@ -143,3 +143,5 @@ dmypy.json
 *.jpg
 *.tgz
 *.tar
+
+*.ckpt
