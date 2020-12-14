@@ -76,7 +76,6 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-.ipynb
 
 # IPython
 profile_default/
@@ -132,3 +131,17 @@ dmypy.json
 # PyTorch models
 *.pt
 *.pth
+
+# images
+*.ppm
+*.pkl
+
+/yolov3.cfg
+/yolov3-wider_16000.weights
+.vscode
+
+*.jpg
+*.tgz
+*.tar
+
+*.ckpt
