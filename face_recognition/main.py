@@ -1,89 +1,153 @@
-# open questions:
-# - how exactly did tbmoon stored it´s images, in .csv? (first convert into .csv files in order to train?)
-# - faces are appearently already aligned with David Sandberg´s MTCNN?
-# - centercrop after resize with exact same size has no effect?
-
-# DOTO:
-# - calculate accuracy with current model
-#   1. Parse image info into .csv
-#   2.
-# - train (finetune) model on sample images (different ways) and calculate accuracy again
-    # - what means "model.module.forward_classifier"
-
-# - model training/finetuning (use data augmentation (random flix, rotate?, ...))
-# - model evaluation
-# - face recognition: implement KNN with fixed threshold for face recognition
-# - face registration: one-shot learning (add to database)
-# - implement adaptive threshold (for every person own threshold which can change if new person is added)
-
-# Naming convention for images used for registration: name_#.(jpg,png,ppm,...)
-
 # imports
 import torch.nn.functional as F
 import torch
 from faceEmbeddingModel import faceEmbeddingModel
-from prep import load_and_transform_img, show_tensor_img
+# from prep import load_and_transform_img, show_tensor_img
 from reg_database import RegistrationDatabase
-from reg_dataset import RegistrationDataset
+from prep import load_and_transform_img
 import sys
 import numpy as np
 
-# Questions to Omar:
-# - Do we get like 20 images (10 persons, each 2 images) for the registered people?
-# -> our idea: load pretrained model and finetune it with few images we get from you?
-# - In order to compare a new person with the registered people, we have to compare the embeddings:
-#       - Therefore, we have to store the embeddings of the registered people?
-#       - As we store the embeddings, do we store just one embedding per person, or if we have multiple images, then also multiple embeddings?
-#           When we have multiple embeddings, we could also store the center of all the embeddings for one person
-#           (Results in a KNN classifier in the end to find the nearest embedding. However, if above threshold, then unknown)
+
+# to Cao, Simon and Thien: model.eval()!
+# main results:
+# - euclidean distance or inner product no difference
+# - data augmentation so far no difference (-> look at images)
+# - works bad for less persons
+# - works a bit better for few-shot learning instead of one-shot learning (currently 3 images per person)
+
+# What I have done since last time:
+# - implemented adaptive threshold
+# - added three images per person and per image 4 data augmentations -> 12 images per registered person
+# - implemented similarity calculation with inner product and euclidean distance (both same results)
 
 
+embedding_model = faceEmbeddingModel().eval()
+
+# mode='euclidean_distance'
+database = RegistrationDatabase()
+
+# RegistrationDatabase Description:
+
+# input: 128 dim embedding as tensor (convert it internally to numpy array)
+#               - registration: embedding + name
+#               - deregistration: name
+#               - recognition: embedding
+# ---------------------------------------------------------------------------
+# functions:    - registration
+#               - deregistration
+#               - recognition
+#               - clean_database
+# ---------------------------------------------------------------------------
+# output:       - registration: "registered successfully"
+#               - deregistration: "deregistered successfully"
+#               - recognition: closest person + access/intruder
+
+# ----------------------------------------------------------------------------------
+def register_people():
+
+    paths = []
+    paths.append('./test_registration_images/Aaron_01.ppm')
+    # paths.append('./test_registration_images/Aaron_02.ppm')
+    # paths.append('./test_registration_images/Aaron_03.ppm')
+    paths.append('./test_registration_images/Abdoulaye_01.ppm')
+    # paths.append('./test_registration_images/Abdoulaye_02.ppm')
+    # paths.append('./test_registration_images/Abdoulaye_03.ppm')
+    paths.append('./test_registration_images/George_01.ppm')
+    # paths.append('./test_registration_images/George_02.ppm')
+    # paths.append('./test_registration_images/George_03.ppm')
+    paths.append('./test_registration_images/Hugo_01.ppm')
+    # paths.append('./test_registration_images/Hugo_02.ppm')
+    # paths.append('./test_registration_images/Hugo_03.ppm')
+    paths.append('./test_registration_images/Ian_01.ppm')
+    # paths.append('./test_registration_images/Ian_02.ppm')
+    # paths.append('./test_registration_images/Ian_03.ppm')
+    paths.append('./test_registration_images/Jennifer_01.ppm')
+    # paths.append('./test_registration_images/Jennifer_02.ppm')
+    # paths.append('./test_registration_images/Jennifer_03.ppm')
+    paths.append('./test_registration_images/Kofi_01.ppm')
+    # paths.append('./test_registration_images/Kofi_02.ppm')
+    # paths.append('./test_registration_images/Kofi_03.ppm')
+    paths.append('./test_registration_images/Lleyton_01.ppm')
+    # paths.append('./test_registration_images/Lleyton_02.ppm')
+    # paths.append('./test_registration_images/Lleyton_03.ppm')
+    paths.append('./test_registration_images/Vladimir_01.ppm')
+    # paths.append('./test_registration_images/Vladimir_02.ppm')
+    # paths.append('./test_registration_images/Vladimir_03.ppm')
+    paths.append('./test_registration_images/Yashwant_01.ppm')
+    # paths.append('./test_registration_images/Yashwant_02.ppm')
+    # paths.append('./test_registration_images/Yashwant_03.ppm')
 
 
-# sys.exit()
-
-# Create dataset
-reg_dataset = RegistrationDataset("./registered_images", "ppm")
-
-# Create dataloader with batch_size = 1
-reg_loader = torch.utils.data.DataLoader(dataset=reg_dataset,
-                                           batch_size=1,
-                                           num_workers=0,
-                                           shuffle=False, sampler=None,
-                                           collate_fn=None)
-
-
-
-
-embedding_model = faceEmbeddingModel()
-
-# If new dataset: pass dataloader to RegistrationDatabase, then it will rewrite Database
-# Otherwise, it trys to return existing database
-database = RegistrationDatabase(embedding_model)
-# print(database.database.iloc[5,1])
-
-#print(database.name_list[[1,5,9,22]])
-
-database.face_recognition(path='./test_images/Aaron_04.ppm')
-
-# # adapt folders
-# path1 = './faces_db/Lleyton_Hewitt_0003.ppm'
-# path2 = './faces_db/Lleyton_Hewitt_0004.ppm'
-
-# img1, img2 = load_and_transform_img(path1, path2)
-
-# # do forward pass (128 dimensional embedding)
-# embed1, embed2 = model(img1), model(img2)
-
-# # compute the distance using euclidean distance of image embeddings (0 if the same)
-# euclidean_distance = F.pairwise_distance(embed1, embed2)
+    names = []
+    names.append('Aaron')
+    # names.append('Aaron')
+    # names.append('Aaron')
+    names.append('Abdoulaye')
+    # names.append('Abdoulaye')
+    # names.append('Abdoulaye')
+    names.append('George')
+    # names.append('George')
+    # names.append('George')
+    names.append('Hugo')
+    # names.append('Hugo')
+    # names.append('Hugo')
+    names.append('Ian')
+    # names.append('Ian')
+    # names.append('Ian')
+    names.append('Jennifer')
+    # names.append('Jennifer')
+    # names.append('Jennifer')
+    names.append('Kofi')
+    # names.append('Kofi')
+    # names.append('Kofi')
+    names.append('Lleyton')
+    # names.append('Lleyton')
+    # names.append('Lleyton')
+    names.append('Vladimir')
+    # names.append('Vladimir')
+    # names.append('Vladimir')
+    names.append('Yashwant')
+    # names.append('Yashwant')
+    # names.append('Yashwant')
 
 
-# # we use 1.5 threshold to decide whether images are genuine or impostor
-# threshold = 1.5
+    for i in range(len(names)):
+        # data augmentation
+        reg_img_1, reg_img_2, reg_img_3, reg_img_4, reg_img_5, reg_img_6, reg_img_7 = load_and_transform_img(paths[i])
+        img_embedding_tensor_1 = embedding_model(reg_img_1)
+        img_embedding_tensor_2 = embedding_model(reg_img_2)
+        img_embedding_tensor_3 = embedding_model(reg_img_3)
+        img_embedding_tensor_4 = embedding_model(reg_img_4)
+        img_embedding_tensor_5 = embedding_model(reg_img_5)
+        img_embedding_tensor_6 = embedding_model(reg_img_6)
+        img_embedding_tensor_7 = embedding_model(reg_img_7)
+        database.face_registration(names[i],img_embedding_tensor_1)
+        database.face_registration(names[i],img_embedding_tensor_2)
+        database.face_registration(names[i],img_embedding_tensor_3)
+        database.face_registration(names[i],img_embedding_tensor_4)
+        database.face_registration(names[i],img_embedding_tensor_5)
+        database.face_registration(names[i],img_embedding_tensor_6)
+        database.face_registration(names[i],img_embedding_tensor_7)
 
-# genuine = euclidean_distance <= threshold
+# ----------------------------------------------------------------------------------
 
-# print(genuine)
+# database.clean_database()
+# register_people()
 
-# print(euclidean_distance)
+# print(database.database)
+
+
+# Face Recognition with data augmentation
+path = './test_recognition_images/Vladimir_04.ppm'
+img_1, img_2, img_3, img_4, img_5, img_6, img_7 = load_and_transform_img(path)
+img_embedding_tensor = embedding_model(img_1)
+closest_label, check = database.face_recognition(img_embedding_tensor)
+if check == 'Access':
+   print("--- Access --- Recognized person: ", closest_label)
+elif check == 'Decline':
+    print("--- Decline ---")
+
+# database.face_deregistration('Aaron')
+
+# print(database.database)
