@@ -11,7 +11,7 @@ class Flatten(nn.Module):
         return x.view(x.size(0), -1)
 
     
-class FaceNet(pl.LightningModule):
+class FaceNet(nn.Module):
     def __init__(self, hparams, pretrained=False):
         super(FaceNet, self).__init__()
 
@@ -91,11 +91,9 @@ class FaceNet(pl.LightningModule):
     # returns face embedding(embedding_size)
     def forward(self, x):
         x = self.cnn(x)
-        #x = x.view(-1, self.batch_size*2048*8*8)
         x = self.model.fc(x)
 
         features = self.l2_norm(x)
-        # Multiply by alpha = 10 as suggested in https://arxiv.org/pdf/1703.09507.pdf
         alpha = 10
         features = features * alpha
         
@@ -105,7 +103,17 @@ class FaceNet(pl.LightningModule):
         features = self.forward(x)
         res = self.model.classifier(features)
         return res
+
     
+    
+class LightningFaceNet(pl.LightningModule):
+    def __init__(self, hparams, pretrained=False):
+        super(LightningFaceNet, self).__init__()
+        self.model = FaceNet(hparams, pretrained=pretrained)
+        
+    def forward(self, x):
+        return self.model(x)
+        
     def general_step(self, batch):
         label, anchor, positive, negative = batch
         
@@ -113,7 +121,7 @@ class FaceNet(pl.LightningModule):
         pos_enc = self.forward(positive)
         neg_enc = self.forward(negative)
         
-        loss = self.criterion(anchor_enc, pos_enc, neg_enc)
+        loss = self.model.criterion(anchor_enc, pos_enc, neg_enc)
 
         return loss
     
@@ -126,6 +134,7 @@ class FaceNet(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         loss = self.general_step(batch)
         log = {'val_loss': loss}
+        self.log('val_loss', loss)
         
         return {"val_loss": loss, "log": log}
     
@@ -136,5 +145,8 @@ class FaceNet(pl.LightningModule):
         return {"test_loss": loss, "log": log}
         
     def configure_optimizers(self):
-        optimizer = torch.optim.SGD(self.parameters(), lr=self.hparams['lr'])     
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.model.hparams['lr'], weight_decay=1e-5)
+        if self.model.hparams['optimizer'] == 'SGD':
+            optimizer = torch.optim.SGD(self.model.parameters(), lr=self.model.hparams['lr'], weight_decay=0.0001)
+                    
         return optimizer
