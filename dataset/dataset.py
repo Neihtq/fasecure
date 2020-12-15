@@ -21,7 +21,7 @@ def download_data(url):
     open("data.tgz", 'wb').write(req.content)
 
     if not os.path.exists('./data'):
-        makedirs('./data/')
+        os.makedirs('./data/')
 
     with tarfile.open('data.tgz', 'r') as f:
         f.extractall('data')
