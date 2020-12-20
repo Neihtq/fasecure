@@ -56,13 +56,14 @@ class RegistrationDatabase():
             else: 
                 print("No database.pkl file exists. Hence, it cannot be cleaned...")      
 
-    def check_label_registered(self, label):
+    # Checks, if database contains specified label
+    def contains(self, label):
         # delete all entries in database with specified name
         label_indices = self.database[ self.database['label'] == label ].index
         if len(label_indices) == 0:
-            return True
-        elif len(label_indices) > 0:
             return False
+        elif len(label_indices) > 0:
+            return True
 
     # Update length of embedding list, embedding list itself and the thresholds of every person
     def update_embeddings(self):

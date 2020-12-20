@@ -22,6 +22,8 @@
 #   -> Choose subset instead of complete LFW
 
 # todo:
+# - error beheben, dass es kein Face Detected hat
+# - read evaluation.txt and plot accuracy
 # - in order to use face detection & alignment, download and setup libraries
 # - put data augmentation techniques inside registration process
 # - fixed threshold for first 10 people or so
