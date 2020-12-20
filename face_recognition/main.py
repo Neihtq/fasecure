@@ -13,7 +13,7 @@ import numpy as np
 # main results:
 # - euclidean distance or inner product no difference
 # - data augmentation so far no difference (-> look at images)
-# - works bad for less persons
+# - works bad for less persons (-> paper used fixed threshold as initial value of adaptive threshold procedure)
 # - works a bit better for few-shot learning instead of one-shot learning (currently 3 images per person)
 
 # What I have done since last time:
