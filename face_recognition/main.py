@@ -2,9 +2,9 @@
 import torch.nn.functional as F
 import torch
 from faceEmbeddingModel import faceEmbeddingModel
-# from prep import load_and_transform_img, show_tensor_img
 from reg_database import RegistrationDatabase
 from prep import load_and_transform_img
+from overall_evaluation import overall_evaluation
 import sys
 import numpy as np
 
@@ -16,10 +16,9 @@ import numpy as np
 # - works bad for less persons (-> paper used fixed threshold as initial value of adaptive threshold procedure)
 # - works a bit better for few-shot learning instead of one-shot learning (currently 3 images per person)
 
-# What I have done since last time:
-# - implemented adaptive threshold
-# - added three images per person and per image 4 data augmentations -> 12 images per registered person
-# - implemented similarity calculation with inner product and euclidean distance (both same results)
+# Other similarities:
+# - Manhatten Distance
+# - Cosine Similarity
 
 
 embedding_model = faceEmbeddingModel().eval()
@@ -137,17 +136,24 @@ def register_people():
 
 # print(database.database)
 
+if database.check_label_registered('Jennifer'):
+    print("--Not-- Available")
+else:
+    print("Available")
 
 # Face Recognition with data augmentation
-path = './test_recognition_images/Vladimir_04.ppm'
-img_1, img_2, img_3, img_4, img_5, img_6, img_7 = load_and_transform_img(path)
-img_embedding_tensor = embedding_model(img_1)
-closest_label, check = database.face_recognition(img_embedding_tensor)
-if check == 'Access':
-   print("--- Access --- Recognized person: ", closest_label)
-elif check == 'Decline':
-    print("--- Decline ---")
+# path = './test_recognition_images/Vladimir_04.ppm'
+# img_1, img_2, img_3, img_4, img_5, img_6, img_7 = load_and_transform_img(path)
+# img_embedding_tensor = embedding_model(img_1)
+# closest_label, check = database.face_recognition(img_embedding_tensor)
+# if check == 'Access':
+#    print("--- Access --- Recognized person: ", closest_label)
+# elif check == 'Decline':
+#     print("--- Decline ---")
 
 # database.face_deregistration('Aaron')
 
 # print(database.database)
+
+# -------------- overall Evaluation ---------------
+overall_evaluation()
