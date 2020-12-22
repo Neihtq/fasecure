@@ -23,20 +23,22 @@
 
 # --- Output: Overall Accuracy
 
-
 # todo:
-# - implement code, that if cuda available, if moves everything onto gpu
-# - decrease computation time:
-#   -> Create intermediate results (e.g. crop all images once and then skip this step, the same if the embedding model if no changes)
-#   -> or, choose subset instead of complete LFW (currently factor of 10)
-# - Improve accuracy (start with fixed threshold, until neighbor is closer)
+# - evalation normally on which dataset? new one?
+# - implement code, that if cuda available, if moves everything on the gpu
+# - print names and access and have a look, if metric is computed correctly
+# - Improve accuracy (start with fixed threshold, until one neighbor is closer)
+#   -> only update threshold if new max is above old threshold (fixed threshold at beginning)
+#   -> How to set fixed threshold? grid-search?
 #   (maybe that was ment by "initialized thresholds with fixed ones" in the paper)
 
 from LFWEvaluationDataset import LFWEvaluationDataset
+from LFWEvaluationDatasetCropped import LFWEvaluationDatasetCropped
 from prep import img_transform_augmentations
 import torch
 import numpy as np
 from PIL import Image
+import sys
 import matplotlib.pyplot as plt
 #%matplotlib inline
 
@@ -45,8 +47,8 @@ from scipy.optimize import fsolve
 
 class PipelineEvaluation():
 
-    def __init__(self, dataset_path, eval_log_path, face_detection_model, 
-                        face_embedding_model, registration_database):
+    def __init__(self, dataset_path, eval_log_path, face_embedding_model,
+                         registration_database, face_detection_model=None):
         
         self.dataset_path = dataset_path
         self.eval_log_path = eval_log_path
@@ -54,20 +56,26 @@ class PipelineEvaluation():
         self.face_embedding_model = face_embedding_model
         self.evaluation_database = registration_database
 
+        # If don´t pass a face detection & alignment model,
+        # then it directly tries to load cropped images and skips this step
+        if face_detection_model == None:
+            self.eval_dataset = LFWEvaluationDatasetCropped(self.dataset_path)
+            self.skip_face_detection = True
+        else:
+            self.eval_dataset = LFWEvaluationDataset(self.dataset_path)
 
     def run(self):
-        eval_dataset = LFWEvaluationDataset(self.dataset_path )
-
+        
         # ---- SHUFFLE DATASET RANDOMLY --------
         # divide dataset size by twenty 10, so that processing is faster
         subset_size = 10
-        n_samples = int(eval_dataset.__len__()/subset_size)
+        n_samples = int(self.eval_dataset.__len__()/subset_size)
 
         # Shuffle indices with np.random.permutation, also fix seed if you want reproducability
         shuffled_indices = np.random.RandomState(seed=42).permutation(n_samples)
 
         # select shuffled set from original dataset
-        eval_dataset_shuffled = torch.utils.data.Subset(eval_dataset, indices=shuffled_indices)   
+        eval_dataset_shuffled = torch.utils.data.Subset(self.eval_dataset, indices=shuffled_indices)   
 
         # ---- CREATE DATALOADER --------
         batch_size = 1
@@ -96,20 +104,25 @@ class PipelineEvaluation():
         for i, (label, image_path) in enumerate(eval_loader):
             label = label[0]
             # ---- FACE DETECTION AND ALIGNMENT --------
-            try:
-                detected_face_numpy = self.face_detection_model.detectFace(image_path[0])
-            except:
-                # Sometimes, if more than one face is on an image, deepFace returns an error
-                # However, it doesn´t count to overall accuracy, as we will get only images with one face
-                print("image not recognized: ", image_path[0])
-                continue
+            if self.skip_face_detection == True:
+                detected_face = image_path[0].unsqueeze(0)
+            else:
+                try:
+                    detected_face_numpy = self.face_detection_model.detectFace(image_path[0])
+                except:
+                    # Sometimes, if more than one face is on an image, deepFace returns an error
+                    # However, it doesn´t count to overall accuracy, as we will get only images with one face
+                    print("image not recognized: ", image_path[0])
+                    continue
 
-            # ---- RESHAPE OUTPUT --------
-            detected_face = detected_face_numpy.copy()
-            # Afterwards: Pytorch tensor 1x3x250x250
-            detected_face = torch.from_numpy(detected_face).permute(2,0,1).unsqueeze(0)
-            # print(detected_face.shape)
-            #plt.imshow(detected_face.permute(1, 2, 0))
+                # ---- RESHAPE OUTPUT --------
+                detected_face = detected_face_numpy.copy()
+                # Afterwards: Pytorch tensor 1x3x250x250
+                detected_face = torch.from_numpy(detected_face).permute(2,0,1).unsqueeze(0)
+                # print(detected_face.shape)
+                #plt.imshow(detected_face.permute(1, 2, 0))
+
+
             
             if torch.cuda.is_available():
                 detected_face = detected_face.to("cuda")
