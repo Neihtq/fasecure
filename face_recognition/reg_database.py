@@ -6,6 +6,20 @@ from PIL import Image
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
 
+# input: 128 dim embedding as tensor (convert it internally to numpy array)
+#               - registration: embedding + name
+#               - deregistration: name
+#               - recognition: embedding
+# ---------------------------------------------------------------------------
+# functions:    - registration
+#               - deregistration
+#               - recognition
+#               - clean_database
+# ---------------------------------------------------------------------------
+# output:       - registration: "registered successfully"
+#               - deregistration: "deregistered successfully"
+#               - recognition: closest person + access/intruder
+
 
 class RegistrationDatabase():
 
