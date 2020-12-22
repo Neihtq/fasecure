@@ -2,6 +2,7 @@
 import torch.nn.functional as F
 import torch
 from faceEmbeddingModel import faceEmbeddingModel
+from refFaceEmbeddingModel import refFaceEmbeddingModel
 from reg_database import RegistrationDatabase
 from prep import load_and_transform_img
 from pipeline_evaluation import PipelineEvaluation
@@ -20,6 +21,13 @@ import numpy as np
 # - Manhatten Distance
 # - Cosine Similarity
 
+# main results 2:
+# - Created evaluation for whole pipeline
+# - only use 1/10 of lfw for evaluation so far
+# - log the evaluation and plot results
+# - can choose wheter to use detection model or directly cropped images
+#   (only in evaluation, if face detected. Otherwise ignored)
+# - Implemented reference face embedding model which we have to beat (lower bound)
 
 # embedding_model = faceEmbeddingModel().eval()
 
@@ -30,19 +38,20 @@ import numpy as np
 # database.clean_database()
 # register_people()
 
-from deepface import DeepFace
+#from deepface import DeepFace
 
-dataset_path = "./evaluation_data/lfw"
-eval_log_path = "./evaluation_results/first_tests.txt"
-face_detection_model = DeepFace
+dataset_path = "./evaluation_data/lfw_crop"
+eval_log_path = "./evaluation_results/ref_model_cropped.txt"
+#face_detection_model = DeepFace
+ref_face_embedding_model = refFaceEmbeddingModel()
 face_embedding_model = faceEmbeddingModel().eval()
 registration_database = RegistrationDatabase()
 
-pipeline_evaluation = PipelineEvaluation(dataset_path, eval_log_path, face_detection_model, 
-                                        face_embedding_model, registration_database)
+pipeline_evaluation = PipelineEvaluation(dataset_path, eval_log_path,
+                                          ref_face_embedding_model, registration_database)
 
-#pipeline_evaluation.run()
-pipeline_evaluation.plot_results()
+pipeline_evaluation.run()
+#pipeline_evaluation.plot_results()
 
 # Face Recognition with data augmentation
 # path = './test_recognition_images/Vladimir_04.ppm'
