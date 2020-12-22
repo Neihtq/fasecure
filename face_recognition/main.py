@@ -41,7 +41,7 @@ import numpy as np
 #from deepface import DeepFace
 
 dataset_path = "./evaluation_data/lfw_crop"
-eval_log_path = "./evaluation_results/ref_model_cropped.txt"
+eval_log_path = "./evaluation_results/ref_model_with_augmentation.txt"
 #face_detection_model = DeepFace
 ref_face_embedding_model = refFaceEmbeddingModel()
 face_embedding_model = faceEmbeddingModel().eval()

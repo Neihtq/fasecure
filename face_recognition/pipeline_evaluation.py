@@ -40,7 +40,6 @@ import numpy as np
 from PIL import Image
 import sys
 import matplotlib.pyplot as plt
-#%matplotlib inline
 
 from scipy import interpolate
 from scipy.optimize import fsolve
@@ -139,22 +138,30 @@ class PipelineEvaluation():
             # (No face recognition for first person, as no faces registered so far)
             if rec_number > 0:
                 closest_label, check = self.evaluation_database.face_recognition(embedding)
-        #         print("True label: ", label)    
-        #         print("Predicted label:", closest_label, " --- Access?: ", check)
-        #         print("-----------------")
+                # print("True label: ", label)    
+                # print("Predicted label:", closest_label, " --- Access?: ", check)
                 
                 # Allegedly known
+                # 3 cases with Joe in the image and he gets access:
+                # 1) Joe gets access, although he is not registered at all
+                # 2) Joe gets access, he is registered, but the model has mixed up Joe with someone else who is registered
+                # 3) Joe gets access, he is registered and the model recognizes him (Correct)
                 if check == 'Access':
                     accept += 1
-                    if not self.evaluation_database.contains(closest_label):
+                    # Case 1)
+                    if not self.evaluation_database.contains(label):
                         fa += 1  # False accept
+                    # Case 2)
                     elif closest_label != label:
                         wa += 1  # Recognition error
                     
                 # Allegedly Intruder
+                # 2 cases with Joe in the image and he gets declined
+                # 1) Joe gets declined, although is is registered
+                # 2) Joe gets declined, since he is not registered (Correct)
                 if check == 'Decline':
                     reject += 1
-                    if self.evaluation_database.contains(closest_label):
+                    if self.evaluation_database.contains(label):
                         fr += 1  # False reject
             
             # # ---- FACE REGISTRATION -------- 
@@ -162,26 +169,25 @@ class PipelineEvaluation():
             if not self.evaluation_database.contains(label):
                 # If we register, then augmentation step between Face Detection/Alignemnt and Face Embedding
                 # Can I also write that in one line with **?
-                # img_embedding_tensor_2 = self.face_embedding_model(aug_img_2)
-                # img_embedding_tensor_3 = self.face_embedding_model(aug_img_3)
-                # img_embedding_tensor_4 = self.face_embedding_model(aug_img_4)
-                # img_embedding_tensor_5 = self.face_embedding_model(aug_img_5)
-                # img_embedding_tensor_6 = self.face_embedding_model(aug_img_6)
-                # img_embedding_tensor_7 = self.face_embedding_model(aug_img_7)
+                img_embedding_tensor_2 = self.face_embedding_model(aug_img_2)
+                img_embedding_tensor_3 = self.face_embedding_model(aug_img_3)
+                img_embedding_tensor_4 = self.face_embedding_model(aug_img_4)
+                img_embedding_tensor_5 = self.face_embedding_model(aug_img_5)
+                img_embedding_tensor_6 = self.face_embedding_model(aug_img_6)
+                img_embedding_tensor_7 = self.face_embedding_model(aug_img_7)
                 
                 # The first one we already calculated
                 self.evaluation_database.face_registration(label,embedding)
-                # self.evaluation_database.face_registration(label,img_embedding_tensor_2)
-                # self.evaluation_database.face_registration(label,img_embedding_tensor_3)
-                # self.evaluation_database.face_registration(label,img_embedding_tensor_4)
-                # self.evaluation_database.face_registration(label,img_embedding_tensor_5)
-                # self.evaluation_database.face_registration(label,img_embedding_tensor_6)
-                # self.evaluation_database.face_registration(label,img_embedding_tensor_7)
+                self.evaluation_database.face_registration(label,img_embedding_tensor_2)
+                self.evaluation_database.face_registration(label,img_embedding_tensor_3)
+                self.evaluation_database.face_registration(label,img_embedding_tensor_4)
+                self.evaluation_database.face_registration(label,img_embedding_tensor_5)
+                self.evaluation_database.face_registration(label,img_embedding_tensor_6)
+                self.evaluation_database.face_registration(label,img_embedding_tensor_7)
                 
             if (rec_number > 0) and (rec_number % 100 == 0):      
                 # Calculate error
                 self.show_and_save(fa, fr, wa, accept, reject, rec_number, self.eval_log_path)
-    
             # Only increases rec_number, if face detected
             rec_number += 1
 
