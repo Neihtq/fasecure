@@ -190,6 +190,7 @@ class PipelineEvaluation():
                 self.show_and_save(fa, fr, wa, accept, reject, rec_number, self.eval_log_path)
             # Only increases rec_number, if face detected
             rec_number += 1
+            print(rec_number)
 
 
     def green_print(self, line):
