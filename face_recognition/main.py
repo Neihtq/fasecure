@@ -144,7 +144,7 @@ img_1, img_2, img_3, img_4, img_5, img_6, img_7 = load_and_transform_img(path)
 img_embedding_tensor = embedding_model(img_1)
 closest_label, check = database.face_recognition(img_embedding_tensor)
 if check == 'Access':
-   print("--- Access --- Recognized person: ", closest_label)
+    print("--- Access --- Recognized person: ", closest_label)
 elif check == 'Decline':
     print("--- Decline ---")
 

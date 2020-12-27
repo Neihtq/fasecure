@@ -29,6 +29,7 @@ class RegistrationDatabase():
         if os.path.exists(self.database_file):
             # load pickle file and save it into class attribute database
             print('Database already exists. Pickle file will be loaded...')
+            
             self.database = pd.read_pickle(self.database_file)
             # For the case, that the pickle file was changed externally
             self.update_embeddings()
@@ -39,7 +40,6 @@ class RegistrationDatabase():
 
             # Save it as a pickle file
             self.save_database()
-
         # In the end after running constructor: loaded availabe database or created a new one
 
     # Save database to pickle file
@@ -59,7 +59,7 @@ class RegistrationDatabase():
     # Update length of embedding list, embedding list itself and the thresholds of every person
     def update_embeddings(self):
         self.len_embeddings_list = len(self.database.index)
-        self.embeddings_list = [self.database.iloc[i,1][0] for i in range(self.len_embeddings_list)]
+        self.embeddings_list = [ self.database.iloc[i,1][0] for i in range(self.len_embeddings_list)]
         # self.name_list = np.array([self.database.iloc[i,0] for i in range(self.len_embeddings_list)])
 
         # Calculate and update inner product thresholds (+add pseudo embeddings to avoid problem with to less registered embeddings for adaptive threshold)
