@@ -19,6 +19,7 @@ deepface = "*"
 facenet = "*"
 align = "*"
 numpy = "==1.19.3"
+scikit-metrics = "*"
 
 [requires]
 python_version = "3.7"
