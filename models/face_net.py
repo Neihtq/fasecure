@@ -105,6 +105,8 @@ class FaceNet(nn.Module):
         return res
 
     
+
+    
     
 class LightningFaceNet(pl.LightningModule):
     def __init__(self, hparams, pretrained=False):
@@ -136,13 +138,60 @@ class LightningFaceNet(pl.LightningModule):
         log = {'val_loss': loss}
         self.log('val_loss', loss)
         
-        return {"val_loss": loss, "log": log}
+        accuracy, precision, recall, F1_Score = self.evaluation(batch)
+        
+        print("Validation Accuracy: " + accuracy)
+        print("Validation Precision: " + precision)
+        print("Validation Recall: " + recall)
+        print("Validation F1_Score: " + F1_Score)
+        
+        return {"val_loss": loss, "log": log, "val_acc": accuracy, "val_precision": precision, "val_recall": recall, "val_F1": F1_Score} 
+        
+    def evaluation(self, batch):
+        for x in batch:
+            #img_1 = load_and_transform_img(x)
+            label, anchor, positive, negative = batch
+            anchor_enc = self.forward(anchor)
+            pos_enc = self.forward(positive)
+            neg_enc = self.forward(negative)  
+            
+            anchor_enc_np = anchor_enc.numpy()
+            pos_enc_np = pos_enc.numpy()
+            neg_enc_np = neg_enc.numpy()
+            
+            d_a_p = numpy.linalg.norm(anchor_enc_np - pos_enc_np)
+            d_a_n = numpy.linalg.norm(anchor_enc_np - neg_enc_np)
+            
+            threshold = 0.02
+            
+            FN, TP, FP, TN = 0, 0, 0, 0
+            if d_a_p > threshold:
+                FN += 1
+            else:
+                TP += 1
+                
+            if d_a_n <= threshold:
+                FP += 1
+            else:
+                TN += 1
+            
+        accuracy = TP + TN / (TP + TN + FP + FN)
+        precision = TP / (TP + FP)
+        recall = TP / (TP + FN)
+        F1_Score = TP / (TP + 0.5 * (FP + FN)) 
+        
+        return accuracy, precision, recall, F1_Score
     
     def test_step(self, batch, batch_idx):
         loss = self.general_step(batch)
         log = {'test_loss': loss}
         
-        return {"test_loss": loss, "log": log}
+        print("Test Accuracy: " + accuracy)
+        print("Test Precision: " + precision)
+        print("Test Recall: " + recall)
+        print("Test F1_Score: " + F1_Score)
+        
+        return {"test_loss": loss, "log": log, "test_acc": accuracy, "test_precision": precision, "test_recall": recall, "test_F1": F1_Score}
         
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.parameters(), lr=self.model.hparams['lr'], weight_decay=1e-5)
