@@ -23,14 +23,6 @@
 
 # --- Output: Overall Accuracy
 
-# todo:
-# - evalation normally on which dataset? new one?
-# - implement code, that if cuda available, if moves everything on the gpu
-# - print names and access and have a look, if metric is computed correctly
-# - Improve accuracy (start with fixed threshold, until one neighbor is closer)
-#   -> only update threshold if new max is above old threshold (fixed threshold at beginning)
-#   -> How to set fixed threshold? grid-search?
-#   (maybe that was ment by "initialized thresholds with fixed ones" in the paper)
 
 from LFWEvaluationDataset import LFWEvaluationDataset
 from LFWEvaluationDatasetCropped import LFWEvaluationDatasetCropped

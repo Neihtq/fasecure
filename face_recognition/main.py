@@ -34,9 +34,12 @@ import numpy as np
 
 # todo
 # - Use whole LFW dataset (when class members > 5)
+# - compare to fixed_threshold = 0 (normal case? and print also the first cases, as there very bad?)
+# - implement code, that if cuda available, if moves everything on the gpu
+# - evalation normally on which dataset? new one?
 # - have to find optimal fixed_threshold as lower bound (and initial threshold) to fix problem with too less registered people
 # - run with that threshold reference model (or with other threshold?)
-
+# - compare accuracy with paper
 
 # from deepface import DeepFace
 # -------------------
@@ -46,13 +49,13 @@ import numpy as np
 ref_face_embedding_model = refFaceEmbeddingModel()
 face_embedding_model = faceEmbeddingModel().eval()
 dataset_path = "./evaluation_data/lfw_crop"
-eval_log_path = "./evaluation_results/ref_model_with_fixed_threshold_"
+eval_log_path = "./evaluation_results/normal_model_with_fixed_threshold_"
 
 # loop over different fixed thresholds to find the one resulting in the highest accuracy
-for fixed_threshold in range(95,100,1):
+for fixed_threshold in range(0,100,1):
     eval_log_path_fix = eval_log_path + str(fixed_threshold) + ".txt"
     registration_database = RegistrationDatabase(fixed_threshold=fixed_threshold)
     pipeline_evaluation = PipelineEvaluation(dataset_path, eval_log_path_fix,
-                                          ref_face_embedding_model, registration_database)
+                                          face_embedding_model, registration_database)
     pipeline_evaluation.run()
     #pipeline_evaluation.plot_results()
