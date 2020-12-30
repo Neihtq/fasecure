@@ -101,6 +101,7 @@ class PipelineEvaluation():
         rec_number = 0
 
         for i, (label, image_path) in enumerate(eval_loader):
+            print("Round: ", i)
             label = label[0]
             # ---- FACE DETECTION AND ALIGNMENT --------
             if self.skip_face_detection == True:
@@ -185,12 +186,12 @@ class PipelineEvaluation():
                 self.evaluation_database.face_registration(label,img_embedding_tensor_6)
                 self.evaluation_database.face_registration(label,img_embedding_tensor_7)
                 
-            if (rec_number > 0) and (rec_number % 100 == 0):      
+            if (rec_number > 0) and (rec_number % 10 == 0):      
                 # Calculate error
                 self.show_and_save(fa, fr, wa, accept, reject, rec_number, self.eval_log_path)
+                print(self.evaluation_database.database)
             # Only increases rec_number, if face detected
             rec_number += 1
-            print(rec_number)
 
 
     def green_print(self, line):
