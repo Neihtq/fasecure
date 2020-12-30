@@ -24,12 +24,15 @@ import numpy as np
 class RegistrationDatabase():
 
     # Initialize database
-    def __init__(self, mode='inner_product'):
+    def __init__(self, fixed_threshold, mode='inner_product'):
         
         # Choose similarity calculation between "inner product" and "euclidean distance"
         self.mode = mode
         if self.mode == 'euclidean_distance':
             self.recognition_model = NearestNeighbors(n_neighbors=1)
+        
+        # ----- Define default value for it
+        self.fixed_threshold = fixed_threshold
       
         self.len_embeddings_list = 0
                              
@@ -85,8 +88,8 @@ class RegistrationDatabase():
         self.embeddings_list = [self.database.iloc[i,1][0] for i in range(self.len_embeddings_list)]
         # self.name_list = np.array([self.database.iloc[i,0] for i in range(self.len_embeddings_list)])
 
-        # Calculate and update inner product thresholds (+add pseudo embeddings to avoid problem with to less registered embeddings for adaptive threshold)
-        # Adapt threshold for first embedding
+        # Calculate and update inner product thresholds
+        # Adapt threshold for first embedding (can be deleted?)
         if self.database['label'].nunique() == 1:
             self.database.iloc[:,2] = 98.0
             #print(self.database)
@@ -116,14 +119,19 @@ class RegistrationDatabase():
                     inner_products = np.inner(temp_embedding,temp_embeddings_list)
 
                     # Set the inner product threshold of the corresponding embedding...
-                    # as the maximum value among all facial embeddings not belonging to the same person                  
-                    self.database.iloc[i,2] = np.max(inner_products) 
+                    # as the maximum value among all facial embeddings not belonging to the same person 
+                    closest_embedding_dist = np.max(inner_products) 
+                    if closest_embedding_dist > self.fixed_threshold:
+                        self.database.iloc[i,2] = closest_embedding_dist
+                    else:
+                        self.database.iloc[i,2] = self.fixed_threshold
 
                 elif self.mode == 'euclidean_distance':
                     # print(type(temp_embedding))
                     # print(temp_embedding.reshape((1,128)).shape)
                     # sys.exit()
                     self.recognition_model.fit(temp_embeddings_list)
+                    print("----------- Fixed threshold not defined so far! --------------")
                     closest_embedding_dist = self.recognition_model.kneighbors(temp_embedding.reshape((1,128)))[0].tolist()[0][0]
                     self.database.iloc[i,2] = closest_embedding_dist
 
