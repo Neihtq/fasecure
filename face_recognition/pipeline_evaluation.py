@@ -103,7 +103,7 @@ class PipelineEvaluation():
         rec_number = 0
 
         for i, (label, image_path) in enumerate(eval_loader):
-            print("Round: ", i)
+            #print("Round: ", i)
 
             label = label[0]
             # ---- FACE DETECTION AND ALIGNMENT --------
@@ -192,7 +192,7 @@ class PipelineEvaluation():
             if (rec_number > 0) and (rec_number % 10 == 0):      
                 # Calculate error
                 self.show_and_save(fa, fr, wa, accept, reject, rec_number, self.eval_log_path)
-                print(self.evaluation_database.database)
+                # print(self.evaluation_database.database)
             # Only increases rec_number, if face detected
             rec_number += 1
 

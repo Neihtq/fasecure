@@ -6,6 +6,7 @@ import torch
 class refFaceEmbeddingModel(nn.Module):
     def __init__(self):
         super(refFaceEmbeddingModel, self).__init__()
+        self.linear = nn.Linear(150528, 128)
 
     def l2_norm(self, input):
         input_size = input.size()
@@ -18,6 +19,7 @@ class refFaceEmbeddingModel(nn.Module):
 
     def forward(self, x):
         x = x.view(x.size(0), -1)
+        x = self.linear(x)
         features = self.l2_norm(x)
 
         # Multiply by alpha = 10 as suggested in https://arxiv.org/pdf/1703.09507.pdf

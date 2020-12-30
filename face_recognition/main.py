@@ -33,9 +33,10 @@ import numpy as np
 # - Implemented reference face embedding model which we have to beat (lower bound)
 
 # todo
+# - Use whole LFW dataset (when class members > 5)
 # - have to find optimal fixed_threshold as lower bound (and initial threshold) to fix problem with too less registered people
 # - run with that threshold reference model (or with other threshold?)
-# - pickle file gets very quick very large
+
 
 # from deepface import DeepFace
 # -------------------
@@ -45,13 +46,13 @@ import numpy as np
 ref_face_embedding_model = refFaceEmbeddingModel()
 face_embedding_model = faceEmbeddingModel().eval()
 dataset_path = "./evaluation_data/lfw_crop"
-eval_log_path = "./evaluation_results/normal_model_with_fixed_threshold_"
+eval_log_path = "./evaluation_results/ref_model_with_fixed_threshold_"
 
 # loop over different fixed thresholds to find the one resulting in the highest accuracy
 for fixed_threshold in range(95,100,1):
     eval_log_path_fix = eval_log_path + str(fixed_threshold) + ".txt"
     registration_database = RegistrationDatabase(fixed_threshold=fixed_threshold)
     pipeline_evaluation = PipelineEvaluation(dataset_path, eval_log_path_fix,
-                                          face_embedding_model, registration_database)
+                                          ref_face_embedding_model, registration_database)
     pipeline_evaluation.run()
     #pipeline_evaluation.plot_results()
