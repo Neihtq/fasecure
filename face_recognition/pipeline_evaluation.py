@@ -41,6 +41,8 @@ from PIL import Image
 import sys
 import matplotlib.pyplot as plt
 
+#%matplotlib inline
+
 from scipy import interpolate
 from scipy.optimize import fsolve
 
@@ -102,6 +104,7 @@ class PipelineEvaluation():
 
         for i, (label, image_path) in enumerate(eval_loader):
             print("Round: ", i)
+
             label = label[0]
             # ---- FACE DETECTION AND ALIGNMENT --------
             if self.skip_face_detection == True:

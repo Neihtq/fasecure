@@ -132,6 +132,7 @@ class RegistrationDatabase():
                     # sys.exit()
                     self.recognition_model.fit(temp_embeddings_list)
                     print("----------- Fixed threshold not defined so far! --------------")
+
                     closest_embedding_dist = self.recognition_model.kneighbors(temp_embedding.reshape((1,128)))[0].tolist()[0][0]
                     self.database.iloc[i,2] = closest_embedding_dist
 

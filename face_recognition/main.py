@@ -26,6 +26,7 @@ import numpy as np
 # - only use 1/10 of lfw for evaluation so far and only if at least 6 images per folder 
 #       (->540 images for overal evaluation)
 #       -> face recognition is more often tested with already registered user, so can test one-shot learning more often
+
 # - log the evaluation and plot results
 # - can choose wheter to use detection model or directly cropped images
 #   (only in evaluation, if face detected. Otherwise ignored)

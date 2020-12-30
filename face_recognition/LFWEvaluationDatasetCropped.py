@@ -7,6 +7,7 @@ from os import listdir
 from PIL import Image
 from itertools import compress
 
+
 class LFWEvaluationDatasetCropped(Dataset):
     def __init__(self, root, transform=None):
         self.root = root
