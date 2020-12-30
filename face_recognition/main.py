@@ -37,6 +37,8 @@ import numpy as np
 # - pickle file gets very quick very large
 
 # from deepface import DeepFace
+# -------------------
+
 
 #face_detection_model = DeepFace
 ref_face_embedding_model = refFaceEmbeddingModel()
