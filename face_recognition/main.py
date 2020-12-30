@@ -59,3 +59,4 @@ for fixed_threshold in range(0,100,1):
                                           face_embedding_model, registration_database)
     pipeline_evaluation.run()
     #pipeline_evaluation.plot_results()
+    #sys.exit()
