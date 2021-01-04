@@ -143,9 +143,6 @@ class LightningFaceNet(pl.LightningModule):
         loss = self.general_step(batch, "train")
         log = {'train_loss': loss}
 
-        accuracy, precision, recall, f1_score = self.train_metric.compute()
-        self.log("train_acc", accuracy, prog_bar=True, logger=True)
-
         return {"loss": loss, "log": log}
 
     def training_epoch_end(self, training_step_outputs):
@@ -155,7 +152,6 @@ class LightningFaceNet(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         loss = self.general_step(batch, "val")
         log = {'val_loss': loss}
-        self.log("val_loss", loss, logger=True)
 
         return {"val_loss": loss, "log": log}
 
@@ -167,7 +163,6 @@ class LightningFaceNet(pl.LightningModule):
         loss = self.general_step(batch, "test")
         log = {'test_loss': loss}
         self.log("test_loss", loss, prog_bar=True)
-        self.log("test_acc", self.test_metric.compute(), prog_bar=True)
         
         return {"test_loss": loss, "log": log}
         
