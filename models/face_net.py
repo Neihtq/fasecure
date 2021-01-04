@@ -143,6 +143,8 @@ class LightningFaceNet(pl.LightningModule):
         loss = self.general_step(batch, "train")
         log = {'train_loss': loss}
 
+        self.log("train_step_acc", self.train_metric, prog_bar=True, logger=True)
+
         return {"loss": loss, "log": log}
 
     def training_epoch_end(self, training_step_outputs):
