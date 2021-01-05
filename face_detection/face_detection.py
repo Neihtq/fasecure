@@ -6,9 +6,9 @@ import numpy as np
 
 from os.path import join, dirname, abspath
 
-dirname = dirname(abspath(__file__))
-PROTO_TXT = join(dirname, "model", "deploy.prototxt")
-MODEL = join(dirname, "model", "res10_300x300_ssd_iter_140000.caffemodel")
+absolute_dir = dirname(abspath(__file__))
+PROTO_TXT = join(absolute_dir, "model", "deploy.prototxt")
+MODEL = join(absolute_dir, "model", "res10_300x300_ssd_iter_140000.caffemodel")
 THRESHOLD = 0.5
 
 def face_detection(callback=None):

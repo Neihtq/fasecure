@@ -1,11 +1,13 @@
+import os
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+import pytorch_lightning as pl
+
 from torchvision.models import resnet50
 from torch.hub import download_url_to_file
-import os
 
 def load_state():
-
     path = 'https://github.com/khrlimam/facenet/releases/download/acc-0.92135/model921-af60fb4f.pth'
 
     model_dir = "./pretrained_model"
@@ -19,31 +21,27 @@ def load_state():
     
     return state_dict
 
-def faceEmbeddingModel(pretrained=True):
-    model = FaceNetModel()
+def get_model(pretrained=True):
+    model = FaceNet()
     if pretrained:
         state = load_state()
         model.load_state_dict(state['state_dict'])
     return model
 
-class Flatten(nn.Module):
 
+class Flatten(nn.Module):
     def forward(self, x):
         return x.view(x.size(0), -1)
 
-class FaceNetModel(nn.Module):
-    def __init__(self, pretrained=False):
-        super(FaceNetModel, self).__init__()
+    
+class FaceNet(nn.Module):
+    def __init__(self, hparams, pretrained=False, num_classes=1680, embedding_size=128):
+        super(FaceNet, self).__init__()
 
+        self.hparams = hparams
         # pretrained is false by default, as I only need the architecture of Resnet50 and not the parameters
         # Parameters are loaded by download from github
         self.model = resnet50(pretrained)
-        embedding_size = 128
-
-        # Adapt for our case
-        num_classes = 500
-
-
         self.cnn = nn.Sequential(
             self.model.conv1,
             self.model.bn1,
@@ -52,18 +50,17 @@ class FaceNetModel(nn.Module):
             self.model.layer1,
             self.model.layer2,
             self.model.layer3,
-            self.model.layer4)
+            self.model.layer4
+        )
 
         # modify fc layer based on https://arxiv.org/abs/1703.07737
-        # if include linear, batchNorm1d and ReLU
         self.model.fc = nn.Sequential(
             Flatten(),
-            # nn.Linear(100352, 1024),
-            # nn.BatchNorm1d(1024),
-            # nn.ReLU(),
-            nn.Linear(100352, embedding_size))
-
+            nn.Linear(2048*8*8, embedding_size)
+        )
+        
         self.model.classifier = nn.Linear(embedding_size, num_classes)
+        self.criterion = nn.TripletMarginLoss(margin=self.hparams["margin"], p=2)
 
     def l2_norm(self, input):
         input_size = input.size()
@@ -108,18 +105,64 @@ class FaceNetModel(nn.Module):
                 for param in child.parameters():
                     param.requires_grad = False
 
-    # returns face embedding(embedding_size)
     def forward(self, x):
         x = self.cnn(x)
         x = self.model.fc(x)
 
         features = self.l2_norm(x)
-        # Multiply by alpha = 10 as suggested in https://arxiv.org/pdf/1703.09507.pdf
         alpha = 10
         features = features * alpha
+        
         return features
 
     def forward_classifier(self, x):
         features = self.forward(x)
         res = self.model.classifier(features)
         return res
+
+    
+    
+class LightningFaceNet(pl.LightningModule):
+    def __init__(self, hparams, pretrained=False):
+        super(LightningFaceNet, self).__init__()
+        self.model = FaceNet(hparams, pretrained=pretrained)
+        
+    def forward(self, x):
+        return self.model(x)
+        
+    def general_step(self, batch):
+        label, anchor, positive, negative = batch
+        
+        anchor_enc = self.forward(anchor)
+        pos_enc = self.forward(positive)
+        neg_enc = self.forward(negative)
+        
+        loss = self.model.criterion(anchor_enc, pos_enc, neg_enc)
+
+        return loss
+    
+    def training_step(self, batch, batch_idx):
+        loss = self.general_step(batch)
+        log = {'train_loss': loss}
+        
+        return {"loss": loss, "log": log}
+        
+    def validation_step(self, batch, batch_idx):
+        loss = self.general_step(batch)
+        log = {'val_loss': loss}
+        self.log('val_loss', loss)
+        
+        return {"val_loss": loss, "log": log}
+    
+    def test_step(self, batch, batch_idx):
+        loss = self.general_step(batch)
+        log = {'test_loss': loss}
+        
+        return {"test_loss": loss, "log": log}
+        
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.model.hparams['lr'], weight_decay=1e-5)
+        if self.model.hparams['optimizer'] == 'SGD':
+            optimizer = torch.optim.SGD(self.model.parameters(), lr=self.model.hparams['lr'], weight_decay=0.0001)
+                    
+        return optimizer

@@ -1,32 +1,14 @@
 import os
 import random
-import requests
-import tarfile 
 import torch
+import glob
 
 from os import listdir
 from PIL import Image
-#from deepface import DeepFace
+from itertools import compress
 
 from torch.utils.data import Dataset
 from torchvision import transforms
-
-
-#def face_alignment(imgname):
-#    detected_face = DeepFace.detectFace(imgname)
-#    return detected_face
-    
-
-def download_data(url):
-    req = requests.get(url, allow_redirects=True)
-    open("data.tgz", 'wb').write(req.content)
-
-    if not os.path.exists('./data'):
-        os.makedirs('./data/')
-
-    with tarfile.open('data.tgz', 'r') as f:
-        f.extractall('data')
-        f.close()
     
     
 class LFWDataset(Dataset):
@@ -73,8 +55,47 @@ class LFWDataset(Dataset):
         img_path = os.path.join(folder, listdir(folder)[0])
     
         return self.get_image(img_path)
+
+
+class LFWEvaluationDataset(Dataset):
+    def __init__(self, root, transform=None, cropped_faces=False):
+        self.root = root
+        self.cropped_faces = cropped_faces
+        self.labels = []
+        self.mask = []
+        self.transform = transform
+        for label in listdir(root):
+            img_path = os.path.join(root, label)
+            if len(listdir(img_path)) > 5:
+                for imgs_per_folder in range(len(listdir(img_path))):
+                    self.labels.append(label)
+                    self.mask.append(True)
+            else:
+                for imgs_per_folder in range(len(listdir(img_path))):
+                    self.mask.append(False)
+
+        self.image_filenames = glob.glob(os.path.join(root, "**/*.jpg"), recursive=True)
+        # Use mask to filter classes with less than certain amount of images
+        self.image_filenames = list(compress(self.image_filenames, self.mask))
+
+    def __len__(self):
+        # returns amount of classes
+        return len(self.labels)
     
-    
-if __name__ == '__main__':
-    url = "http://vis-www.cs.umass.edu/lfw/lfw-deepfunneled.tgz"
-    download_data(url)
+    def __getitem__(self, idx):
+        label = self.labels[idx]
+        img = self.image_filenames[idx]
+        
+        if self.cropped_faces:
+            img = self.get_image(img)
+
+        return label, img
+        
+    def get_image(self, img_path):
+        img = Image.open(img_path)
+        img_tensor = transforms.ToTensor()(img)
+        
+        if self.transform:
+            img_tensor = self.transform(img_tensor)
+        
+        return img_tensor

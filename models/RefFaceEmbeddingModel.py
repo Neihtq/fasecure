@@ -1,11 +1,11 @@
+import torch
 import torch.nn as nn
 
-import torch
 
-# Reference model for lower bound of accuracy
-class refFaceEmbeddingModel(nn.Module):
+class RefFaceEmbeddingModel(nn.Module):
+    ''' Reference model for lower bound of accuracy'''
     def __init__(self):
-        super(refFaceEmbeddingModel, self).__init__()
+        super(RefFaceEmbeddingModel, self).__init__()
         self.linear = nn.Linear(150528, 128)
 
     def l2_norm(self, input):
