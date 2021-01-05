@@ -9,6 +9,7 @@ from pytorch_lightning.metrics import Metric
 from torchvision.models import resnet50
 from torch.hub import download_url_to_file
 
+
 def load_state():
     path = 'https://github.com/khrlimam/facenet/releases/download/acc-0.92135/model921-af60fb4f.pth'
 
@@ -37,10 +38,9 @@ class Flatten(nn.Module):
 
     
 class FaceNet(nn.Module):
-    def __init__(self, hparams, pretrained=False, num_classes=1680, embedding_size=128):
+    def __init__(self, pretrained=False, num_classes=1680, embedding_size=128):
         super(FaceNet, self).__init__()
 
-        self.hparams = hparams
         # pretrained is false by default, as I only need the architecture of Resnet50 and not the parameters
         # Parameters are loaded by download from github
         self.model = resnet50(pretrained)
@@ -62,10 +62,6 @@ class FaceNet(nn.Module):
         )
         
         self.model.classifier = nn.Linear(embedding_size, num_classes)
-<<<<<<< HEAD:models/face_net.py
-=======
-        self.criterion = nn.TripletMarginLoss(margin=self.hparams["margin"], p=2)
->>>>>>> main:models/FaceNet.py
 
     def l2_norm(self, input):
         input_size = input.size()
@@ -124,10 +120,7 @@ class FaceNet(nn.Module):
         features = self.forward(x)
         res = self.model.classifier(features)
         return res
-
-    
-
-    
+   
     
 class LightningFaceNet(pl.LightningModule):
     def __init__(self, hparams, pretrained=False):
