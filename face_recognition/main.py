@@ -54,6 +54,7 @@ eval_log_path = "./evaluation_results/normal_model_with_fixed_threshold_"
 # loop over different fixed thresholds to find the one resulting in the highest accuracy
 for fixed_threshold in range(0,100,1):
     eval_log_path_fix = eval_log_path + str(fixed_threshold) + ".txt"
+    eval_log_path_fix = "./evaluation_results/normal_model_with_fixed_threshold_95.txt"
     registration_database = RegistrationDatabase(fixed_threshold=fixed_threshold)
     pipeline_evaluation = PipelineEvaluation(dataset_path, eval_log_path_fix,
                                           face_embedding_model, registration_database)
