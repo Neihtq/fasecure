@@ -2,10 +2,8 @@ import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import pytorch_lightning as pl
 import numpy as np
 
-from pytorch_lightning.metrics import Metric
 from torchvision.models import resnet50
 from torch.hub import download_url_to_file
 
@@ -25,7 +23,7 @@ def load_state():
     return state_dict
 
 def get_model(pretrained=True):
-    model = FaceNet()
+    model = FaceNet(pretrained)
     if pretrained:
         state = load_state()
         model.load_state_dict(state['state_dict'])
@@ -55,14 +53,15 @@ class FaceNet(nn.Module):
             self.model.layer4
         )
 
-
         #num_classes=1680
         # modify fc layer based on https://arxiv.org/abs/1703.07737
+        fc_dim = 2048 * 8 * 8
+        if pretrained:
+            fc_dim = 100352
+
         self.model.fc = nn.Sequential(
             Flatten(),
-            nn.Linear(100352, embedding_size)
-            #nn.Linear(2048*8*8, embedding_size)
-
+            nn.Linear(fc_dim, embedding_size)
         )
         
         self.model.classifier = nn.Linear(embedding_size, num_classes)

@@ -1,14 +1,18 @@
 import torch
 import torch.nn as nn
+import pytorch_lightning as pl
 
-from FaceNet import FaceNet
+from pytorch_lightning.metrics import Metric
+
+from .FaceNet import FaceNet
 
 
 class LightningFaceNet(pl.LightningModule):
-    def __init__(self, hparams, pretrained=False):
+    def __init__(self, hparams, num_classes, embedding_size=128, pretrained=False):
+        self.hparams = hparams
         super(LightningFaceNet, self).__init__()
-        self.model = FaceNet(hparams, pretrained=pretrained)
-        self.criterion = nn.TripletMarginLoss(margin=hparams["margin"], p=2)
+        self.model = FaceNet(pretrained=pretrained, num_classes=num_classes, embedding_size=embedding_size)
+        self.criterion = nn.TripletMarginLoss(margin=self.hparams["margin"], p=2)
         self.train_metric = EmbeddingAccuracy()
         self.val_metric = EmbeddingAccuracy()
         self.test_metric = EmbeddingAccuracy()
@@ -64,9 +68,9 @@ class LightningFaceNet(pl.LightningModule):
         self.log("test_acc", accuracy, prog_bar=True, logger=True)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.model.hparams['lr'], weight_decay=1e-5)
-        if self.model.hparams['optimizer'] == 'SGD':
-            optimizer = torch.optim.SGD(self.model.parameters(), lr=self.model.hparams['lr'], weight_decay=0.0001)
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.hparams['lr'], weight_decay=1e-5)
+        if self.hparams['optimizer'] == 'SGD':
+            optimizer = torch.optim.SGD(self.model.parameters(), lr=self.hparams['lr'], weight_decay=0.0001)
                     
         return optimizer
 
