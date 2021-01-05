@@ -16,9 +16,9 @@ matplotlib = "*"
 scikit-learn = "*"
 jupyter = "*"
 deepface = "*"
-numpy = "*"
 facenet = "*"
 align = "*"
+numpy = "==1.19.3"
 
 [requires]
 python_version = "3.7"
