@@ -2,18 +2,19 @@ import os
 import random
 import requests
 import tarfile 
+import torch
 
 from os import listdir
 from PIL import Image
-from deepface import DeepFace
+#from deepface import DeepFace
 
 from torch.utils.data import Dataset
 from torchvision import transforms
 
 
-def face_alignment(imgname):
-    detected_face = DeepFace.detectFace(imgname)
-    return detected_face
+#def face_alignment(imgname):
+#    detected_face = DeepFace.detectFace(imgname)
+#    return detected_face
     
 
 def download_data(url):
@@ -21,7 +22,7 @@ def download_data(url):
     open("data.tgz", 'wb').write(req.content)
 
     if not os.path.exists('./data'):
-        makedirs('./data/')
+        os.makedirs('./data/')
 
     with tarfile.open('data.tgz', 'r') as f:
         f.extractall('data')
@@ -55,12 +56,14 @@ class LFWDataset(Dataset):
         
     def get_image(self, img_path):
         img = Image.open(img_path)
-        img_tensor = transforms.ToTensor()(img)
-        
+       
         if self.transform:
-            img_tensor = self.transform(img_tensor)
+            img = self.transform(img)
+       
+        if not torch.is_tensor(img):        
+            img = transforms.ToTensor()(img)
         
-        return img_tensor
+        return img
     
     def get_negative(self, idx):
         include = [n for n in range(0, len(self.labels)) if n != idx]
