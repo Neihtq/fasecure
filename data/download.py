@@ -2,9 +2,24 @@ import os
 import requests
 import re
 import zipfile
+import tarfile 
 
 from tqdm import tqdm
 from os.path import dirname, abspath, join, exists
+
+
+def download_data(url):
+    ''' helper download function for e.g. lfw-deepfunneled: http://vis-www.cs.umass.edu/lfw/lfw-deepfunneled.tgz'''
+    req = requests.get(url, allow_redirects=True)
+    open("data.tgz", 'wb').write(req.content)
+
+    if not os.path.exists('./data'):
+        os.makedirs('./data/')
+
+    with tarfile.open('data.tgz', 'r') as f:
+        f.extractall('data')
+        f.close()
+
 
 def download_from_google_drive(drive_url, destination):
     ''' downloads data from google drive into the destination folder
