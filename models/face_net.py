@@ -141,11 +141,9 @@ class LightningFaceNet(pl.LightningModule):
     
     def training_step(self, batch, batch_idx):
         loss = self.general_step(batch, "train")
-        log = {'train_loss': loss}
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
 
-        self.log("train_step_acc", self.train_metric, prog_bar=True, logger=True)
-
-        return {"loss": loss, "log": log}
+        return {"loss": loss}
 
     def training_epoch_end(self, training_step_outputs):
         accuracy, precision, recall, f1_score = self.train_metric.compute()
@@ -154,6 +152,7 @@ class LightningFaceNet(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         loss = self.general_step(batch, "val")
         log = {'val_loss': loss}
+        self.log("val_loss", loss, logger=True)
 
         return {"val_loss": loss, "log": log}
 
@@ -163,11 +162,8 @@ class LightningFaceNet(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         loss = self.general_step(batch, "test")
-        log = {'test_loss': loss}
-        self.log("test_loss", loss, prog_bar=True)
-        
-        return {"test_loss": loss, "log": log}
-        
+        self.log("test_loss", loss, prog_bar=True, logger=True)
+
     def test_epoch_end(self, test_step_outputs):
         accuracy, precision, recall, f1_score = self.test_metric.compute()
         self.log("test_acc", accuracy, prog_bar=True, logger=True)
@@ -209,7 +205,7 @@ class EmbeddingAccuracy(Metric):
         TP, TN = self.true_positive, self.true_negative
         FP, FN = self.false_positive, self.false_negative        
 
-        accuracy = TP + TN / (TP + TN + FP + FN)
+        accuracy = (TP + TN) / (TP + TN + FP + FN)
         precision = TP / (TP + FP)
         recall = TP / (TP + FN)
         F1_Score = TP / (TP + 0.5 * (FP + FN)) 
