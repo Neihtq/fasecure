@@ -59,5 +59,5 @@ for fixed_threshold in range(0,100,1):
     pipeline_evaluation = PipelineEvaluation(dataset_path, eval_log_path_fix,
                                           face_embedding_model, registration_database)
     pipeline_evaluation.run()
-    #pipeline_evaluation.plot_results()
+    pipeline_evaluation.plot_results()
     #sys.exit()
