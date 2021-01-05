@@ -166,7 +166,7 @@ class PipelineEvaluation():
 
         # String formatting: every %f oder %d is an index in the following tuple (f: float, d: double?)
         # However, this type of string formatting is not recommended!!
-        info = 'compare_num: %d\nfar:%f(%d/%d), frr:%f(%d/%d), war:%f(%d/%d), acc:%.4f(%d/%d)\n' % \
+        info = 'compare_num: %d\nfa_rate:%f(%d/%d), fr_rate:%f(%d/%d), wa_rate:%f(%d/%d), acc:%.4f(%d/%d)\n' % \
                 (compare_num, fa_rate, fa, accept, fr_rate, fr, reject, 
                 wa_rate, wa, accept, 1-error, (accept+reject)-(fa+fr+wa), (accept+reject))
         self.green_print(info)
@@ -196,7 +196,7 @@ class PipelineEvaluation():
         compare_num = []
         rates = []
         for indx, v in enumerate(all_data):
-            if indx%2 == 0:
+            if indx % 2 == 0:
                 compare_num.append(float(v.split(': ')[-1]))
             else:
                 rates.append(v.split(', '))

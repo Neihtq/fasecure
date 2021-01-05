@@ -21,7 +21,7 @@ ABSOLUTE_DIR = dirname(abspath(__file__))
 
 class RegistrationDatabase():
     def __init__(self, fixed_threshold, mode='inner_product'):        
-        
+        super().__init__()
         # Choose similarity calculation between "inner product" and "euclidean distance"
         self.mode = mode
         if self.mode == 'euclidean_distance':
