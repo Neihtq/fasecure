@@ -32,6 +32,8 @@ import numpy as np
 from PIL import Image
 import sys
 import matplotlib.pyplot as plt
+from os.path import split, join
+import glob
 
 #%matplotlib inline
 
@@ -181,12 +183,16 @@ class PipelineEvaluation():
                 self.evaluation_database.face_registration(label,img_embedding_tensor_6)
                 self.evaluation_database.face_registration(label,img_embedding_tensor_7)
                 
-            if (rec_number > 0) and (rec_number % 10 == 0):      
+            if (rec_number > 0) and (rec_number % 1 == 0):      
                 # Calculate error
                 self.show_and_save(fa, fr, wa, accept, reject, rec_number, self.eval_log_path)
                 # print(self.evaluation_database.database)
             # Only increases rec_number, if face detected
             rec_number += 1
+
+            if rec_number > 10:
+                return
+
 
 
     def green_print(self, line):
@@ -290,8 +296,8 @@ class PipelineEvaluation():
         plt.plot(best_num, best_frr, 'bo', label=acc_frr_label)
         
         plt.xlabel('Number of recognition/registration tests')
-        plt.ylabel('Error rate')
-        plt.title('Adaptive threshold - Error rates')
+        plt.ylabel('Accuracy')
+        plt.title('Adaptive threshold - Performance Measures')
         plt.legend(loc=4)
         
         # Accuracy
@@ -306,5 +312,46 @@ class PipelineEvaluation():
     #     plt.title('Adaptive threshold - Accuracy')
     #     plt.legend()
 
+        plt.show()
+
+    # Compare different evaluations (normally they differ in the fixed threshold)
+    def compare_evaluations(self):
+        eval_folder = split(self.eval_log_path)[0]
+        eval_results_filenames = glob.glob(join(eval_folder, "**/*.txt"), recursive=True)
+
+        plt.figure(figsize=(14,6))
+
+        for i in range(len(eval_results_filenames)):
+
+            eval_filename = eval_results_filenames[i]
+
+            # In this setting, the fixed threshold is the label
+            label = str(eval_filename.split('_')[-1].split('.txt')[0])
+
+            # Read file
+            with open(eval_filename, 'r') as file:
+                all_data = file.read().split('\n')
+            if all_data[-1] == '':
+                del all_data[-1]
+
+            # Split x and y data
+            compare_num = []
+            rates = []
+            for indx, v in enumerate(all_data):
+                if indx%2 == 0:
+                    compare_num.append(float(v.split(': ')[-1]))
+                else:
+                    rates.append(v.split(', '))
+
+            # Get y axis data
+            acc = self.get_rate('acc:', 3, rates)
+
+            # Plot accuracy
+            plt.plot(compare_num, acc, label=label)
+
+        plt.xlabel('Number of recognition/registration tests')
+        plt.ylabel('Accuarcy')
+        plt.title('Comparison of multiple evaluations')
+        plt.legend(loc=0)
 
         plt.show()
