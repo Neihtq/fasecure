@@ -67,7 +67,8 @@ def evaluate_pipeline():
         pipeline_evaluation = PipelineEvaluation(dataset_path, eval_log_path_fix,
                                             face_embedding_model, registration_database)
         pipeline_evaluation.run()
-    pipeline_evaluation.plot_results()
+        pipeline_evaluation.plot_results()
+        break
 
 
 if __name__ == '__main__':
