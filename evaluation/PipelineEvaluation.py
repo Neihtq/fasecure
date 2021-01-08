@@ -26,6 +26,8 @@ import torch
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+from os.path import split, join
+import glob
 
 from PIL import Image
 from scipy import interpolate
@@ -234,8 +236,8 @@ class PipelineEvaluation():
         plt.plot(best_num, best_fr_rate, 'bo', label=acc_fr_rate_label)
         
         plt.xlabel('Number of recognition/registration tests')
-        plt.ylabel('Error rate')
-        plt.title('Adaptive threshold - Error rates')
+        plt.ylabel('Accuracy')
+        plt.title('Adaptive threshold - Performance measures')
         plt.legend(loc=4)
         
         # Accuracy
@@ -243,5 +245,47 @@ class PipelineEvaluation():
         plt.plot(compare_num, acc)
         max_label = ('Best: %.4f/%d' % (best_acc, best_num))
         plt.plot(best_num, best_acc, 'ro', label=max_label)
+
+        plt.show()
+
+    # Compare different evaluations (normally they differ in the fixed threshold)
+    def compare_evaluations(self):
+        eval_folder = split(self.eval_log_path)[0]
+        eval_results_filenames = glob.glob(join(eval_folder, "**/*.txt"), recursive=True)
+
+        plt.figure(figsize=(14,6))
+
+        for i in range(len(eval_results_filenames)):
+
+            eval_filename = eval_results_filenames[i]
+
+            # In this setting, the fixed threshold is the label
+            label = str(eval_filename.split('_')[-1].split('.txt')[0])
+
+            # Read file
+            with open(eval_filename, 'r') as file:
+                all_data = file.read().split('\n')
+            if all_data[-1] == '':
+                del all_data[-1]
+
+            # Split x and y data
+            compare_num = []
+            rates = []
+            for indx, v in enumerate(all_data):
+                if indx%2 == 0:
+                    compare_num.append(float(v.split(': ')[-1]))
+                else:
+                    rates.append(v.split(', '))
+
+            # Get y axis data
+            acc = self.get_rate('acc:', 3, rates)
+
+            # Plot accuracy
+            plt.plot(compare_num, acc, label=label)
+
+        plt.xlabel('Number of recognition/registration tests')
+        plt.ylabel('Accuarcy')
+        plt.title('Comparison of multiple evaluations')
+        plt.legend(loc=0)
 
         plt.show()
