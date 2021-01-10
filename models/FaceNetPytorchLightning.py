@@ -8,10 +8,10 @@ from pytorch_lightning.metrics import Metric
 
 from .FaceNet import FaceNet
 from constants import FACE_FEATURES
-
+from utils.FaceEmbedder import FaceEmbedder
 
 class LightningFaceNet(pl.LightningModule):
-    def __init__(self, hparams, num_classes, embedding_size=128, pretrained=False):
+    def __init__(self, hparams, num_classes, root, embedding_size=128, pretrained=False, transform=None):
         self.hparams = hparams
         super(LightningFaceNet, self).__init__()
         self.model = FaceNet(pretrained=pretrained, num_classes=num_classes, embedding_size=embedding_size)
@@ -19,6 +19,7 @@ class LightningFaceNet(pl.LightningModule):
         self.train_metric = EmbeddingAccuracy()
         self.val_metric = EmbeddingAccuracy()
         self.test_metric = EmbeddingAccuracy()
+        self.embedder = FaceEmbedder(root, transform)
 
     def forward(self, x):
         return self.model(x)
@@ -51,7 +52,7 @@ class LightningFaceNet(pl.LightningModule):
         accuracy, precision, recall, f1_score = self.train_metric.compute()
         self.log("train_epoch_acc", accuracy, prog_bar=True, logger=True)
         torch.save(self.state_dict(), './models/FaceNetOnLFW.pth')
-        
+        self.embedder.calculate_embedding()
 
     def validation_step(self, batch, batch_idx):
         loss = self.general_step(batch, "val")
