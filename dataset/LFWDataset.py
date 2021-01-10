@@ -39,6 +39,7 @@ class LFWDataset(Dataset):
     def __getitem__(self, idx):
         label = self.labels[idx]
         csv_dict = next(csv.DictReader(open('triplets.csv')))
+
         triplets = csv_dict[label]
         anchor = self.get_image(triplets[0][2:-1])
         positive = self.get_image(triplets[1][2:-1])

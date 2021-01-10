@@ -63,7 +63,7 @@ class FaceEmbedder():
         for i, label in enumerate(self.labels):
             triplets[label] = results[i]
 
-        with open("triplets.csv", "w") as f:
+        with open("triplets.csv", "w", newline='') as f:
             writer = csv.DictWriter(f, triplets.keys())
             writer.writeheader()
             writer.writerow(triplets)
@@ -112,6 +112,8 @@ class FaceEmbedder():
 
                 dist = np.linalg.norm(anchor - embedding)
                 diff = max(dist,diff) if find_max else min(dist, diff)
+                
+                assert isinstance(diff, int) or isinstance(diff, float), "is " + type(diff)
                 update = diff < prev if find_max else diff > prev
                 if update:
                         curr_path = img_path
@@ -121,7 +123,7 @@ class FaceEmbedder():
     def calculate_embedding(self):
         '''Creates CSV of all embeddings from all persons with latest model'''
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        embeddings = {} # key: label, value: [ (index, path_to_img ) ]
+        embeddings = {}
         np_arrays = []
         index = 0
         self.model = self.model.to(device)
