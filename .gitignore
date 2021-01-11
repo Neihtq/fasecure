@@ -147,3 +147,4 @@ dmypy.json
 *.ckpt
 *.csv
 *.zip
+*.npy
