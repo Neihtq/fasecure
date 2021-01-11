@@ -19,7 +19,7 @@ class LightningFaceNet(pl.LightningModule):
         self.train_metric = EmbeddingAccuracy()
         self.val_metric = EmbeddingAccuracy()
         self.test_metric = EmbeddingAccuracy()
-        self.embedder = FaceEmbedder(root, transform)
+        self.embedder = FaceEmbedder(root, transform=transform)
 
     def forward(self, x):
         return self.model(x)
@@ -51,7 +51,7 @@ class LightningFaceNet(pl.LightningModule):
     def training_epoch_end(self, training_step_outputs):
         accuracy, precision, recall, f1_score = self.train_metric.compute()
         self.log("train_epoch_acc", accuracy, prog_bar=True, logger=True)
-        torch.save(self.state_dict(), './models/FaceNetOnLFW.pth')
+        torch.save(self.model.state_dict(), './models/FaceNetOnLFW.pth')
         self.embedder.calculate_embedding()
 
     def validation_step(self, batch, batch_idx):

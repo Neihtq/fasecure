@@ -43,7 +43,6 @@ class LFWDataset(Dataset):
 
         triplet = csv_dict[label].split(',')
 
-        print(triplet[0][2:-1], triplet[1][2:-1], triplet[2][2:-2])
         anchor = self.get_image(triplet[0][2:-1])
         positive = self.get_image(triplet[1][2:-1])
         negative = self.get_image(triplet[2][2:-2])

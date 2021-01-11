@@ -20,7 +20,7 @@ ABSOLUTE_DIR = dirname(abspath(__file__))
 MODEL_DIR = os.path.join(ABSOLUTE_DIR, '..', 'models', 'FaceNetOnLFW.pth')
 
 class FaceEmbedder():
-    def __init__(self, root, transform=None):
+    def __init__(self, root, transform=None, init_update=True):
         self.root = root
         self.labels = []
         for label in listdir(root):
@@ -28,8 +28,11 @@ class FaceEmbedder():
             if len(listdir(img_path)) > 1:
                 self.labels.append(label)
         
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.transform = transform
-        self.update()
+        
+        if init_update:
+            self.update()
         
     def update(self):
         print("Create embedding space.")
@@ -46,7 +49,7 @@ class FaceEmbedder():
         return embedding, img_path
 
     def select_triplets(self):
-        self.embeddings_info = pd.read_csv('embeddings.csv')
+        self.embeddings_info = pd.read_csv('embeddings.csv', dtype={label: str for label in self.labels})
         with open('embeddings.npy', 'rb') as f:
             self.embeddings_np = np.load(f)
 
@@ -112,9 +115,8 @@ class FaceEmbedder():
 
     def calculate_embedding(self):
         '''Creates CSV of all embeddings from all persons with latest model'''
-        device = "cuda" if torch.cuda.is_available() else "cpu"
         model = FaceNet(num_classes=len(self.labels))
-        model = model.to(device)
+        model = model.to(self.device)
         if os.path.exists(MODEL_DIR):
             try:
                 model.load_state_dict(torch.load(MODEL_DIR))
@@ -129,7 +131,7 @@ class FaceEmbedder():
             for i in listdir(folder):
                 img_path = os.path.join(folder, i)
                 img = self.get_image(img_path)
-                img = img.reshape((1,) + tuple(img.shape)).to(device)
+                img = img.reshape((1,) + tuple(img.shape)).to(self.device)
 
                 embedding = model(img).detach().to("cpu").numpy()
                 np_arrays.append(embedding)
