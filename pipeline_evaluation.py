@@ -47,10 +47,16 @@ def evaluate_pipeline():
         registration_database = RegistrationDatabase(fixed_threshold=fixed_threshold)
         pipeline_evaluation = PipelineEvaluation(dataset_path, eval_log_path_fix,
                                             face_embedding_model, registration_database)
+<<<<<<< HEAD
+        pipeline_evaluation.run()
+        pipeline_evaluation.plot_results()
+        break
+=======
         #pipeline_evaluation.run()
         pipeline_evaluation.plot_results()
         #pipeline_evaluation.compare_evaluations()
         #sys.exit()
+>>>>>>> aca42eaedc15300e6f5369749745f3ef633f9f5a
 
 
 if __name__ == '__main__':

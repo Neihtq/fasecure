@@ -1,16 +1,27 @@
+import csv
 import os
 import random
 import torch
 import glob
+import pathlib
+import numpy as np
+import pandas as pd
 
 from os import listdir
+from os.path import dirname, abspath
 from PIL import Image
 from itertools import compress
 
 from torch.utils.data import Dataset
 from torchvision import transforms
     
-    
+from models.FaceNet import FaceNet
+
+from constants import FACE_FEATURES
+
+ABSOLUTE_DIR = dirname(abspath(__file__))
+MODEL_DIR = os.path.join(ABSOLUTE_DIR, '..', 'models', 'FaceNetOnLFW.pth')
+
 class LFWDataset(Dataset):
     def __init__(self, root, transform=None):
         self.root = root
@@ -19,26 +30,30 @@ class LFWDataset(Dataset):
             img_path = os.path.join(root, label)
             if len(listdir(img_path)) > 1:
                 self.labels.append(label)
+
+        self.labels = self.labels[:20]
         self.transform = transform
-        
+
     def __len__(self):
-        # returns amount of classes
         return len(self.labels)
     
     def __getitem__(self, idx):
         label = self.labels[idx]
-        folder = os.path.join(self.root, label)
-        img_path = os.path.join(folder, listdir(folder)[0])
-        anchor = self.get_image(img_path)
-        img_path = os.path.join(folder, listdir(folder)[1])
-        positive = self.get_image(img_path)
-        negative = self.get_negative(idx)
-        
+        csv_dict = next(csv.DictReader(open('triplets.csv')))
+
+        triplet = csv_dict[label].split(',')
+
+        anchor = self.get_image(triplet[0][2:-1])
+        positive = self.get_image(triplet[1][2:-1])
+        negative = self.get_image(triplet[2][2:-2])
+
         return label, anchor, positive, negative
         
     def get_image(self, img_path):
-        img = Image.open(img_path)
-       
+        '''Returns Pytorch.Tensor of image'''
+        img_path = pathlib.Path(img_path)
+        img = Image.open(img_path)      
+
         if self.transform:
             img = self.transform(img)
        
@@ -47,15 +62,6 @@ class LFWDataset(Dataset):
         
         return img
     
-    def get_negative(self, idx):
-        include = [n for n in range(0, len(self.labels)) if n != idx]
-        i = random.choice(include)
-        label = self.labels[i]
-        folder = os.path.join(self.root, label)
-        img_path = os.path.join(folder, listdir(folder)[0])
-    
-        return self.get_image(img_path)
-
 
 class LFWEvaluationDataset(Dataset):
     def __init__(self, root, transform=None, cropped_faces=False):
