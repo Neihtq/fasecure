@@ -29,19 +29,13 @@ class FaceEmbedder():
                 self.labels.append(label)
         
         self.transform = transform
-        self.model = FaceNet(num_classes=len(self.labels))
-        
-        if os.path.exists(MODEL_DIR):
-            try:
-                self.model.load_state_dict(torch.load(MODEL_DIR))
-            except:
-                print("Could not load pretrained model. Continue without weights")
-
         self.update()
         
     def update(self):
-        self.select_triplets()
+        print("Create embedding space.")
         self.calculate_embedding()
+        print("Create triplet selections.")
+        self.select_triplets()
 
     def get_embedding_and_path(self, info):
         infos = info.split(',')
@@ -76,14 +70,14 @@ class FaceEmbedder():
     def get_positive_and_anchor(self, label):
         diff = 0
         curr_anchor = ""
-        anchor_embedding = ""
+        anchor_embedding = np.zeros(128)
         curr_pos = ""
         for info in self.embeddings_info[label]:
             if pd.notnull(info):
                 embedding, anchor_path = self.get_embedding_and_path(info)
-                pos_path, diff_2 = self.finder(label, embedding)
-                if diff < diff_2:
-                    diff = diff_2
+                pos_path, dist = self.finder(label, embedding)
+                if dist > diff:
+                    diff = dist
                     curr_anchor = anchor_path
                     curr_pos = pos_path
                     anchor_embedding = embedding
@@ -95,39 +89,41 @@ class FaceEmbedder():
         neg_path = ""
         for l in self.labels:
             if l != label:
-                path, diff_2 = self.finder(l, anchor, find_max=False)
-                if diff > diff_2:
+                path, dist = self.finder(l, anchor, find_max=False)
+                if dist < diff:
                     neg_path = path
-                    diff = diff_2
+                    diff = dist
 
         return neg_path
 
     def finder(self, label, anchor, find_max=True):
         diff = 0 if find_max else float('inf')
-        prev = diff
         curr_path = ""
         for info in self.embeddings_info[label]:
             if pd.notnull(info):
                 embedding, img_path = self.get_embedding_and_path(info)
-
                 dist = np.linalg.norm(anchor - embedding)
-                diff = max(dist,diff) if find_max else min(dist, diff)
-                
-                assert isinstance(diff, int) or isinstance(diff, float), "is " + type(diff)
-                update = diff < prev if find_max else diff > prev
+                update = dist > diff if find_max else dist < diff
                 if update:
-                        curr_path = img_path
+                    diff = dist
+                    curr_path = img_path
         
         return curr_path, diff
 
     def calculate_embedding(self):
         '''Creates CSV of all embeddings from all persons with latest model'''
         device = "cuda" if torch.cuda.is_available() else "cpu"
+        model = FaceNet(num_classes=len(self.labels))
+        model = model.to(device)
+        if os.path.exists(MODEL_DIR):
+            try:
+                model.load_state_dict(torch.load(MODEL_DIR))
+            except:
+                print("Could not load pretrained model. Continue without weights")
+        
         embeddings = {}
         np_arrays = []
         index = 0
-        self.model = self.model.to(device)
-
         for label in self.labels:
             folder = os.path.join(self.root, label)
             for i in listdir(folder):
@@ -135,16 +131,16 @@ class FaceEmbedder():
                 img = self.get_image(img_path)
                 img = img.reshape((1,) + tuple(img.shape)).to(device)
 
-                embedding = self.model(img).detach().to("cpu").numpy()
-
+                embedding = model(img).detach().to("cpu").numpy()
                 np_arrays.append(embedding)
 
                 if not label in embeddings:
                     embeddings[label] = []
+
                 embeddings[label].append((index, img_path))
                 index += 1
 
-        df = pd.DataFrame(dict([ (k, pd.Series(v)) for k, v in embeddings.items()]))
+        df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in embeddings.items()]))
         df.to_csv('embeddings.csv', index=False)
 
         np_arrays = np.vstack(np_arrays)

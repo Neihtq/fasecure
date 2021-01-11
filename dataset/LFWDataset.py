@@ -31,6 +31,7 @@ class LFWDataset(Dataset):
             if len(listdir(img_path)) > 1:
                 self.labels.append(label)
 
+        self.labels = self.labels[:20]
         self.transform = transform
 
     def __len__(self):
@@ -40,10 +41,12 @@ class LFWDataset(Dataset):
         label = self.labels[idx]
         csv_dict = next(csv.DictReader(open('triplets.csv')))
 
-        triplets = csv_dict[label]
-        anchor = self.get_image(triplets[0][2:-1])
-        positive = self.get_image(triplets[1][2:-1])
-        negative = self.get_image(triplets[2][2:-2])
+        triplet = csv_dict[label].split(',')
+
+        print(triplet[0][2:-1], triplet[1][2:-1], triplet[2][2:-2])
+        anchor = self.get_image(triplet[0][2:-1])
+        positive = self.get_image(triplet[1][2:-1])
+        negative = self.get_image(triplet[2][2:-2])
 
         return label, anchor, positive, negative
         
