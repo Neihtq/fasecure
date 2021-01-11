@@ -31,7 +31,6 @@ class LFWDataset(Dataset):
             if len(listdir(img_path)) > 1:
                 self.labels.append(label)
 
-        self.labels = self.labels[:20]
         self.transform = transform
 
     def __len__(self):
