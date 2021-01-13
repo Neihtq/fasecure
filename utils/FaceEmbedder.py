@@ -11,7 +11,7 @@ from os.path import dirname, abspath
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
-from multiprocessing import Pool
+from torch.multiprocessing import Pool, set_start_method
 
 from models.FaceNet import FaceNet
 
@@ -41,21 +41,28 @@ class FaceEmbedder():
         self.select_triplets()
 
     def get_embedding_and_path(self, info):
-        infos = info.split(',')
-        index = int(infos[0][1:])
-        img_path = infos[1][2:-2]
-        embedding = self.embeddings_np[index]
+        index = int(info[0])
+        img_path = str(info[1])
+        embedding = self.embeddings[index]
         
         return embedding, img_path
 
     def select_triplets(self):
-        self.embeddings_info = pd.read_csv('embeddings.csv', dtype={label: str for label in self.labels})
-        with open('embeddings.npy', 'rb') as f:
-            self.embeddings_np = np.load(f)
-
-        pool = Pool(os.cpu_count())
-        results = pool.map(self.get_triplets, self.labels)
-
+        #self.embeddings_info = pd.read_csv('embeddings.csv', dtype={label: str for label in self.labels})
+        #with open('embeddings.npy', 'rb') as f:
+        #    self.embeddings_np = np.load(f)
+        
+        try:
+            set_start_method('spawn')
+        except RuntimeError:
+            print("Error with set_start_method(spawn")
+        
+        pool = Pool(processes=None)
+        results = pool.map(self.get_triplets, self.labels, 250)
+        #pool.close()
+        #pool.join()
+        
+        #results = list(results)
         triplets = {}
         for i, label in enumerate(self.labels):
             triplets[label] = results[i]
@@ -73,7 +80,7 @@ class FaceEmbedder():
     def get_positive_and_anchor(self, label):
         diff = 0
         curr_anchor = ""
-        anchor_embedding = np.zeros(128)
+        anchor_embedding = torch.zeros(128, device=torch.device(self.device))
         curr_pos = ""
         for info in self.embeddings_info[label]:
             if pd.notnull(info):
@@ -105,7 +112,7 @@ class FaceEmbedder():
         for info in self.embeddings_info[label]:
             if pd.notnull(info):
                 embedding, img_path = self.get_embedding_and_path(info)
-                dist = np.linalg.norm(anchor - embedding)
+                dist = torch.norm(anchor - embedding)
                 update = dist > diff if find_max else dist < diff
                 if update:
                     diff = dist
@@ -124,17 +131,17 @@ class FaceEmbedder():
                 print("Could not load pretrained model. Continue without weights")
         
         embeddings = {}
-        np_arrays = []
+        self.embeddings = []
         index = 0
         for label in self.labels:
             folder = os.path.join(self.root, label)
             for i in listdir(folder):
                 img_path = os.path.join(folder, i)
-                img = self.get_image(img_path)
-                img = img.reshape((1,) + tuple(img.shape)).to(self.device)
+                img = self.get_image(img_path).to(self.device)
+                img = img.unsqueeze(0)
 
-                embedding = model(img).detach().to("cpu").numpy()
-                np_arrays.append(embedding)
+                embedding = model(img).detach()
+                self.embeddings.append(embedding)
 
                 if not label in embeddings:
                     embeddings[label] = []
@@ -142,12 +149,13 @@ class FaceEmbedder():
                 embeddings[label].append((index, img_path))
                 index += 1
 
-        df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in embeddings.items()]))
-        df.to_csv('embeddings.csv', index=False)
+        self.embeddings_info = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in embeddings.items()]))
+        
+        #df.to_csv('embeddings.csv', index=False)
 
-        np_arrays = np.vstack(np_arrays)
-        with open ('embeddings.npy', 'wb') as f:
-            np.save(f, np_arrays)
+        #np_arrays = np.vstack(np_arrays)
+        #with open ('embeddings.npy', 'wb') as f:
+        #    np.save(f, np_arrays)
     
     def get_image(self, img_path):
         '''Returns Pytorch.Tensor of image'''
