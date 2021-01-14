@@ -38,15 +38,17 @@ class LFWDataset(Dataset):
     
     def __getitem__(self, idx):
         label = self.labels[idx]
-        csv_dict = next(csv.DictReader(open('triplets.csv')))
+        #csv_dict = next(csv.DictReader(open('triplets.csv')))
 
-        triplet = csv_dict[label].split(',')
+        #triplet = csv_dict[label].split(',')
 
-        anchor = self.get_image(triplet[0][2:-1])
-        positive = self.get_image(triplet[1][2:-1])
-        negative = self.get_image(triplet[2][2:-2])
+        #anchor = self.get_image(triplet[0][2:-1])
+        #positive = self.get_image(triplet[1][2:-1])
+        #negative = self.get_image(triplet[2][2:-2])
 
-        return label, anchor, positive, negative
+        path = os.path.join(self.root, label)
+
+        return label, path
         
     def get_image(self, img_path):
         '''Returns Pytorch.Tensor of image'''
