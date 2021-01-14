@@ -8,6 +8,7 @@ import torch.nn.functional as F
 from os.path import join, dirname, abspath
 
 from models.FaceNet import get_model
+from models.mobilenetv2 import mobilenetv2
 from models.RefFaceEmbeddingModel import RefFaceEmbeddingModel
 from registration_database.RegistrationDatabase import RegistrationDatabase
 from utils.prep import load_and_transform_img
@@ -31,10 +32,13 @@ from evaluation.PipelineEvaluation import PipelineEvaluation
 absolute_dir = dirname(abspath(__file__))
 
 def evaluate_pipeline():
+    anti_spoofing_model = mobilenetv2()
     ref_face_embedding_model = RefFaceEmbeddingModel()
     face_embedding_model = get_model().eval()
     dataset_path = join(absolute_dir, "data", "lfw_crop")
     eval_log_path = join(absolute_dir, "evaluation", "evaluation_results", "normal_model_with_fixed_threshold_")
+
+    sys.exit()
 
     if not os.path.exists(join(absolute_dir, "evaluation", "evaluation_results")):
         os.makedirs(join(absolute_dir, "evaluation", "evaluation_results"))

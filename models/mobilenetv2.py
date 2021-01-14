@@ -126,7 +126,7 @@ class MobileNetV2(nn.Module):
                 m.weight.data.normal_(0, 0.01)
                 m.bias.data.zero_()
 def load_weight(model,path):
-    checkpoint=torch.load(path)
+    checkpoint=torch.load(path,map_location=torch.device('cpu'))
     model_dict = {}
     state_dict = model.state_dict()
     for (k, v) in checkpoint.items():
@@ -135,14 +135,20 @@ def load_weight(model,path):
             model_dict[k] = v
     state_dict.update(model_dict)
     return state_dict
+
 def mobilenetv2():
+    x = torch.load('./pretrained_model/mobilenet_v2.pth.tar',map_location=torch.device('cpu'))
+    print(x.keys())
     model = MobileNetV2()
-#     model = torch.nn.DataParallel(model)
+    #model = torch.nn.DataParallel(model)
     pretrained = True
     if pretrained:
-        path = '../pretrained_model/mobilenet_v2.pth.tar'
-        state_dict = load_weight(model,path)
-        model.load_state_dict(state_dict,strict=True)
+        path = './pretrained_model/mobilenet_v2.pth.tar'
+        #state_dict = torch.load(path, map_location=torch.device('cpu')) 
+        #state_dict = load_weight(model,path)
+        # originally strict=True!!!
+        #model.load_state_dict(state_dict['state_dict'],strict=True)
+        model.load_state_dict(x['state_dict'],strict=True)
     return model
 # + Number of FLOPs: 0.31G
 # The network has 2226434 params.
