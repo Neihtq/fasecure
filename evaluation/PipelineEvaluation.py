@@ -102,10 +102,10 @@ class PipelineEvaluation():
             augmented_imgs = img_transform_augmentations(detected_face)     
         
             # Anti spoofing
-            input_spoofing = augmented_imgs[0].squeeze(0).numpy()
-            print("input_spoofing_shape: ", input_spoofing.shape)
-            check = self.anti_spoofing_model(input_spoofing)
-            print("check: ", check) 
+            # input_spoofing = augmented_imgs[0].squeeze(0).numpy()
+            # print("input_spoofing_shape: ", input_spoofing.shape)
+            # check = self.anti_spoofing_model(input_spoofing)
+            # print("check: ", check) 
 
             embedding = self.face_embedding_model(augmented_imgs[0])
 

@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+
 from os.path import join, dirname, abspath
 
 from models.FaceNet import get_model
@@ -17,11 +18,15 @@ from evaluation.PipelineEvaluation import PipelineEvaluation
 
 # todo
 # - mit neuen detection und alignment croppen und in ordner packen
-#
 
+## -------- Test --------------
+test = AntiSpoofingModel()
+check = test()
+print("check: ", check)
+
+sys.exit()
+## ----------------------
 from deepface import DeepFace
-# -------------------
-
 
 face_detection_model = DeepFace
 absolute_dir = dirname(abspath(__file__))

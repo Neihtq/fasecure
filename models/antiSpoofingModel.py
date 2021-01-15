@@ -8,112 +8,32 @@
 
 # Code Reference: https://medium.com/visionwizard/face-spoofing-detection-in-python-e46761fe5947
 
-# Questions:
-# - input: type and shape
-# - output: type and shape
+# Description:
+# - input: type (W,H,C) W and H doesn´t matter, C=3
+# - output: fake or real
 
 import numpy as np
 import cv2
 from sklearn.externals import joblib
 import torch.nn as nn
 
-
-# import sklearn
-# import sys
-
-# print(sklearn.__version__)
-# print("hello")
-
-# sys.exit()
-
-
-
-# modelFile = "pretrained_model/res10_300x300_ssd_iter_140000.caffemodel"
-# configFile = "pretrained_model/deploy.prototxt"
-# net = cv2.dnn.readNetFromCaffe(configFile, modelFile)
-# clf = joblib.load('pretrained_model/face_spoofing.pkl')
-# cap = cv2.VideoCapture(0)
-# # width = 320
-# # height = 240
-# # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-# # cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-
-# sample_number = 1
-# count = 0
-# measures = np.zeros(sample_number, dtype=np.float)
-
-# while True:
-#     ret, img = cap.read()
-#     print("Image: ", img)
-#     blob = cv2.dnn.blobFromImage(cv2.resize(img, (300, 300)), 1.0,(300, 300), (104.0, 177.0, 123.0))
-    
-#     net.setInput(blob)
-#     faces3 = net.forward()
-
-#     measures[count%sample_number]=0
-#     height, width = img.shape[:2]
-#     for i in range(faces3.shape[2]):
-#         confidence = faces3[0, 0, i, 2]
-#         if confidence > 0.5:
-#             box = faces3[0, 0, i, 3:7] * np.array([width, height, width, height])
-#             (x, y, x1, y1) = box.astype("int")
-#             # cv2.rectangle(img, (x, y), (x1, y1), (0, 0, 255), 5)
-#             roi = img[y:y1, x:x1]
-
-#             point = (0,0) 
-
-#             # input: numpy array
-#             # shape: ???
-            
-#             img_ycrcb = cv2.cvtColor(roi, cv2.COLOR_BGR2YCR_CB)
-#             img_luv = cv2.cvtColor(roi, cv2.COLOR_BGR2LUV)
-    
-#             ycrcb_hist = calc_hist(img_ycrcb)
-#             luv_hist = calc_hist(img_luv)
-    
-#             feature_vector = np.append(ycrcb_hist.ravel(), luv_hist.ravel())
-#             feature_vector = feature_vector.reshape(1, len(feature_vector))
-
-#             # feature_vector shape?
-    
-#             prediction = clf.predict_proba(feature_vector)
-#             prob = prediction[0][1]
-    
-#             measures[count % sample_number] = prob
-    
-#             cv2.rectangle(img, (x, y), (x1, y1), (255, 0, 0), 2)
-    
-#             point = (x, y-5)
-    
-#             print (measures, np.mean(measures))
-#             if 0 not in measures:
-#                 text = "True"
-#                 if np.mean(measures) >= 0.7:
-#                     text = "False"
-#                     font = cv2.FONT_HERSHEY_SIMPLEX
-#                     cv2.putText(img=img, text=text, org=point, fontFace=font, fontScale=0.9, color=(0, 0, 255),
-#                                 thickness=2, lineType=cv2.LINE_AA)
-#                 else:
-#                     font = cv2.FONT_HERSHEY_SIMPLEX
-#                     cv2.putText(img=img, text=text, org=point, fontFace=font, fontScale=0.9,
-#                                 color=(0, 255, 0), thickness=2, lineType=cv2.LINE_AA)
-        
-#     count+=1
-#     cv2.imshow('img_rgb', img)
-    
-#     key = cv2.waitKey(1)
-#     if key & 0xFF == 27:
-#         break
-
-# cap.release()
-# cv2.destroyAllWindows()
-
+# Problems: 
+# - I cannot open webcam with the code I have
+# - not sure if it works with scikit-learn 0.19.2
+# todo:
+# - build in live webcam procedure from Cao. Adapt init(delete face detection) and forward function(add input and delete face detection) and add text in live video
+# - delete my test function and pretrained_models from face detection
 
 
 class AntiSpoofingModel(nn.Module):
     def __init__(self):
         super(AntiSpoofingModel, self).__init__()
-        self.clf = joblib.load('pretrained_model/face_spoofing.pkl')
+        self.clf = joblib.load('./pretrained_model/face_spoofing.pkl')
+
+        #----------------
+        modelFile = "./pretrained_model/res10_300x300_ssd_iter_140000.caffemodel"
+        configFile = "./pretrained_model/deploy.prototxt"
+        self.net = cv2.dnn.readNetFromCaffe(configFile, modelFile)
 
     def calc_hist(self, img):
         histogram = [0] * 3
@@ -123,9 +43,38 @@ class AntiSpoofingModel(nn.Module):
             histogram[j] = histr
         return np.array(histogram)
 
-    def forward(self, x):
-        img_ycrcb = cv2.cvtColor(x, cv2.COLOR_BGR2YCR_CB)
-        img_luv = cv2.cvtColor(x, cv2.COLOR_BGR2LUV)
+    def forward(self):
+        #img_input = cv2.imread('C:/Users/Marco/Desktop/Master/3_semester/practical_course/skript/github_01/IBM/data/fake/celebrity_eins/WIN_20210114_15_59_04_Pro.jpg', cv2.IMREAD_COLOR)
+        img_input = cv2.imread('C:/Users/Marco/Desktop/Master/3_semester/practical_course/skript/github_01/IBM/data/lfw/Aaron_Eckhart/Aaron_Eckhart_0001.jpg', cv2.IMREAD_COLOR)
+        
+        # cv2.imshow('image', x)   
+
+        # k = cv2.waitKey(0) & 0xFF
+        # # wait for ESC key to exit
+        # if k == 27:
+        #     cv2.destroyAllWindows()    
+
+        blob = cv2.dnn.blobFromImage(cv2.resize(img_input, (300, 300)), 1.0,(300, 300), (104.0, 177.0, 123.0))
+        self.net.setInput(blob)
+        faces3 = self.net.forward()      
+
+
+        height, width = img_input.shape[:2]
+        box = faces3[0, 0, 0, 3:7] * np.array([width, height, width, height])
+        x, y, x1, y1 = box.astype("int")
+        roi = img_input[y:y1, x:x1]
+
+        cv2.imshow('image', roi)
+        k = cv2.waitKey(0) & 0xFF
+        # wait for ESC key to exit
+        if k == 27:
+            cv2.destroyAllWindows()
+
+        # roi is input (H,W,3(BGR)), numpy array
+
+
+        img_ycrcb = cv2.cvtColor(roi, cv2.COLOR_BGR2YCR_CB)
+        img_luv = cv2.cvtColor(roi, cv2.COLOR_BGR2LUV)
 
         ycrcb_hist = self.calc_hist(img_ycrcb)
         luv_hist = self.calc_hist(img_luv)
@@ -133,11 +82,10 @@ class AntiSpoofingModel(nn.Module):
         feature_vector = np.append(ycrcb_hist.ravel(), luv_hist.ravel())
         feature_vector = feature_vector.reshape(1, len(feature_vector))
 
-        # feature_vector shape?
-        print("Feature vector: ", feature_vector.shape)
-
         prediction = self.clf.predict_proba(feature_vector)
         prob = prediction[0][1]
+
+        print(prob)
 
         if prob >= 0.7:
             check = "fake"
