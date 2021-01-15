@@ -18,7 +18,7 @@ from sklearn.externals import joblib
 import torch.nn as nn
 
 # Problems: 
-# - I cannot open webcam with the code I have
+# - I cannot open webcam with the code I have (frame is type "None")
 # - not sure if it works with scikit-learn 0.19.2
 # todo:
 # - build in live webcam procedure from Cao. Adapt init(delete face detection) and forward function(add input and delete face detection) and add text in live video
