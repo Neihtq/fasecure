@@ -3,6 +3,8 @@ import torch
 import imutils
 import time
 import numpy as np
+import sys
+from face_alignment import FaceAlignment
 
 from os.path import join, dirname, abspath
 
@@ -16,6 +18,7 @@ def face_detection(callback=None):
 
     prev_frame_time = 0
     new_frame_time = 0
+    access = 0
 
     cam = cv2.VideoCapture(0)
     while True:
@@ -35,9 +38,11 @@ def face_detection(callback=None):
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
             start_x , start_y, end_x, end_y = box.astype("int")
                 
-
-            #cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), (0, 0, 255), 2)
-            frame = crop_img(frame, start_x-10, start_y-10, end_x+10, end_y+10)
+            color =(255, 0, 0)
+            stroke = 3
+            cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), color, stroke)
+            cropped_frame = crop_img(frame, start_x-20, start_y-20, end_x+20, end_y+20)
+            
 
             if callback:
                 tensor = callback(frame)
@@ -53,10 +58,32 @@ def face_detection(callback=None):
         prev_frame_time = new_frame_time
         fps = str(int(fps))
         cv2.putText(frame, fps, (7, 70), cv2.FONT_HERSHEY_SIMPLEX, 3, (100, 255, 0), 3, cv2.LINE_AA)
+        """
+        if cv2.waitKey(20) & 0xFF == ord('1'):
+            access = 1
+        if cv2.waitKey(20) & 0xFF == ord('2'):
+            access = 2
+        if cv2.waitKey(20) & 0xFF == ord('3'):
+            access = 0
 
+        if access == 1:
+            cv2.putText(frame, "User recognized - Access Granted!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 3, cv2.LINE_AA)#, bottomLeftOrigin=True)
+        elif access == 2:
+            cv2.putText(frame, "User not recognized - Access Denied!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3, cv2.LINE_AA)#, bottomLeftOrigin=True)
+        """
         cv2.imshow('Webcam', frame)
-
-        if cv2.waitKey(1) == 27:
+        """
+        take_shot = False
+        if cv2.waitKey(20) & 0xFF == ord('4'):
+            take_shot = True
+        if take_shot:
+            fa = FaceAlignment()
+            aligned_img = fa.align(cropped_frame)
+            img_item = "aligned-image.png"
+            cv2.imwrite(img_item, aligned_img)
+            take_shot = False
+        """
+        if cv2.waitKey(20) & 0xFF == 27:#ord('q'):
             break
 
     cam.release()
@@ -77,9 +104,7 @@ def crop_img(img, start_x, start_y, end_x, end_y):
     return crop_img
 
 
-    
-
-
 if __name__ == '__main__':
     face_detection()
+    sys.exit(0)
     
