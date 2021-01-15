@@ -23,6 +23,7 @@
 
 # --- Output: Overall Accuracy
 import torch
+import torch.nn as nn
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
@@ -38,11 +39,12 @@ from utils.prep import img_transform_augmentations
 
 
 class PipelineEvaluation():
-    def __init__(self, dataset_path, eval_log_path, face_embedding_model,
-                         registration_database, face_detection_model=None):
+    def __init__(self, dataset_path, eval_log_path, anti_spoofing_model,
+                         face_embedding_model, registration_database, face_detection_model=None):
         self.dataset_path = dataset_path
         self.eval_log_path = eval_log_path
         self.face_detection_model = face_detection_model
+        self.anti_spoofing_model = anti_spoofing_model
         self.face_embedding_model = face_embedding_model
         self.evaluation_database = registration_database
 
@@ -52,9 +54,10 @@ class PipelineEvaluation():
             self.skip_face_detection = True
         else:
             self.eval_dataset = LFWEvaluationDataset(self.dataset_path)
+            self.skip_face_detection = False
 
     def run(self):
-        subset_size = 10
+        subset_size = 1
         n_samples = int(self.eval_dataset.__len__()/subset_size)
         shuffled_indices = np.random.RandomState(seed=42).permutation(n_samples)
         eval_dataset_shuffled = torch.utils.data.Subset(self.eval_dataset, indices=shuffled_indices)   
@@ -78,9 +81,10 @@ class PipelineEvaluation():
         for i, (label, image_path) in enumerate(eval_loader):
             label = label[0]
             
-            # Face detection and alignment
-            if self.skip_face_detection:
+            # Skip, as already cropped
+            if self.skip_face_detection == True:
                 detected_face = image_path[0].unsqueeze(0)
+            # Use face detection and alignment model
             else:
                 try:
                     detected_face_numpy = self.face_detection_model.detectFace(image_path[0])
@@ -95,8 +99,14 @@ class PipelineEvaluation():
             
             detected_face = detected_face.to(device)
 
+            augmented_imgs = img_transform_augmentations(detected_face)     
+        
+            # Anti spoofing
+            input_spoofing = augmented_imgs[0].squeeze(0).numpy()
+            print("input_spoofing_shape: ", input_spoofing.shape)
+            check = self.anti_spoofing_model(input_spoofing)
+            print("check: ", check) 
 
-            augmented_imgs = img_transform_augmentations(detected_face)            
             embedding = self.face_embedding_model(augmented_imgs[0])
 
             # Face recognition
