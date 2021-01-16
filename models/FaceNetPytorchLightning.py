@@ -17,38 +17,37 @@ class LightningFaceNet(pl.LightningModule):
         self.hparams = hparams
         super(LightningFaceNet, self).__init__()
         self.model = FaceNet(pretrained=pretrained, num_classes=num_classes, embedding_size=embedding_size)
-        self.criterion = nn.TripletMarginLoss(margin=self.hparams["margin"], p=2)
+        #self.criterion = nn.TripletMarginLoss(margin=self.hparams["margin"], p=2)
         self.train_metric = EmbeddingAccuracy()
         self.val_metric = EmbeddingAccuracy()
         self.test_metric = EmbeddingAccuracy()
-        self.embedder = FaceEmbedder(root, transform=transform)
-
-        self.mining_func = miners.TripletMarginMiner(margin=0.2, type_of_triplets="hard")
+        
+        self.loss_func = losses.TripletMarginLoss()
+        self.miner = miners.BatchHardMiner()
 
     def forward(self, x):
         return self.model(x)
         
     def general_step(self, batch, mode):
-        label, anchor, positive, negative = batch
+        labels, data = batch
         
-        anchor_enc = self.forward(anchor)
-        pos_enc = self.forward(positive)
-        neg_enc = self.forward(negative)
+        embeddings = self.forward(data)
+        triplets = self.minder(embeddings, labels)
+
+        loss = loss_func(embeddings, labels, triplets)
         
-        indices_tuple = mining_func(embeddings, labels)
-
-        loss = self.criterion(anchor_enc, pos_enc, neg_enc)
-
         if mode == 'train':
-            self.train_metric(anchor_enc, pos_enc, neg_enc)
+            self.train_metric(triplets)
         elif mode == 'val':
-            self.val_metric(anchor_enc, pos_enc, neg_enc)
+            self.val_metric(triplets)
         else:
-            self.test_metric(anchor_enc, pos_enc, neg_enc)
+            self.test_metric(triplets)
 
         return loss
     
     def training_step(self, batch, batch_idx):
+        label, path = batch
+        
         loss = self.general_step(batch, "train")
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
 

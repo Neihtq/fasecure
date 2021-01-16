@@ -15,6 +15,55 @@ ABSOLUTE_DIR = dirname(abspath(__file__))
 MODEL_DIR = os.path.join(ABSOLUTE_DIR, '..', 'models', 'FaceNetOnLFW.pth')
 
 
+def pairwise_distance(embeddings):
+    dot_product = torch.dot(embeddings, torch.transpose(embeddings))
+    square_norm = torch.diagonal(dot_product)
+    
+    # Compute the pairwise distance matrix as we have:
+    # ||a - b||^2 = ||a||^2  - 2 <a, b> + ||b||^2
+    # shape (batch_size, batch_size)
+    distances = square_norm.unsqueeze(0) - 2.0 * dot_product + square_norm.unsqueeze(1)
+    # cross out negative distances
+    distances = torch.maximum(distances, 0,0)
+
+    mask = torch.eq(distances, 0.0).double()
+    
+    distances = distances + mask * 1e-16
+    distances = torch.sqrt(distances)
+    distances = distances * (1.0 - mask)
+
+    return distances
+
+def get_anchor_positive_triplet_mask(labels):
+    indices_equal = torch.eye(labels.shape[0]).type(torch.BoolTensor)
+    indices_not_equal = torch.logical_not(indices_equal)
+
+    labels_equal = torch.eq(labels.unsqueeze(1))
+
+    mask = torch.logical_and(indices_not_equal, labels_equal)
+
+    return mask
+
+def get_anchor_negative_triplet_mask(labels):
+    labels_equal = torch.eq(labels.unsqueeze(0), labels.unsqueeze(1))
+    mask = torch.logical_not(labels_equal)
+
+    return mask
+
+def batch_hard_triplet_loss(labels, embeddings, margin):
+    pairwise_dist = pairwise_dist(embeddings)
+
+    mask_anchor_positive = get_anchor_positive_triplet_mask(labels).double()
+    anchor_positive_dist = mask_anchor_positive * pairwise_dist
+    hardest_positive_dist = torch.amax(anchor_positive_dist, 1, keepdim=True)
+
+    mask_anchor_negative = get_anchor_negative_triplet_mask(labels).double()
+    max_anchor_negative_dist = torch.amax(pairwise_dist, 1, keepdim=True)
+    anchor_negative_dist = pairwise_dist + max_anchor_negative_dist * (1.0 - mask_anchor_negative)
+
+
+
+
 def collate_fn(batch):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     root = os.path.join(ABSOLUTE_DIR, '..', 'data', 'lfw_crop')

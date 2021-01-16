@@ -25,30 +25,26 @@ MODEL_DIR = os.path.join(ABSOLUTE_DIR, '..', 'models', 'FaceNetOnLFW.pth')
 class LFWDataset(Dataset):
     def __init__(self, root, transform=None):
         self.root = root
-        self.labels = []
-        for label in listdir(root):
-            img_path = os.path.join(root, label)
-            if len(listdir(img_path)) > 1:
-                self.labels.append(label)
+        self.label_to_number = {}
+        self.data = []
+        for i, label in enumerate(listdir(root)):
+            self.label_to_number[i] = label
+            label_path = os.path.join(root, label)
+            for img in listdir(label_path):
+                img_path = os.path.join(label_path, img)
+                self.data.append((i, img_path))
 
         self.transform = transform
+        
 
     def __len__(self):
-        return len(self.labels)
+        return len(self.data)
     
     def __getitem__(self, idx):
-        label = self.labels[idx]
-        #csv_dict = next(csv.DictReader(open('triplets.csv')))
+        label, img_path = self.data[idx]
+        img = self.get_image(img_path)
 
-        #triplet = csv_dict[label].split(',')
-
-        #anchor = self.get_image(triplet[0][2:-1])
-        #positive = self.get_image(triplet[1][2:-1])
-        #negative = self.get_image(triplet[2][2:-2])
-
-        path = os.path.join(self.root, label)
-
-        return label, path
+        return label, img
         
     def get_image(self, img_path):
         '''Returns Pytorch.Tensor of image'''
