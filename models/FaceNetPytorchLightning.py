@@ -5,8 +5,7 @@ import pytorch_lightning as pl
 
 from os import listdir
 from pytorch_lightning.metrics import Metric
-from pytorch_metric_learning import losses, miners, distances, reducers, testers
-from pytorch_metric_learning.utils.accuracy_calculator import AccuracyCalculator
+from online_triplet_loss.losses import batch_hard_triplet_loss
 
 from .FaceNet import FaceNet
 from constants import FACE_FEATURES
@@ -17,13 +16,11 @@ class LightningFaceNet(pl.LightningModule):
         self.hparams = hparams
         super(LightningFaceNet, self).__init__()
         self.model = FaceNet(pretrained=pretrained, num_classes=num_classes, embedding_size=embedding_size)
-        #self.criterion = nn.TripletMarginLoss(margin=self.hparams["margin"], p=2)
         self.train_metric = EmbeddingAccuracy()
         self.val_metric = EmbeddingAccuracy()
         self.test_metric = EmbeddingAccuracy()
         
-        self.loss_func = losses.TripletMarginLoss()
-        self.miner = miners.BatchHardMiner()
+        self.loss_func = batch_hard_triplet_loss
 
     def forward(self, x):
         return self.model(x)
@@ -32,16 +29,16 @@ class LightningFaceNet(pl.LightningModule):
         labels, data = batch
         
         embeddings = self.forward(data)
-        triplets = self.minder(embeddings, labels)
+        triplets = self.loss_func(labels, embeddings, margin=self.hparams["margin"])
 
-        loss = loss_func(embeddings, labels, triplets)
+        #loss = loss_func(embeddings, labels, triplets)
         
         if mode == 'train':
-            self.train_metric(triplets)
+            self.train_metric(triplets[0], triplets[1], triplets[2])
         elif mode == 'val':
-            self.val_metric(triplets)
+            self.val_metric(triplets[0], triplets[1], triplets[2])
         else:
-            self.test_metric(triplets)
+            self.test_metric(triplets[0], triplets[1], triplets[2])
 
         return loss
     
@@ -56,8 +53,7 @@ class LightningFaceNet(pl.LightningModule):
     def training_epoch_end(self, training_step_outputs):
         accuracy, precision, recall, f1_score = self.train_metric.compute()
         self.log("train_epoch_acc", accuracy, prog_bar=True, logger=True)
-        #torch.save(self.model.state_dict(), './models/FaceNetOnLFW.pth')
-        #self.embedder.calculate_embedding()
+
 
     def validation_step(self, batch, batch_idx):
         loss = self.general_step(batch, "val")
