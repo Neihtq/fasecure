@@ -77,9 +77,6 @@ def crop_img(img, start_x, start_y, end_x, end_y):
     return crop_img
 
 
-    
-
-
 if __name__ == '__main__':
     face_detection()
     
