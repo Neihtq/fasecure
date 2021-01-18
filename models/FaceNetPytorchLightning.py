@@ -81,7 +81,7 @@ class LightningFaceNet(pl.LightningModule):
 
 
 class EmbeddingAccuracy(Metric):
-    def __init__(self, threshold=0.2):
+    def __init__(self, threshold=1.242):
         super().__init__()
         self.threshold = threshold
         self.add_state("false_positive", default=torch.tensor(0), dist_reduce_fx="sum")

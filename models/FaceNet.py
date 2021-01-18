@@ -38,9 +38,6 @@ class Flatten(nn.Module):
 class FaceNet(nn.Module):
     def __init__(self, pretrained=False, num_classes=500, embedding_size=128):
         super(FaceNet, self).__init__()
-
-        # pretrained is false by default, as I only need the architecture of Resnet50 and not the parameters
-        # Parameters are loaded by download from github
         self.model = resnet50(pretrained)
         self.cnn = nn.Sequential(
             self.model.conv1,
@@ -54,7 +51,6 @@ class FaceNet(nn.Module):
         )
 
         #num_classes=1680
-        # modify fc layer based on https://arxiv.org/abs/1703.07737
         fc_dim = 2048 * 8 * 8
         if pretrained:
             fc_dim = 100352

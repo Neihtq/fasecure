@@ -34,10 +34,10 @@ def evaluate_pipeline():
     ref_face_embedding_model = RefFaceEmbeddingModel()
     face_embedding_model = get_model().eval()
     dataset_path = join(absolute_dir, "data", "lfw_crop")
-    eval_log_path = join(absolute_dir, "evaluation", "evaluation_results", "normal_model_with_fixed_threshold_")
+    eval_log_path = join(absolute_dir, "evaluation", "results", "normal_model_with_fixed_threshold_")
 
-    if not os.path.exists(join(absolute_dir, "evaluation", "evaluation_results")):
-        os.makedirs(join(absolute_dir, "evaluation", "evaluation_results"))
+    if not os.path.exists(join(absolute_dir, "evaluation", "results")):
+        os.makedirs(join(absolute_dir, "evaluation", "results"))
 
     # loop over different fixed thresholds to find the one resulting in the highest accuracy
     thresholds = [98.5]

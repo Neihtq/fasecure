@@ -22,6 +22,7 @@ from constants import FACE_FEATURES
 ABSOLUTE_DIR = dirname(abspath(__file__))
 MODEL_DIR = os.path.join(ABSOLUTE_DIR, '..', 'models', 'FaceNetOnLFW.pth')
 
+
 class LFWDataset(Dataset):
     def __init__(self, root, transform=None):
         self.root = root
@@ -36,7 +37,6 @@ class LFWDataset(Dataset):
 
         self.transform = transform
         
-
     def __len__(self):
         return len(self.data)
     
@@ -82,7 +82,6 @@ class LFWEvaluationDataset(Dataset):
         self.image_filenames = list(compress(self.image_filenames, self.mask))
 
     def __len__(self):
-        # returns amount of classes
         return len(self.labels)
     
     def __getitem__(self, idx):

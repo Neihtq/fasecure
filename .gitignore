@@ -148,3 +148,5 @@ dmypy.json
 *.csv
 *.zip
 *.npy
+
+tb_logs/*
