@@ -20,6 +20,9 @@ facenet = "*"
 align = "*"
 numpy = "==1.19.3"
 scikit-metrics = "*"
+pytorch-metric-learning = "*"
+online-triplet-loss = "*"
+faiss-gpu = "*"
 
 [requires]
 python_version = "3.7"
