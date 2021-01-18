@@ -1,21 +1,7 @@
+import os
 import cv2 
 import torch 
-import torch.nn as nn
-import torch.nn.functional as F 
 import numpy as np
-
-from torch.autograd import Variable
-from deepface import DeepFace
-
-
-def face_alignment(imgname):
-    '''Rotates the image as much necessary that you could draw a straight line between the two eyes
-    input: path to image
-    return: 224 x 224 x 3 image
-    '''
-    detected_face = DeepFace.detectFace(imgname)
-    return detected_face
-
 
 def predict_transform(prediction, in_dim, anchors, num_classes, device="cpu"):
     batch_size = prediction.size(0)

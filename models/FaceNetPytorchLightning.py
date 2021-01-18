@@ -15,34 +15,35 @@ class LightningFaceNet(pl.LightningModule):
         self.hparams = hparams
         super(LightningFaceNet, self).__init__()
         self.model = FaceNet(pretrained=pretrained, num_classes=num_classes, embedding_size=embedding_size)
-        self.criterion = nn.TripletMarginLoss(margin=self.hparams["margin"], p=2)
         self.train_metric = EmbeddingAccuracy()
         self.val_metric = EmbeddingAccuracy()
         self.test_metric = EmbeddingAccuracy()
-        self.embedder = FaceEmbedder(root, transform=transform)
+        
+        self.loss_func = nn.TripletMaringLoss()
 
     def forward(self, x):
         return self.model(x)
         
     def general_step(self, batch, mode):
-        label, anchor, positive, negative = batch
+        labels, data = batch
         
-        anchor_enc = self.forward(anchor)
-        pos_enc = self.forward(positive)
-        neg_enc = self.forward(negative)
-        
-        loss = self.criterion(anchor_enc, pos_enc, neg_enc)
+        embeddings = self.forward(data)
+        anchor, positive, negative = self.loss_func(labels, embeddings, margin=self.hparams["margin"])
 
+        loss = self.loss_func(anchor, positive, negative)
+        
         if mode == 'train':
-            self.train_metric(anchor_enc, pos_enc, neg_enc)
+            self.train_metric(anchor, positive, negative)
         elif mode == 'val':
-            self.val_metric(anchor_enc, pos_enc, neg_enc)
+            self.val_metric(anchor, positive, negative)
         else:
-            self.test_metric(anchor_enc, pos_enc, neg_enc)
+            self.test_metric(anchor, positive, negative)
 
         return loss
     
     def training_step(self, batch, batch_idx):
+        label, path = batch
+        
         loss = self.general_step(batch, "train")
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
 
@@ -51,8 +52,6 @@ class LightningFaceNet(pl.LightningModule):
     def training_epoch_end(self, training_step_outputs):
         accuracy, precision, recall, f1_score = self.train_metric.compute()
         self.log("train_epoch_acc", accuracy, prog_bar=True, logger=True)
-        torch.save(self.model.state_dict(), './models/FaceNetOnLFW.pth')
-        self.embedder.calculate_embedding()
 
     def validation_step(self, batch, batch_idx):
         loss = self.general_step(batch, "val")
@@ -82,7 +81,7 @@ class LightningFaceNet(pl.LightningModule):
 
 
 class EmbeddingAccuracy(Metric):
-    def __init__(self, threshold=0.2):
+    def __init__(self, threshold=1.242):
         super().__init__()
         self.threshold = threshold
         self.add_state("false_positive", default=torch.tensor(0), dist_reduce_fx="sum")

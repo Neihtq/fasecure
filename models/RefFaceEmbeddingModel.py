@@ -22,7 +22,6 @@ class RefFaceEmbeddingModel(nn.Module):
         x = self.linear(x)
         features = self.l2_norm(x)
 
-        # Multiply by alpha = 10 as suggested in https://arxiv.org/pdf/1703.09507.pdf
         alpha = 10
         features = features * alpha
         return features

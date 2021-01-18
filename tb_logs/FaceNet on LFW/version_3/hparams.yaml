@@ -1,3 +1,0 @@
-lr: 0.001
-margin: 1
-optimizer: Adam
