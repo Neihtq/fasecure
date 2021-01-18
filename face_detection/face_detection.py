@@ -7,6 +7,10 @@ import sys
 from face_alignment import FaceAlignment
 
 from os.path import join, dirname, abspath
+from face_recognition.faceEmbeddingModel import faceEmbeddingModel
+from face_recognition.reg_database import RegistrationDatabase
+from face_recognition.prep import load_and_transform_img
+
 
 absolute_dir = dirname(abspath(__file__))
 PROTO_TXT = join(absolute_dir, "model", "deploy.prototxt")
@@ -71,8 +75,13 @@ def face_detection(callback=None):
         elif access == 2:
             cv2.putText(frame, "User not recognized - Access Denied!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3, cv2.LINE_AA)#, bottomLeftOrigin=True)
         """
-        cv2.imshow('Webcam', frame)
         """
+        #pretrained model
+        embedding_model = faceEmbeddingModel().eval()
+        """
+
+        cv2.imshow('Webcam', frame)
+        
         take_shot = False
         if cv2.waitKey(20) & 0xFF == ord('4'):
             take_shot = True
@@ -82,7 +91,7 @@ def face_detection(callback=None):
             img_item = "aligned-image.png"
             cv2.imwrite(img_item, aligned_img)
             take_shot = False
-        """
+        
         if cv2.waitKey(20) & 0xFF == 27:#ord('q'):
             break
 
