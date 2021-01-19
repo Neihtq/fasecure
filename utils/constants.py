@@ -1,1 +1,0 @@
-FACE_FEATURES = {}
