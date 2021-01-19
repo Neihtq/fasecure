@@ -4,12 +4,11 @@ import imutils
 import time
 import numpy as np
 import sys
-from face_alignment import FaceAlignment
+from face_detection.face_alignment import FaceAlignment
 
 from os.path import join, dirname, abspath
-from face_recognition.faceEmbeddingModel import faceEmbeddingModel
-from face_recognition.reg_database import RegistrationDatabase
-from face_recognition.prep import load_and_transform_img
+from models.FaceNet import FaceNet
+from registration_database.RegistrationDatabase import RegistrationDatabase
 
 
 absolute_dir = dirname(abspath(__file__))
@@ -44,8 +43,7 @@ def face_detection(callback=None):
                 
             color =(255, 0, 0)
             stroke = 3
-            cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), color, stroke)
-            cropped_frame = crop_img(frame, start_x-20, start_y-20, end_x+20, end_y+20)
+            cv2.rectangle(frame, (start_x-30, start_y-30), (end_x+30, end_y+30), color, stroke)
             
 
             if callback:
@@ -62,35 +60,69 @@ def face_detection(callback=None):
         prev_frame_time = new_frame_time
         fps = str(int(fps))
         cv2.putText(frame, fps, (7, 70), cv2.FONT_HERSHEY_SIMPLEX, 3, (100, 255, 0), 3, cv2.LINE_AA)
+        
         """
         if cv2.waitKey(20) & 0xFF == ord('1'):
-            access = 1
+            #access = 1
+            cv2.putText(frame, "User recognized - Access Granted!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 3, cv2.LINE_AA)
         if cv2.waitKey(20) & 0xFF == ord('2'):
             access = 2
-        if cv2.waitKey(20) & 0xFF == ord('3'):
-            access = 0
-
+            cv2.putText(frame, "User not recognized - Access Denied!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3, cv2.LINE_AA)
+        #if cv2.waitKey(20) & 0xFF == ord('3'):
+        #    access = 0
+        
+        
         if access == 1:
-            cv2.putText(frame, "User recognized - Access Granted!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 3, cv2.LINE_AA)#, bottomLeftOrigin=True)
+            cv2.putText(frame, "User recognized - Access Granted!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 3, cv2.LINE_AA)
         elif access == 2:
-            cv2.putText(frame, "User not recognized - Access Denied!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3, cv2.LINE_AA)#, bottomLeftOrigin=True)
+            cv2.putText(frame, "User not recognized - Access Denied!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3, cv2.LINE_AA)
         """
-        """
-        #pretrained model
-        embedding_model = faceEmbeddingModel().eval()
-        """
-
+        
         cv2.imshow('Webcam', frame)
         
         take_shot = False
+        
         if cv2.waitKey(20) & 0xFF == ord('4'):
             take_shot = True
         if take_shot:
+            #crop image
+            cropped_inference = crop_img(frame, start_x-20, start_y-20, end_x+20, end_y+20)
+            #align image
             fa = FaceAlignment()
-            aligned_img = fa.align(cropped_frame)
+            cropped_aligned_inference = fa.align(cropped_inference)
             img_item = "aligned-image.png"
-            cv2.imwrite(img_item, aligned_img)
+            cv2.imwrite(img_item, cropped_aligned_inference)
+            
+            
+            #pretrained model
+            embedding_model = FaceNet()
+            embedding_model.eval()
+            
+            tensor_cropped_aligned_inference = torch.from_numpy(cropped_aligned_inference).double()
+
+            #inference_embedding_tensor = embedding_model(tensor_cropped_aligned_inference.permute(2, 1, 0).unsqueeze(0))
+            test_tensor = tensor_cropped_aligned_inference.permute(2, 1, 0).unsqueeze(0)
+            print(test_tensor.type())
+            print(test_tensor.shape)
+            
+            """
+            #registration and recognition
+            database = RegistrationDatabase()
+
+            #registration
+            #newname = "Cao"
+            #database.face_registration(newname, inference_embedding_tensor)
+
+            #inference to recognition process
+            closest_label, check = database.face_recognition(inference_embedding_tensor)
+            if check == 'Access':
+                cv2.putText(frame, "User recognized - " + closest_label + " - Access Granted!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 3, cv2.LINE_AA)#, bottomLeftOrigin=True)
+            elif check == 'Decline':
+                cv2.putText(frame, "User not recognized - Access Denied!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3, cv2.LINE_AA)#, bottomLeftOrigin=True)
             take_shot = False
+            """
+            
+        
         
         if cv2.waitKey(20) & 0xFF == 27:#ord('q'):
             break
@@ -109,7 +141,7 @@ def detect(image, net):
 def crop_img(img, start_x, start_y, end_x, end_y):
     height, width = end_y - start_y, end_x - start_x
     crop_img = img[start_y:start_y+height, start_x:start_x+width]
-    crop_img = cv2.resize(crop_img, (400, 400))
+    crop_img = cv2.resize(crop_img, (250, 250))
     return crop_img
 
 

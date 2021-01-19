@@ -3,11 +3,13 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+#from face_detection.face_detection import face_detection
+#from face_recognition.faceEmbeddingModel import faceEmbeddingModel
+#from face_recognition.prep import load_and_transform_img, show_tensor_img
+#from face_recognition.reg_database import RegistrationDatabase
+#from face_recognition.reg_dataset import RegistrationDataset
+
 from face_detection.face_detection import face_detection
-from face_recognition.faceEmbeddingModel import faceEmbeddingModel
-from face_recognition.prep import load_and_transform_img, show_tensor_img
-from face_recognition.reg_database import RegistrationDatabase
-from face_recognition.reg_dataset import RegistrationDataset
 
 def main():
     embedding_model = faceEmbeddingModel()
@@ -22,4 +24,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    #main()
+    face_detection()

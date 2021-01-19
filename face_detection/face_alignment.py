@@ -6,7 +6,7 @@ from PIL import Image
 class FaceAlignment():         
     def __init__(self):
         self.detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor('shape_predictor_5_face_landmarks.dat')
+        self.predictor = dlib.shape_predictor('face_detection/shape_predictor_5_face_landmarks.dat')
     
     def shape_to_normal(self, shape):
         shape_normal = []
