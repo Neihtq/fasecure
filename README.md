@@ -1,7 +1,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/othneildrew/Best-README-Template">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="images/logo.png" alt="Logo" width="100" height="100">
   </a>
 
   <h3 align="center">Face Recognition with FaceNet</h3>
@@ -187,13 +187,22 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <!-- CONTACT -->
 # Contact
 
-Quang Thien Nguyen - [@Neihtq](https://github.com/Neihtq - q.thien.nguyen@outlook.de)
+Cao Son Ngoc Pham - [@cacao](https://github.com/xcacao) - caoson@hotmail.de -
+<a href="https://www.linkedin.com/in/xcacao/">
+    <img height=17 src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
+</a>
 
-Cao Son Ngoc Pham - [@cao]() - cao@cao.cao
+Quang Thien Nguyen - [@Neihtq](https://github.com/Neihtq) - q.thien.nguyen@outlook.de - <a href="https://www.linkedin.com/in/thien-quang-nguyen-808101143/">
+    <img height=17 src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
+</a>
 
-Simon Felderer - [SF]() - simon@felder.com
+Simon Felderer - [@simonfelderer](https://github.com/simonfelderer) - simon.felderer@tum.de - <a href="https://www.linkedin.com/in/simon-felderer-976b9b154/">
+    <img height=17 src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
+</a>
 
-Tobias Zeulner - [TZ]() - tobia@zeulner.com
+Tobias Zeulner - [@Zeulni](https://github.com/Zeulni) - ge93yan@mytum.de - <a href="https://www.linkedin.com/in/tobias-zeulner-893080169/">
+    <img height=17 src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
+</a>
 
 
 ## Acknowledgements
@@ -202,21 +211,3 @@ Tobias Zeulner - [TZ]() - tobia@zeulner.com
 * [Face Recognition using Tensorflow](https://github.com/davidsandberg/facenet)
 * [Best-README-Template](https://github.com/othneildrew/Best-README-Template)
 * [Pretrained Weight for Face Recognition, also heavily inspired in terms of building the archecture](https://github.com/tbmoon/facenet)
-
-
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-url]: https://github.com/Neihtq/IBM-labcourse/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
-[forks-url]: https://github.com/Neihtq/IBM-labcourse/network/members
-[stars-shield]: https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge
-[stars-url]: https://github.com/Neihtq/IBM-labcourse/stargazers
-[issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
-[issues-url]: https://github.com/Neihtq/IBM-labcourse/issues
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
-[license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/othneildrew
-[product-screenshot]: images/screenshot.png
