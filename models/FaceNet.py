@@ -50,7 +50,6 @@ class FaceNet(nn.Module):
             self.model.layer4
         )
 
-        #num_classes=1680
         fc_dim = 2048 * 8 * 8
         if pretrained:
             fc_dim = 100352
@@ -70,40 +69,6 @@ class FaceNet(nn.Module):
         _output = torch.div(input, norm.view(-1, 1).expand_as(input))
         output = _output.view(input_size)
         return output
-
-    def freeze_all(self):
-        for param in self.model.parameters():
-            param.requires_grad = False
-
-    def unfreeze_all(self):
-        for param in self.model.parameters():
-            param.requires_grad = True
-
-    def freeze_fc(self):
-        for param in self.model.fc.parameters():
-            param.requires_grad = False
-
-    def unfreeze_fc(self):
-        for param in self.model.fc.parameters():
-            param.requires_grad = True
-
-    def freeze_only(self, freeze):
-        for name, child in self.model.named_children():
-            if name in freeze:
-                for param in child.parameters():
-                    param.requires_grad = False
-            else:
-                for param in child.parameters():
-                    param.requires_grad = True
-
-    def unfreeze_only(self, unfreeze):
-        for name, child in self.model.named_children():
-            if name in unfreeze:
-                for param in child.parameters():
-                    param.requires_grad = True
-            else:
-                for param in child.parameters():
-                    param.requires_grad = False
 
     def forward(self, x):
         x = self.cnn(x)
