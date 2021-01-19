@@ -35,7 +35,7 @@ def face_detection(callback=None):
     new_frame_time = 0
     access = 0
 
-    cam = cv2.VideoCapture(1)
+    cam = cv2.VideoCapture(0)
 
     while True:
         _, frame = cam.read()
@@ -80,15 +80,19 @@ def face_detection(callback=None):
         # if key "6" pressed, then take current frame and register user as "tobias"      
         if cv2.waitKey(20) & 0xFF == ord('6'):
             embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
+            if embedding == None:
+                continue
             label = "tobias"
             register(augmented_imgs, label)
 
         # if key "7" pressed, then take current frame and register user as "cao"    
         if cv2.waitKey(20) & 0xFF == ord('7'):
             embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
+            if embedding == None:
+                continue
             label = "cao"
             register(augmented_imgs, label)
-            
+        """    
         # if key "8" pressed, then take current frame and register user as "thien"
         if cv2.waitKey(20) & 0xFF == ord('8'):
             embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
@@ -100,7 +104,7 @@ def face_detection(callback=None):
             embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
             label = "simon"
             register(augmented_imgs, label)
-
+        """
 
         # if key "r" pressed, then reset the database
         if cv2.waitKey(20) & 0xFF == ord('c'):           
@@ -115,14 +119,17 @@ def face_detection(callback=None):
         if cv2.waitKey(20) & 0xFF == ord('1'):
 
             embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
+            if embedding == None:
+                continue
             closest_label, check = registration_database.face_recognition(embedding)
 
             if check == 'Access':
                 print("User recognized - " + closest_label + " - Access Granted!")
-                #cv2.putText(frame, "User recognized - " + closest_label + " - Access Granted!", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3, cv2.LINE_AA)
+                
+                cv2.putText(frame, "User recognized - " + closest_label + " - Access Granted!", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3, cv2.LINE_AA)
             elif check == 'Decline':
                 print("User not recognized - Access Denied!")
-                #cv2.putText(frame, "User not recognized - Access Denied!", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3, cv2.LINE_AA)
+                cv2.putText(frame, "User not recognized - Access Denied!", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3, cv2.LINE_AA)
             
         
         if cv2.waitKey(20) & 0xFF == ord('q'):
@@ -151,6 +158,10 @@ def align_embed(frame, start_x, start_y, end_x, end_y):
     #align image
     
     detected_face_numpy = face_alignment_model.align(cropped_inference)
+    
+    if detected_face_numpy is None:
+        print("Error during Face Detection. Please try again!")
+        return None, None
     # img_item = "aligned-image.png"
     # cv2.imwrite(img_item, cropped_aligned_inference)
 
