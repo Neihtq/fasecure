@@ -2,9 +2,7 @@ import argparse
 import os
 import sys
 import timeit
-import numpy as np
 import torch
-import torch.nn.functional as F
 import pytorch_lightning as pl
 
 from datetime import datetime
@@ -131,3 +129,4 @@ def train_without_lightning():
 
 if __name__ == '__main__':
     main()
+    sys.exit(0)

@@ -75,6 +75,7 @@ Additionally, we implemented all tasks in which face recognition can be broken d
 ## Built With
 * [Python](https://www.python.org/)
 * [PyTorch](https://pytorch.org/)
+* [PyTorchLightning](https://www.pytorchlightning.ai/)
 * [Pytorch Metric Learning](https://github.com/KevinMusgrave/pytorch-metric-learning)
 * [NumPy](https://numpy.org/)
 * [pandas](https://pandas.pydata.org/)
