@@ -59,7 +59,7 @@ class FaceAlignment():
                 w = rect.right()
                 h = rect.bottom()
                 shape = self.predictor(gray, rect)
-        print(shape)
+                
         shape = self.shape_to_normal(shape)
         nose, left_eye, right_eye = self.get_eyes_nose_dlib(shape)
 

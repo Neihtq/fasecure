@@ -61,23 +61,23 @@ def face_detection(callback=None):
         fps = str(int(fps))
         cv2.putText(frame, fps, (7, 70), cv2.FONT_HERSHEY_SIMPLEX, 3, (100, 255, 0), 3, cv2.LINE_AA)
         
-        """
+        
         if cv2.waitKey(20) & 0xFF == ord('1'):
-            #access = 1
+            access = 1
             cv2.putText(frame, "User recognized - Access Granted!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 3, cv2.LINE_AA)
         if cv2.waitKey(20) & 0xFF == ord('2'):
             access = 2
             cv2.putText(frame, "User not recognized - Access Denied!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3, cv2.LINE_AA)
-        #if cv2.waitKey(20) & 0xFF == ord('3'):
-        #    access = 0
+        if cv2.waitKey(20) & 0xFF == ord('3'):
+            access = 0
         
         
         if access == 1:
             cv2.putText(frame, "User recognized - Access Granted!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 3, cv2.LINE_AA)
         elif access == 2:
             cv2.putText(frame, "User not recognized - Access Denied!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3, cv2.LINE_AA)
-        """
         
+
         cv2.imshow('Webcam', frame)
         
         take_shot = False
@@ -103,9 +103,8 @@ def face_detection(callback=None):
             #inference_embedding_tensor = embedding_model(tensor_cropped_aligned_inference.permute(2, 1, 0).unsqueeze(0))
             test_tensor = tensor_cropped_aligned_inference.permute(2, 1, 0).unsqueeze(0)
             print(test_tensor.type())
-            print(test_tensor.shape)
             
-            """
+            
             #registration and recognition
             database = RegistrationDatabase()
 
@@ -116,11 +115,11 @@ def face_detection(callback=None):
             #inference to recognition process
             closest_label, check = database.face_recognition(inference_embedding_tensor)
             if check == 'Access':
-                cv2.putText(frame, "User recognized - " + closest_label + " - Access Granted!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 3, cv2.LINE_AA)#, bottomLeftOrigin=True)
+                cv2.putText(frame, "User recognized - " + closest_label + " - Access Granted!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 3, cv2.LINE_AA)
             elif check == 'Decline':
-                cv2.putText(frame, "User not recognized - Access Denied!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3, cv2.LINE_AA)#, bottomLeftOrigin=True)
+                cv2.putText(frame, "User not recognized - Access Denied!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3, cv2.LINE_AA)
             take_shot = False
-            """
+            
             
         
         

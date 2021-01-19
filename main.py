@@ -3,11 +3,8 @@ import os
 import sys
 import timeit
 import torch
-import pytorch_lightning as pl
+#import pytorch_lightning as pl
 
-<<<<<<< HEAD
-from face_detection.face_detection import face_detection
-=======
 from datetime import datetime
 from torchvision import transforms
 from torch.utils.data import DataLoader
@@ -16,9 +13,11 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 
 from data.LFWDataset import LFWDataset
 from face_detection.face_detection import face_detection
-from models.FaceNetPytorchLightning import LightningFaceNet
+#from models.FaceNetPytorchLightning import LightningFaceNet
 from models.FaceNet import FaceNet
 from registration_database.RegistrationDatabase import RegistrationDatabase
+
+
 
 parser = argparse.ArgumentParser(description='Face Recognition using Triplet Loss')
 
@@ -55,7 +54,6 @@ parser.add_argument('--load-last', action='store_true')
 
 args = parser.parse_args()
 
->>>>>>> 6c96a3e45cb9ea289cdb6472ea46bc6a9a5fd8e7
 
 def main():
     train()
@@ -138,10 +136,7 @@ def train():
 
 
 if __name__ == '__main__':
-<<<<<<< HEAD
 
-=======
     face_detection()
-    main()
+    #main()
     sys.exit(0)
->>>>>>> 6c96a3e45cb9ea289cdb6472ea46bc6a9a5fd8e7
