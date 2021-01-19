@@ -10,7 +10,6 @@ from os.path import join, dirname, abspath
 from models.FaceNet import get_model
 from models.RefFaceEmbeddingModel import RefFaceEmbeddingModel
 from registration_database.RegistrationDatabase import RegistrationDatabase
-from utils.prep import load_and_transform_img
 from evaluation.PipelineEvaluation import PipelineEvaluation
 
 # to Cao, Simon and Thien: model.eval()!

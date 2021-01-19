@@ -11,9 +11,9 @@ from constants import FACE_FEATURES
 from utils.FaceEmbedder import FaceEmbedder
 
 class LightningFaceNet(pl.LightningModule):
-    def __init__(self, hparams, num_classes, root, embedding_size=128, pretrained=False, transform=None):
-        self.hparams = hparams
+    def __init__(self, hparams, num_classes, embedding_size=128, pretrained=False):
         super(LightningFaceNet, self).__init__()
+        self.hparams = hparams
         self.model = FaceNet(pretrained=pretrained, num_classes=num_classes, embedding_size=embedding_size)
         self.train_metric = EmbeddingAccuracy()
         self.val_metric = EmbeddingAccuracy()
