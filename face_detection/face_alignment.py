@@ -59,7 +59,7 @@ class FaceAlignment():
                 w = rect.right()
                 h = rect.bottom()
                 shape = self.predictor(gray, rect)
-                
+
         shape = self.shape_to_normal(shape)
         nose, left_eye, right_eye = self.get_eyes_nose_dlib(shape)
 
@@ -72,6 +72,10 @@ class FaceAlignment():
 
         cos_a = self.cosine_formula(length_line1, length_line2, length_line3)
         angle = np.arccos(cos_a)
+
+        print(nose)
+        print(center_of_forehead)
+        print(angle)
 
         rotated_point = self.rotate_point(nose, center_of_forehead, angle)
         rotated_point = (int(rotated_point[0]), int(rotated_point[1]))

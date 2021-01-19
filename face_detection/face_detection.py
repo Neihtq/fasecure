@@ -85,13 +85,14 @@ def face_detection(callback=None):
         if cv2.waitKey(20) & 0xFF == ord('4'):
             take_shot = True
         if take_shot:
-            #crop image
+            #crop big image
             cropped_inference = crop_img(frame, start_x-20, start_y-20, end_x+20, end_y+20)
             #align image
             fa = FaceAlignment()
             cropped_aligned_inference = fa.align(cropped_inference)
             img_item = "aligned-image.png"
             cv2.imwrite(img_item, cropped_aligned_inference)
+
             
             
             #pretrained model
@@ -135,7 +136,6 @@ def detect(image, net):
     net.setInput(blob)
     detections = net.forward()
     return detections
-
 
 def crop_img(img, start_x, start_y, end_x, end_y):
     height, width = end_y - start_y, end_x - start_x
