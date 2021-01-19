@@ -128,7 +128,7 @@ class PipelineEvaluation():
             
             # Face registration
             if not self.evaluation_database.contains(label):
-                self.evaluation_database.face_registration(label,embedding)
+                #self.evaluation_database.face_registration(label,embedding)
                 for aug_img in augmented_imgs:
                     img_embedding_tensor = self.face_embedding_model(aug_img)
                     self.evaluation_database.face_registration(label, img_embedding_tensor)

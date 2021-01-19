@@ -161,6 +161,8 @@ class RegistrationDatabase():
         '''Grants access of closes person in embedding space could be found; denies acces otherwise'''
         if self.len_embeddings_list == 0:
             print("Person is unkown")
+            closest_label = None
+            check = "Decline"
             return
 
         img_embedding_numpy = self.convert_to_numpy(img_embedding_tensor)

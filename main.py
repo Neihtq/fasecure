@@ -8,8 +8,8 @@ import torch
 from datetime import datetime
 from torchvision import transforms
 from torch.utils.data import DataLoader
-from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.callbacks import ModelCheckpoint
+#from pytorch_lightning.loggers import TensorBoardLogger
+#from pytorch_lightning.callbacks import ModelCheckpoint
 
 from data.LFWDataset import LFWDataset
 from face_detection.face_detection import face_detection
