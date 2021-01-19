@@ -5,10 +5,9 @@ import pytorch_lightning as pl
 
 from os import listdir
 from pytorch_lightning.metrics import Metric
+from pytorch_metric_learning import miners, losses
 
 from .FaceNet import FaceNet
-from constants import FACE_FEATURES
-from utils.FaceEmbedder import FaceEmbedder
 
 class LightningFaceNet(pl.LightningModule):
     def __init__(self, hparams, num_classes, embedding_size=128, pretrained=False):
@@ -18,8 +17,8 @@ class LightningFaceNet(pl.LightningModule):
         self.train_metric = EmbeddingAccuracy()
         self.val_metric = EmbeddingAccuracy()
         self.test_metric = EmbeddingAccuracy()
-        
-        self.loss_func = nn.TripletMaringLoss()
+        self.miner = miners.BatchHardMiner()
+        self.loss_func = losses.TripletMarginLoss(margin=self.hparams['margin'])
 
     def forward(self, x):
         return self.model(x)
@@ -28,17 +27,18 @@ class LightningFaceNet(pl.LightningModule):
         labels, data = batch
         
         embeddings = self.forward(data)
-        anchor, positive, negative = self.loss_func(labels, embeddings, margin=self.hparams["margin"])
+        triplets = self.miner(embeddings, labels)
 
-        loss = self.loss_func(anchor, positive, negative)
+        loss = self.loss_func(embeddings, labels, triplets)
         
+        '''
         if mode == 'train':
             self.train_metric(anchor, positive, negative)
         elif mode == 'val':
             self.val_metric(anchor, positive, negative)
         else:
             self.test_metric(anchor, positive, negative)
-
+        '''
         return loss
     
     def training_step(self, batch, batch_idx):

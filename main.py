@@ -31,39 +31,34 @@ parser.add_argument('--num-workers', default=0, type=int, metavar='NW',
 parser.add_argument('--learning-rate', default=0.001, type=float, metavar='LR',
                     help='learning rate (default: 0.001)')
 
-parser.add_argument('--margin', default=0.5, type=float, metavar='MG',
-                    help='margin for TripletLoss (default: 0.5)')
+parser.add_argument('--margin', default=0.02, type=float, metavar='MG',
+                    help='margin for TripletLoss (default: 0.02)')
 
 parser.add_argument('--train-data-dir', default='./data/images/lfw_crop', type=str,
                     help='path to train root dir')
 
+parser.add_argument('--val-data-dir', default=None, type=str,
+                    help='path to train root dir')                    
+
 parser.add_argument('--model-dir', default='./models/results', type=str,
                     help='path to train root dir')
 
-parser.add_argument('--weight-decay', default=1e-5, type=int, metavar='SZ',
+parser.add_argument('--weight-decay', default=1e-5, type=float, metavar='SZ',
                     help='Decay learning rate (default: 1e-5)')
 
 parser.add_argument('--pretrained', action='store_true')
 
 parser.add_argument('--load-last', action='store_true')
-parser.add_argument('--no-pytorch-lightning', action='store_true',
-                    help='Perform Training without PyTorch Lightning')
 
 args = parser.parse_args()
 
 
 def main():
-    no_pytorch_lightning = args.no_pytorch_lightning
-
-    if no_pytorch_lightning:
-        train_without_lightning()
-    else:
-        train()
+    train()
 
 
-def initialize_dataset():
+def initialize_dataset(data_dir):
     batch_size = args.batch_size
-    train_dir = os.path.expanduser(args.train_data_dir)
     num_workers = args.num_workers
 
     transform = transforms.Compose([
@@ -72,7 +67,7 @@ def initialize_dataset():
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
     )
     print("Initialize Dataset.")
-    train_set = LFWDataset(train_dir, transform=transform)
+    train_set = LFWDataset(data_dir, transform=transform)
     num_classes = len(train_set.label_to_number.keys())
 
     print("Initialize DataLoader.")
@@ -93,7 +88,7 @@ def train():
     pretrained = args.pretrained
     num_epochs = args.num_epochs
     load_last = args.load_last
-    model_dir = os.path.expanduser(model_dir)
+    model_dir = os.path.expanduser(args.model_dir)
     if not os.path.exists(model_dir):
         os.mkdir(model_dir)
 
@@ -102,19 +97,24 @@ def train():
     if not os.path.exists(subdir):
         os.mkdir(subdir)
 
-    train_loader, num_classes = initialize_dataset()
-    
-    checkpoint_dir = './checkpoints/last_checkpoint.ckpt'
+    train_dir = os.path.expanduser(args.train_data_dir)
+    train_loader, num_classes = initialize_dataset(train_dir)
+
+    val_loader = None
+    if args.val_data_dir:
+        val_dir = os.path.expanduser()
+        val_loader, _ = initialize_dataset(val_dir)        
+
+    checkpoint_dir = './checkpoints/last_checkpoint'
     checkpoint_callback = ModelCheckpoint(
         filepath=checkpoint_dir,
-        save_best_only=True,
         verbose=True,
-        monitor='val_loss',
+        monitor='val_loss' if val_loader else 'train_loss',
         mode='min'
     )
     logger = TensorBoardLogger('tb_logs', name='Training')
     model = LightningFaceNet(hparams, num_classes, pretrained=pretrained)
-    trainer = pl.Traine(
+    trainer = pl.Trainer(
         gpus=1 if torch.cuda.is_available() else 0,
         max_epochs=num_epochs,
         logger=logger,
@@ -124,17 +124,13 @@ def train():
 
     print("Begin Training.")
     start = timeit.default_timer()
-    trainer.fit(model, train_loader)
+    trainer.fit(model, train_loader, val_loader)
     stop = timeit.default_timer()
     print("Finished Training in", stop - start, "seconds")
     
     print("Save trained weights.")
     model_name = os.path.join(subdir, time_stamp + '.pth')
     torch.save(model.model.state_dict(), model_name)
-
-
-def train_without_lightning():
-    pass
 
 
 if __name__ == '__main__':

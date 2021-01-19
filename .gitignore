@@ -150,3 +150,5 @@ dmypy.json
 *.npy
 
 tb_logs/*
+models/results/*
+checkpoints/*

@@ -143,7 +143,7 @@ Aaron_Peirsol
 
 --learning-rate: Learning Rate (default: 0.001)
 
---margin: Margin for TripletLoss (default: 0.5)
+--margin: Margin for TripletLoss (default: 0.02)
 
 --train-data-dir: Path to dataset (default: ```'./data/images/lfw_crop'```)
 
@@ -154,9 +154,6 @@ Aaron_Peirsol
 --pretrained: Will load pretrained model, if set.
 
 --load-last: Start training from last checkpoint, if set.
-
---no-pytorch-lightning: Will perform regular training without PyTorchLightning, if set,
-
 ```
 
 3. Execute the script with desired parameters, e.g.:

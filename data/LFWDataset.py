@@ -17,8 +17,6 @@ from torchvision import transforms
     
 from models.FaceNet import FaceNet
 
-from constants import FACE_FEATURES
-
 ABSOLUTE_DIR = dirname(abspath(__file__))
 MODEL_DIR = os.path.join(ABSOLUTE_DIR, '..', 'models', 'FaceNetOnLFW.pth')
 
