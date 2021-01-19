@@ -163,7 +163,7 @@ class RegistrationDatabase():
             print("Person is unkown")
             closest_label = None
             check = "Decline"
-            return
+            return closest_label, check
 
         img_embedding_numpy = self.convert_to_numpy(img_embedding_tensor)
 

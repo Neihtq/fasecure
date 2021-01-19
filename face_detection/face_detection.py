@@ -118,9 +118,11 @@ def face_detection(callback=None):
             closest_label, check = registration_database.face_recognition(embedding)
 
             if check == 'Access':
-                cv2.putText(frame, "User recognized - " + closest_label + " - Access Granted!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 3, cv2.LINE_AA)
+                print("User recognized - " + closest_label + " - Access Granted!")
+                #cv2.putText(frame, "User recognized - " + closest_label + " - Access Granted!", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3, cv2.LINE_AA)
             elif check == 'Decline':
-                cv2.putText(frame, "User not recognized - Access Denied!", (10, 1000), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 255), 3, cv2.LINE_AA)
+                print("User not recognized - Access Denied!")
+                #cv2.putText(frame, "User not recognized - Access Denied!", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3, cv2.LINE_AA)
             
         
         if cv2.waitKey(20) & 0xFF == ord('q'):
