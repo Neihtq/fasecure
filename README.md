@@ -39,14 +39,14 @@
     <li>
     <a href="#training">Training</a>
         <ul>
-            <a href="#triplet-loss-training">Triplet Loss Training</a>
+            <li><a href="#triplet-loss-training">Triplet Loss Training</a></li>
         </ul>
         <ul>
-            <a href="#face-embedding-facenet-with-resnet50-backbone">Face Embedding FaceNet with ResNet50 backbone</a>
+            <li><a href="#face-embedding-facenet-with-resnet50-backbone">Face Embedding FaceNet with ResNet50 backbone</a></li>
         </ul>
         <ul>
-            <a href="#face-verification-with-knn-and-adaptive-thresholding
-">Face Face Verification with KNN and Adaptive Thresholding</a>
+            <li><a href="#face-verification-with-knn-and-adaptive-thresholding
+">Face Face Verification with KNN and Adaptive Thresholding</a></li>
         </ul>
     </li>
     <li><a href="#performance">Performance</a></li>

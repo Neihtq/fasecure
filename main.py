@@ -9,6 +9,7 @@ from datetime import datetime
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 from data.LFWDataset import LFWDataset
 from face_detection.face_detection import face_detection
@@ -83,7 +84,8 @@ def initialize_dataset():
     return train_loader, num_classes
 
 
-def train(hparams):
+def train():
+    """Train model with PyTorchLightning""" 
     hparams = {
         'margin': args.margin,
         'lr': args.learning_rate,
@@ -104,12 +106,22 @@ def train(hparams):
 
     train_loader, num_classes = initialize_dataset()
     
+    checkpoint_dir = './checkpoints/last_checkpoint.ckpt'
+    checkpoint_callback = ModelCheckpoint(
+        filepath=checkpoint_dir,
+        save_best_only=True,
+        verbose=True,
+        monitor='val_loss',
+        mode='min'
+    )
     logger = TensorBoardLogger('tb_logs', name='Training')
     model = LightningFaceNet(hparams, num_classes, pretrained=pretrained)
-    trainer = pl.Trainer(
+    trainer = pl.Traine(
         gpus=1 if torch.cuda.is_available() else 0,
         max_epochs=num_epochs,
-        logger=logger
+        logger=logger,
+        checkpoint_callback=checkpoint_callback,
+        resume_from_checkpoint=checkpoint_dir if load_last else None
     )
 
     print("Begin Training.")
