@@ -23,6 +23,7 @@ import torch.nn as nn
 # todo:
 # - build in live webcam procedure from Cao. Adapt init(delete face detection) and forward function(add input and delete face detection) and add text in live video
 # - delete my test function and pretrained_models from face detection
+# - install droidcam on phone and pc and try to use opencv with smartphone as webcam (evtl set videocapture to 1)
 
 
 class AntiSpoofingModel(nn.Module):
