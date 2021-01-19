@@ -40,8 +40,8 @@ parser.add_argument('--train-data-dir', default='./data/images/lfw_crop', type=s
 parser.add_argument('--model-dir', default='./models/results', type=str,
                     help='path to train root dir')
 
-parser.add_argument('--weight-decay', default=0, type=int, metavar='SZ',
-                    help='Decay learning rate (default: 0)')
+parser.add_argument('--weight-decay', default=1e-5, type=int, metavar='SZ',
+                    help='Decay learning rate (default: 1e-5)')
 
 parser.add_argument('--pretrained', action='store_true')
 
