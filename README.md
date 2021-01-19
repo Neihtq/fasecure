@@ -1,10 +1,3 @@
-[![Contributors][forks-shield]][contributors-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-
-
-
-<!-- PROJECT LOGO -->
 <br />
 <p align="center">
   <a href="https://github.com/othneildrew/Best-README-Template">
@@ -24,7 +17,6 @@
 
 
 
-<!-- TABLE OF CONTENTS -->
 <details open="open">
   <summary>Table of Contents</summary>
   <ol>
@@ -33,17 +25,32 @@
       <ul>
         <li><a href="#built-with">Built With</a></li>
       </ul>
+      <ul>
+        <li><a href="#face-recognition-pipeline">Face Recognition Pipeline</a></li>
+      </ul>
     </li>
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#training-data">Training Data</a></li>
+    <li>
+    <a href="#training">Training</a>
+        <ul>
+            <a href="#triplet-loss-training">Triplet Loss Training</a>
+        </ul>
+        <ul>
+            <a href="#face-embedding-facenet-with-resnet50-backbone">Face Embedding FaceNet with ResNet50 backbone</a>
+        </ul>
+        <ul>
+            <a href="#face-verification-with-knn-and-adaptive-thresholding
+">Face Face Verification with KNN and Adaptive Thresholding</a>
+        </ul>
+    </li>
+    <li><a href="#performance">Performance</a></li>
+    <li><a href="#issues">Issues</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgements">Acknowledgements</a></li>
@@ -55,9 +62,7 @@
 <!-- ABOUT THE PROJECT -->
 # About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
-In the context of the advanced practical course "Application Challenges for Machine Learning on the example of IBM Power AI" our task was to build a complete face recognition system.
+This project was developed in the context of the advanced practical course "Application Challenges for Machine Learning on the example of IBM Power AI" at the Technical University of Munich. Our task was to build a complete face recognition system.
 
 During the project we came up with an additional pseudo real world use case. The idea is to use face recognition to let the a computer or laptop automatically lock if the registered owneder does not appear in front of the camera within a given time frame. While this makes it more comfortable for the user, it is also helpful against data theft.
 
@@ -67,7 +72,7 @@ The main focus of this project is implementation of the face verification. For t
 Additionally, we implemented all tasks in which face recognition can be broken down to: Detection, Alignment, Embedding and Verification.
 
 
-# Built With
+## Built With
 * [Python](https://www.python.org/)
 * [PyTorch](https://pytorch.org/)
 * [Pytorch Metric Learning](https://github.com/KevinMusgrave/pytorch-metric-learning)
@@ -128,18 +133,30 @@ Aaron_Peirsol
     ...
 ```
 2. The ```main.py``` script will initiate the training. Following flags are available to setup the process:
+```
+--num-epochs: Number of epochs to train(default: 200)
 
-* --num-epochs: Number of epochs to train(default: 200)
-* --batch-size: Batch Size for dataset (default: 220)
-* --num-workers: Number of worker for DataLoader (default: 0)
-* --learning-rate: Learning Rate (default: 0.001)
-* --margin: Margin for TripletLoss (default: 0.5)
-* --train-data-dir: Path to dataset (default: ```'./data/images/lfw_crop'```)
-* --model-dir: Path where trained model should be save (default: ```./models/results```)
-* --step-size: Decay learning rate schedules every ```--step-size``` (default: 50)
-* --pretrained: Will load pretrained model, if set.
-* --load-last: Start training from last checkpoint, if set.
-* --no-pytorch-lightning: Will perform regular training without PyTorchLightning, if set,
+--batch-size: Batch Size for dataset (default: 220)
+
+--num-workers: Number of worker for DataLoader (default: 0)
+
+--learning-rate: Learning Rate (default: 0.001)
+
+--margin: Margin for TripletLoss (default: 0.5)
+
+--train-data-dir: Path to dataset (default: ```'./data/images/lfw_crop'```)
+
+--model-dir: Path where trained model should be save (default: ```./models/results```)
+
+--step-size: Decay learning rate schedules every ```--step-size``` (default: 50)
+
+--pretrained: Will load pretrained model, if set.
+
+--load-last: Start training from last checkpoint, if set.
+
+--no-pytorch-lightning: Will perform regular training without PyTorchLightning, if set,
+
+```
 
 3. Execute the script with desired parameters, e.g.:
 ```sh
@@ -150,25 +167,25 @@ python main.py --num-epochs 175 --batch-size 128 learning-rate 0.005 --train-dat
 
 The FaceNet architecture includes a deep neural network followed by a 128 dimensional linear layer. We chose for the deep neural network [ResNet50](https://arxiv.org/abs/1512.03385), which also already included in PyTorch.
 
-## Face Verification with KNN and adaptive Thresholding
+## Face Verification with KNN and Adaptive Thresholding
 TBD
 
-## Evalution
+# Performance
 TBD
 
 
-## Issues
+# Issues
 
 See the [open issues](hhttps://github.com/Neihtq/IBM-labcourse/issues) for a list of proposed features (and known issues).
 
 
 <!-- LICENSE -->
-## License
+# License
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
 <!-- CONTACT -->
-## Contact
+# Contact
 
 Quang Thien Nguyen - [@Neihtq](https://github.com/Neihtq - q.thien.nguyen@outlook.de)
 
@@ -180,11 +197,11 @@ Tobias Zeulner - [TZ]() - tobia@zeulner.com
 
 
 ## Acknowledgements
-
+* Special thanks to Omar Shouman for giving his best effort to support us during this course
+* Special thanks for IBM to provides us with the IBM POWER Architecture for training
 * [Face Recognition using Tensorflow](https://github.com/davidsandberg/facenet)
 * [Best-README-Template](https://github.com/othneildrew/Best-README-Template)
 * [Pretrained Weight for Face Recognition, also heavily inspired in terms of building the archecture](https://github.com/tbmoon/facenet)
-
 
 
 
@@ -197,7 +214,7 @@ Tobias Zeulner - [TZ]() - tobia@zeulner.com
 [stars-shield]: https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge
 [stars-url]: https://github.com/Neihtq/IBM-labcourse/stargazers
 [issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
-[issues-url]: https://github.com/othneildrew/Best-README-Template/issues
+[issues-url]: https://github.com/Neihtq/IBM-labcourse/issues
 [license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
 [license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555

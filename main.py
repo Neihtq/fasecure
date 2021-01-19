@@ -16,11 +16,7 @@ from data.LFWDataset import LFWDataset
 from face_detection.face_detection import face_detection
 from models.FaceNetPytorchLightning import LightningFaceNet
 from models.FaceNet import FaceNet
-from face_recognition.prep import load_and_transform_img, show_tensor_img
 from registration_database.RegistrationDatabase import RegistrationDatabase
-from face_recognition.reg_dataset import RegistrationDataset
-
-
 
 parser = argparse.ArgumentParser(description='Face Recognition using Triplet Loss')
 
@@ -67,28 +63,10 @@ def main():
         train()
 
 
-def train(hparams):
-    hparams = {
-        'margin': args.margin,
-        'lr': args.learning_rate,
-        'step_size': args.step_size
-    }
-
-    pretrained = args.pretrained
-    num_epochs = args.num_epochs
+def initialize_dataset():
     batch_size = args.batch_size
-    num_workers = args.num_workers
-    load_best = args.load_best
-    load_last = args.load_last
     train_dir = os.path.expanduser(args.train_data_dir)
-    model_dir = os.path.expanduser(model_dir)
-    if not os.path.exists(model_dir):
-        os.mkdir(model_dir)
-
-    time_stamp = datetime.strftime(datetime.now(), '%Y%m%d-%H%M%S')
-    subdir = os.path.join(model_dir, time_stamp)
-    if not os.path.exists(subdir):
-        os.mkdir(subdir)
+    num_workers = args.num_workers
 
     transform = transforms.Compose([
         transforms.Resize((250, 250)),
@@ -103,6 +81,30 @@ def train(hparams):
     train_loader = torch.utils.data.DataLoader(
         train_set, batch_size=batch_size, num_workers=num_workers, shuffle=True
     )
+
+    return train_loader, num_classes
+
+
+def train(hparams):
+    hparams = {
+        'margin': args.margin,
+        'lr': args.learning_rate,
+        'step_size': args.step_size
+    }
+    pretrained = args.pretrained
+    num_epochs = args.num_epochs
+    load_best = args.load_best
+    load_last = args.load_last
+    model_dir = os.path.expanduser(model_dir)
+    if not os.path.exists(model_dir):
+        os.mkdir(model_dir)
+
+    time_stamp = datetime.strftime(datetime.now(), '%Y%m%d-%H%M%S')
+    subdir = os.path.join(model_dir, time_stamp)
+    if not os.path.exists(subdir):
+        os.mkdir(subdir)
+
+    train_loader, num_classes = initialize_dataset()
     
     logger = TensorBoardLogger('tb_logs', name='Training')
     model = LightningFaceNet(hparams, num_classes, pretrained=pretrained)
