@@ -148,3 +148,5 @@ dmypy.json
 *.csv
 *.zip
 *.npy
+
+data/vgg-faces/
