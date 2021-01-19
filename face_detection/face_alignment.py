@@ -52,6 +52,7 @@ class FaceAlignment():
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
         rects = self.detector(gray, 0)
+        
         if len(rects) > 0:
             for rect in rects:
                 x = rect.left()
@@ -59,32 +60,30 @@ class FaceAlignment():
                 w = rect.right()
                 h = rect.bottom()
                 shape = self.predictor(gray, rect)
+                
+            shape = self.shape_to_normal(shape)
+            nose, left_eye, right_eye = self.get_eyes_nose_dlib(shape)
 
-        shape = self.shape_to_normal(shape)
-        nose, left_eye, right_eye = self.get_eyes_nose_dlib(shape)
+            center_of_forehead = ((left_eye[0] + right_eye[0]) // 2, (left_eye[1] + right_eye[1]) // 2)
+            center_pred = (int((x + w) / 2), int((y + y) / 2))
 
-        center_of_forehead = ((left_eye[0] + right_eye[0]) // 2, (left_eye[1] + right_eye[1]) // 2)
-        center_pred = (int((x + w) / 2), int((y + y) / 2))
+            length_line1 = self.distance(center_of_forehead, nose)
+            length_line2 = self.distance(center_pred, nose)
+            length_line3 = self.distance(center_pred, center_of_forehead)
 
-        length_line1 = self.distance(center_of_forehead, nose)
-        length_line2 = self.distance(center_pred, nose)
-        length_line3 = self.distance(center_pred, center_of_forehead)
+            cos_a = self.cosine_formula(length_line1, length_line2, length_line3)
+            angle = np.arccos(cos_a)
 
-        cos_a = self.cosine_formula(length_line1, length_line2, length_line3)
-        angle = np.arccos(cos_a)
+            rotated_point = self.rotate_point(nose, center_of_forehead, angle)
+            rotated_point = (int(rotated_point[0]), int(rotated_point[1]))
+            
+            if self.is_between(nose, center_of_forehead, center_pred, rotated_point):
+                angle = np.degrees(-angle)
+            else:
+                angle = np.degrees(angle)
 
-        print(nose)
-        print(center_of_forehead)
-        print(angle)
-
-        rotated_point = self.rotate_point(nose, center_of_forehead, angle)
-        rotated_point = (int(rotated_point[0]), int(rotated_point[1]))
-        
-        if self.is_between(nose, center_of_forehead, center_pred, rotated_point):
-            angle = np.degrees(-angle)
+            aligned_img = Image.fromarray(img)
+            aligned_img = np.array(aligned_img.rotate(angle))
         else:
-            angle = np.degrees(angle)
-
-        aligned_img = Image.fromarray(img)
-        aligned_img = np.array(aligned_img.rotate(angle))       
+            aligned_img = None       
         return aligned_img
