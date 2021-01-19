@@ -149,7 +149,7 @@ Aaron_Peirsol
 
 --model-dir: Path where trained model should be save (default: ```./models/results```)
 
---step-size: Decay learning rate schedules every ```--step-size``` (default: 50)
+--weight-decay: Decay learning rate (default: 0)
 
 --pretrained: Will load pretrained model, if set.
 

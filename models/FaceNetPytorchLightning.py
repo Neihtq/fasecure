@@ -73,9 +73,7 @@ class LightningFaceNet(pl.LightningModule):
         self.log("test_acc", accuracy, prog_bar=True, logger=True)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.hparams['lr'], weight_decay=1e-5)
-        if self.hparams['optimizer'] == 'SGD':
-            optimizer = torch.optim.SGD(self.model.parameters(), lr=self.hparams['lr'], weight_decay=0.0001)
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.hparams['lr'], weight_decay=self.hparams['weight_decay'])
                     
         return optimizer
 

@@ -22,8 +22,8 @@ parser = argparse.ArgumentParser(description='Face Recognition using Triplet Los
 parser.add_argument('--num-epochs', default=200, type=int, metavar='NE',
                     help='number of epochs to train (default: 200)')
 
-parser.add_argument('--batch-size', default=220, type=int, metavar='BS',
-                    help='batch size (default: 220)')
+parser.add_argument('--batch-size', default=16, type=int, metavar='BS',
+                    help='batch size (default: 16)')
 
 parser.add_argument('--num-workers', default=0, type=int, metavar='NW',
                     help='number of workers (default: 0)')
@@ -40,12 +40,11 @@ parser.add_argument('--train-data-dir', default='./data/images/lfw_crop', type=s
 parser.add_argument('--model-dir', default='./models/results', type=str,
                     help='path to train root dir')
 
-parser.add_argument('--step-size', default=50, type=int, metavar='SZ',
-                    help='Decay learning rate schedules every --step-size (default: 50)')
+parser.add_argument('--weight-decay', default=0, type=int, metavar='SZ',
+                    help='Decay learning rate (default: 0)')
 
 parser.add_argument('--pretrained', action='store_true')
 
-parser.add_argument('--load-best', action='store_true')
 parser.add_argument('--load-last', action='store_true')
 parser.add_argument('--no-pytorch-lightning', action='store_true',
                     help='Perform Training without PyTorch Lightning')
@@ -89,11 +88,10 @@ def train():
     hparams = {
         'margin': args.margin,
         'lr': args.learning_rate,
-        'step_size': args.step_size
+        'weight_decay': args.weight_decay
     }
     pretrained = args.pretrained
     num_epochs = args.num_epochs
-    load_best = args.load_best
     load_last = args.load_last
     model_dir = os.path.expanduser(model_dir)
     if not os.path.exists(model_dir):
