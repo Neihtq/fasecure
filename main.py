@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 #from pytorch_lightning.callbacks import ModelCheckpoint
 
 from data.LFWDataset import LFWDataset
-from face_detection.face_detection import face_detection
+from face_detection.input_pipeline import input_pipeline
 #from models.FaceNetPytorchLightning import LightningFaceNet
 from models.FaceNet import FaceNet
 from registration_database.RegistrationDatabase import RegistrationDatabase
@@ -137,6 +137,6 @@ def train():
 
 if __name__ == '__main__':
 
-    face_detection()
+    input_pipeline()
     #main()
     sys.exit(0)
