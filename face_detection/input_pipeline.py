@@ -1,6 +1,6 @@
 import cv2
 import torch
-import imutils
+#import imutils
 import time
 import numpy as np
 import sys
@@ -13,12 +13,12 @@ from utils.prep import img_augmentation
 
 
 absolute_dir = dirname(abspath(__file__))
-PROTO_TXT = join(absolute_dir, "model", "deploy.prototxt")
-MODEL = join(absolute_dir, "model", "res10_300x300_ssd_iter_140000.caffemodel")
-THRESHOLD = 0.5
+face_detection_prototxt = join(absolute_dir, "model", "deploy.prototxt")
+face_detection_path = join(absolute_dir, "model", "res10_300x300_ssd_iter_140000.caffemodel")
+detection_threshold = 0.5
 
 # Face detection model
-face_detection_model = cv2.dnn.readNetFromCaffe(PROTO_TXT, MODEL)
+face_detection_model = cv2.dnn.readNetFromCaffe(face_detection_prototxt, face_detection_path)
 
 # Face alignment model
 face_alignment = FaceAlignment()
@@ -28,7 +28,8 @@ face_embedding_model = get_model()
 face_embedding_model.eval()
 
 # Face registration & recognition
-registration_database = RegistrationDatabase(fixed_threshold=98.5)
+fixed_initial_registration_threshold = 98.5
+registration_database = RegistrationDatabase(fixed_initial_registration_threshold)
 
 
 def input_pipeline(callback=None):
@@ -37,26 +38,38 @@ def input_pipeline(callback=None):
     new_frame_time = 0
     access = 0
 
-    #choose Camera input
-    cam = cv2.VideoCapture(0)
+    # Choose camera input (maybe have to adapt input parameter to "1")
+    cam = cv2.VideoCapture(1)
 
     while True:
         _, frame = cam.read()
         
-        start_x , start_y, end_x, end_y = face_detection(frame)
-
-        color =(255, 0, 0)
-        stroke = 3
-        cv2.rectangle(frame, (start_x-30, start_y-30), (end_x+30, end_y+30), color, stroke)
+        h, w = frame.shape[:2]
         
+        # Face detection
+        detections = detect(frame)
 
-        if callback:
-            tensor = callback(frame)
-            print(tensor.shape)
-            print(tensor)
-            cam.release()
-            cv2.destroyAllWindows()
-            return
+        for i in np.arange(0, detections.shape[2]):
+            confidence = detections[0, 0, i, 2]
+            
+            if confidence < detection_threshold:
+                continue
+            
+            box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+            start_x , start_y, end_x, end_y = box.astype("int")
+                
+            color =(255, 0, 0)
+            stroke = 3
+            cv2.rectangle(frame, (start_x-30, start_y-30), (end_x+30, end_y+30), color, stroke)
+            
+
+            if callback:
+                tensor = callback(frame)
+                print(tensor.shape)
+                print(tensor)
+                cam.release()
+                cv2.destroyAllWindows()
+                return
 
 
         new_frame_time = time.time()
@@ -143,10 +156,10 @@ def input_pipeline(callback=None):
 
 
 
-def detect(image, net):
-    blob = cv2.dnn.blobFromImage(image, 0.007843, (300, 300), 127.5)
-    net.setInput(blob)
-    detections = net.forward()
+def detect(image):
+    blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
+    face_detection_model.setInput(blob)
+    detections = face_detection_model.forward()
     return detections
 
 def crop_img(img, start_x, start_y, end_x, end_y):
@@ -167,6 +180,8 @@ def align_embed(frame, start_x, start_y, end_x, end_y):
         return None, None
 
     detected_face = torch.from_numpy(detected_face_numpy).permute(2, 1, 0).unsqueeze(0).float()
+
+    # to do: Swap color channels from opencv (BGR) to pytorch (RGB) implementation
 
     # perform augmentations
     augmented_imgs = img_augmentation(detected_face)
@@ -190,22 +205,6 @@ def take_shot(directory, filename, frame, start_x, start_y, end_x, end_y):
     cv2.imwrite(write_root, cropped_aligned_img)
 
     print("Snapshot taken and saved as: " + filename)
-
-def face_detection(img):
-    h, w = img.shape[:2]
-    
-    blob = cv2.dnn.blobFromImage(cv2.resize(img, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
-    face_detection_model.setInput(blob)
-    detections = face_detection_model.forward()
-    for i in np.arange(0, detections.shape[2]):
-        confidence = detections[0, 0, i, 2]
-        
-        if confidence < THRESHOLD:
-            continue
-        
-        box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-        start_x , start_y, end_x, end_y = box.astype("int")
-    return start_x , start_y, end_x, end_y
 
 if __name__ == '__main__':
     input_pipeline()
