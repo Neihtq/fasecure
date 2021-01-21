@@ -9,7 +9,7 @@ from evaluation.PipelineEvaluation import PipelineEvaluation
 
 
 # Evaluate the face embedding model and the overall pipeline
-def evaluate_results(absolute_dir, face_embedding_eval_data_path=None, overall_eval_data_path=None, face_embedding_model_path=None, fixed_initial_registration_threshold=98.5):
+def evaluate_results(absolute_dir, face_embedding_model_path=None, fixed_initial_registration_threshold=98.5):
 
     # FACE EMBEDDING EVALUATION
 
@@ -24,11 +24,9 @@ def evaluate_results(absolute_dir, face_embedding_eval_data_path=None, overall_e
         pass
 
 
-    # Load evaluation data for overall evaluation from default path, if no path specified
-    if overall_eval_data_path is None:
-        dataset_path = join(absolute_dir, "data", "lfw_crop")
-    else:
-        dataset_path = overall_eval_data_path
+    # Load evaluation data for overall evaluation from default path
+    overall_eval_dataset_path = join(absolute_dir, "data", "lfw_crop")
+
     
     # Define the evaluation log path for the overall evaluation with the default path
     eval_log_path = join(absolute_dir, "evaluation", "results", "overall_evaluation_logs_")
@@ -39,7 +37,7 @@ def evaluate_results(absolute_dir, face_embedding_eval_data_path=None, overall_e
     # Run the overall evaluation
     eval_log_path_fix = eval_log_path + str(fixed_initial_registration_threshold) + ".txt"
     registration_database = RegistrationDatabase(fixed_initial_threshold=fixed_initial_registration_threshold)
-    pipeline_evaluation = PipelineEvaluation(dataset_path, eval_log_path_fix, face_embedding_model, registration_database)
+    pipeline_evaluation = PipelineEvaluation(overall_eval_dataset_path, eval_log_path_fix, face_embedding_model, registration_database)
     pipeline_evaluation.run()
     pipeline_evaluation.plot_results()
         
