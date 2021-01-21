@@ -20,20 +20,20 @@ from sklearn.neighbors import NearestNeighbors
 ABSOLUTE_DIR = dirname(abspath(__file__))
 
 class RegistrationDatabase():
-    def __init__(self, fixed_threshold, mode='inner_product'):        
-        super().__init__()
+    def __init__(self, fixed_initial_threshold, mode='inner_product'):        
         # Choose similarity calculation between "inner product" and "euclidean distance"
         self.mode = mode
         if self.mode == 'euclidean_distance':
             self.recognition_model = NearestNeighbors(n_neighbors=1)
         
-        self.fixed_threshold = fixed_threshold
+        self.fixed_threshold = fixed_initial_threshold
         self.len_embeddings_list = 0
                              
         save_dir = join(ABSOLUTE_DIR, "./reg_database")
         os.makedirs(save_dir, exist_ok=True)
         self.database_file = os.path.join(save_dir, 'database.pkl')
 
+        print("test")
         if os.path.exists(self.database_file):
             print('Database already exists. Pickle file will be loaded...')
             self.database = pd.read_pickle(self.database_file)

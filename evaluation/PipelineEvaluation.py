@@ -33,25 +33,19 @@ from PIL import Image
 from scipy import interpolate
 from scipy.optimize import fsolve
 
-from dataset.LFWDataset import LFWEvaluationDataset
+from data.LFWDataset import LFWEvaluationDataset
 from utils.prep import img_augmentation
 
 
 class PipelineEvaluation():
-    def __init__(self, dataset_path, eval_log_path, face_embedding_model,
-                         registration_database, face_detection_model=None):
+    def __init__(self, dataset_path, eval_log_path, face_embedding_model, registration_database):
         self.dataset_path = dataset_path
         self.eval_log_path = eval_log_path
-        self.face_detection_model = face_detection_model
         self.face_embedding_model = face_embedding_model
         self.evaluation_database = registration_database
 
-        if face_detection_model == None:
-            # directly load cropped images
-            self.eval_dataset = LFWEvaluationDataset(self.dataset_path, cropped_faces=True)
-            self.skip_face_detection = True
-        else:
-            self.eval_dataset = LFWEvaluationDataset(self.dataset_path)
+        # Directly load cropped images for evaluation
+        self.eval_dataset = LFWEvaluationDataset(self.dataset_path, cropped_faces=True)
 
     def run(self):
         subset_size = 10
@@ -65,6 +59,7 @@ class PipelineEvaluation():
                                                     shuffle=False, 
                                                     sampler=None,
                                                     collate_fn=None)
+
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         self.evaluation_database.clean_database()
@@ -79,22 +74,9 @@ class PipelineEvaluation():
             label = label[0]
             
             # Face detection and alignment
-            if self.skip_face_detection:
-                detected_face = image_path[0].unsqueeze(0)
-            else:
-                try:
-                    detected_face_numpy = self.face_detection_model.detectFace(image_path[0])
-                except:
-                    # Sometimes, if more than one face is on an image, deepFace returns an error
-                    # However, it doesn´t count to overall accuracy, as we will get only images with one face
-                    print("image not recognized: ", image_path[0])
-                    continue
+            detected_face = image_path[0].unsqueeze(0)
 
-                detected_face = detected_face_numpy.copy()
-                detected_face = torch.from_numpy(detected_face).permute(2,0,1).unsqueeze(0)
-            
             detected_face = detected_face.to(device)
-
 
             augmented_imgs = img_augmentation(detected_face)            
             embedding = self.face_embedding_model(augmented_imgs[0])
