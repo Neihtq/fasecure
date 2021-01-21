@@ -18,7 +18,7 @@ MODEL = join(absolute_dir, "model", "res10_300x300_ssd_iter_140000.caffemodel")
 THRESHOLD = 0.5
 
 # Face detection model
-net = cv2.dnn.readNetFromCaffe(PROTO_TXT, MODEL)
+face_detection_model = cv2.dnn.readNetFromCaffe(PROTO_TXT, MODEL)
 
 # Face alignment model
 face_alignment_model = FaceAlignment()
@@ -27,7 +27,8 @@ face_alignment_model = FaceAlignment()
 face_embedding_model = get_model().eval()
 
 # Face registration & recognition
-registration_database = RegistrationDatabase(fixed_threshold=98.5)
+fixed_initial_threshold = 98.5
+registration_database = RegistrationDatabase(fixed_initial_threshold)
 
 def face_detection(callback=None):
     
@@ -42,9 +43,9 @@ def face_detection(callback=None):
         
         h, w = frame.shape[:2]
         
-        blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
-        net.setInput(blob)
-        detections = net.forward()
+        # Face detection
+        detections = detect(frame)
+
         for i in np.arange(0, detections.shape[2]):
             confidence = detections[0, 0, i, 2]
             
@@ -106,7 +107,7 @@ def face_detection(callback=None):
             register(augmented_imgs, label)
         """
 
-        # if key "r" pressed, then reset the database
+        # if key "c" pressed, then clean the database
         if cv2.waitKey(20) & 0xFF == ord('c'):           
             registration_database.clean_database()
             print("database was cleaned...")
@@ -114,26 +115,26 @@ def face_detection(callback=None):
 
         cv2.imshow('Webcam', frame)
         
-        take_shot = False
+        # take_shot = False
         
-        if cv2.waitKey(20) & 0xFF == ord('4'):
-            take_shot = True
-        if take_shot:
-            #crop big image
-            cropped_inference = crop_img(frame, start_x-20, start_y-20, end_x+20, end_y+20)
-            #align image
-            fa = FaceAlignment()
-            cropped_aligned_inference = fa.align(cropped_inference)
-            img_item = "aligned-image.png"
-            cv2.imwrite(img_item, cropped_aligned_inference)
+        # if cv2.waitKey(20) & 0xFF == ord('4'):
+        #     take_shot = True
+        # if take_shot:
+        #     #crop big image
+        #     cropped_inference = crop_img(frame, start_x-20, start_y-20, end_x+20, end_y+20)
+        #     #align image
+        #     fa = FaceAlignment()
+        #     cropped_aligned_inference = fa.align(cropped_inference)
+        #     img_item = "aligned-image.png"
+        #     cv2.imwrite(img_item, cropped_aligned_inference)
 
             
             
-            #pretrained model
-            embedding_model = FaceNet()
-            embedding_model.eval()
+        #     #pretrained model
+        #     embedding_model = FaceNet()
+        #     embedding_model.eval()
             
-            tensor_cropped_aligned_inference = torch.from_numpy(cropped_aligned_inference).double()
+        #     tensor_cropped_aligned_inference = torch.from_numpy(cropped_aligned_inference).double()
 
 
         # --- FACE RECOGNITION ---
@@ -153,7 +154,7 @@ def face_detection(callback=None):
                 print("User not recognized - Access Denied!")
                 cv2.putText(frame, "User not recognized - Access Denied!", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3, cv2.LINE_AA)
             
-        
+        # If "q" is pressed, then quit application
         if cv2.waitKey(20) & 0xFF == ord('q'):
             break
 
@@ -161,10 +162,10 @@ def face_detection(callback=None):
     cv2.destroyAllWindows()
 
 
-def detect(image, net):
+def detect(image):
     blob = cv2.dnn.blobFromImage(image, 0.007843, (300, 300), 127.5)
-    net.setInput(blob)
-    detections = net.forward()
+    face_detection_model.setInput(blob)
+    detections = face_detection_model.forward()
     return detections
 
 def crop_img(img, start_x, start_y, end_x, end_y):
