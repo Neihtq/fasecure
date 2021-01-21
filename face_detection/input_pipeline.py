@@ -43,7 +43,22 @@ def input_pipeline(callback=None):
     while True:
         _, frame = cam.read()
         
-        start_x , start_y, end_x, end_y = face_detection(frame)
+        #start_x , start_y, end_x, end_y = face_detection(frame)
+
+        h, w = frame.shape[:2]
+    
+        blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
+        face_detection_model.setInput(blob)
+        detections = face_detection_model.forward()
+        for i in np.arange(0, detections.shape[2]):
+            confidence = detections[0, 0, i, 2]
+            
+            if confidence < THRESHOLD:
+                continue
+            
+            box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+            start_x , start_y, end_x, end_y = box.astype("int")
+
 
         color =(255, 0, 0)
         stroke = 3
