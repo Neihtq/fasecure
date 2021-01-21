@@ -8,6 +8,7 @@ from pytorch_lightning.metrics import Metric
 from pytorch_metric_learning import miners, losses
 
 from .FaceNet import FaceNet
+      
 
 class LightningFaceNet(pl.LightningModule):
     def __init__(self, hparams, num_classes, embedding_size=128, pretrained=False):
@@ -16,7 +17,6 @@ class LightningFaceNet(pl.LightningModule):
         self.model = FaceNet(pretrained=pretrained, num_classes=num_classes, embedding_size=embedding_size)
         self.train_metric = EmbeddingAccuracy()
         self.val_metric = EmbeddingAccuracy()
-        self.test_metric = EmbeddingAccuracy()
         self.miner = miners.BatchHardMiner()
         self.loss_func = losses.TripletMarginLoss(margin=self.hparams['margin'])
 
@@ -31,14 +31,11 @@ class LightningFaceNet(pl.LightningModule):
 
         loss = self.loss_func(embeddings, labels, triplets)
         
-        '''
         if mode == 'train':
-            self.train_metric(anchor, positive, negative)
-        elif mode == 'val':
-            self.val_metric(anchor, positive, negative)
+            self.train_metric(triplets, embeddings)
         else:
-            self.test_metric(anchor, positive, negative)
-        '''
+            self.val_metric(triplets, embeddings)
+
         return loss
     
     def training_step(self, batch, batch_idx):
@@ -68,10 +65,6 @@ class LightningFaceNet(pl.LightningModule):
         loss = self.general_step(batch, "test")
         self.log("test_loss", loss, prog_bar=True, logger=True)
 
-    def test_epoch_end(self, test_step_outputs):
-        accuracy, precision, recall, f1_score = self.test_metric.compute()
-        self.log("test_acc", accuracy, prog_bar=True, logger=True)
-
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.parameters(), lr=self.hparams['lr'], weight_decay=self.hparams['weight_decay'])
                     
@@ -87,8 +80,11 @@ class EmbeddingAccuracy(Metric):
         self.add_state("true_negative", default=torch.tensor(0), dist_reduce_fx="sum")
         self.add_state("false_negative", default=torch.tensor(0), dist_reduce_fx="sum")
 
-    def update(self, anchor_enc, pos_enc, neg_enc):
-        assert anchor_enc.shape == pos_enc.shape == neg_enc.shape
+    def update(self, triplets, embeddings):
+        anchor_enc = embeddings[triplets[0]]
+        pos_enc = embeddings[triplets[1]]
+        neg_enc = embeddings[triplets[2]]
+        
         l2_pos = torch.dist(anchor_enc, pos_enc, 2)
         l2_neg = torch.dist(anchor_enc, neg_enc, 2)
 
@@ -107,9 +103,9 @@ class EmbeddingAccuracy(Metric):
         TP, TN = self.true_positive, self.true_negative
         FP, FN = self.false_positive, self.false_negative        
 
-        accuracy = (TP + TN) / (TP + TN + FP + FN)
-        precision = TP / (TP + FP)
-        recall = TP / (TP + FN)
-        F1_Score = TP / (TP + 0.5 * (FP + FN)) 
+        accuracy = torch.true_divide((TP + TN),(TP + TN + FP + FN))
+        precision = torch.true_divide(TP,(TP + FP))
+        recall = torch.true_divide(TP,(TP + FN))
+        F1_Score = torch.true_divide(TP,(TP + 0.5 * (FP + FN)))
         
         return accuracy, precision, recall, F1_Score

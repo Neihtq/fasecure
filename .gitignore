@@ -152,3 +152,4 @@ dmypy.json
 tb_logs/*
 models/results/*
 checkpoints/*
+data/vgg-faces

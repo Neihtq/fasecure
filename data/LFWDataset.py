@@ -7,6 +7,7 @@ import pathlib
 import numpy as np
 import pandas as pd
 
+from random import shuffle
 from os import listdir
 from os.path import dirname, abspath
 from PIL import Image
@@ -21,7 +22,7 @@ ABSOLUTE_DIR = dirname(abspath(__file__))
 MODEL_DIR = os.path.join(ABSOLUTE_DIR, '..', 'models', 'FaceNetOnLFW.pth')
 
 
-class LFWDataset(Dataset):
+class ImageDataset(Dataset):
     def __init__(self, root, transform=None):
         self.root = root
         self.label_to_number = {}
@@ -34,6 +35,7 @@ class LFWDataset(Dataset):
                 self.data.append((i, img_path))
 
         self.transform = transform
+        shuffle(self.data)
         
     def __len__(self):
         return len(self.data)
@@ -47,15 +49,15 @@ class LFWDataset(Dataset):
     def get_image(self, img_path):
         '''Returns Pytorch.Tensor of image'''
         img_path = pathlib.Path(img_path)
-        img = Image.open(img_path)      
-
+        img = Image.open(img_path).convert('RGB')
+        
         if self.transform:
             img = self.transform(img)
        
         if not torch.is_tensor(img):        
             img = transforms.ToTensor()(img)
         
-        return img
+        return img.float()
     
 
 class LFWEvaluationDataset(Dataset):
