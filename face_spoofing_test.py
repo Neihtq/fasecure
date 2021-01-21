@@ -18,7 +18,7 @@ def face_spoofing_live():
     modelFile = "./pretrained_model/res10_300x300_ssd_iter_140000.caffemodel"
     configFile = "./pretrained_model/deploy.prototxt"
     face_detection_model = cv2.dnn.readNetFromCaffe(configFile, modelFile)
-    face_spoofing_model = joblib.load('./pretrained_model/face_spoofing_01.pkl')
+    face_spoofing_model = joblib.load('./pretrained_model/face_spoofing.pkl')
     cap = cv2.VideoCapture(1)
 
 
