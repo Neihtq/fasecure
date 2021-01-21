@@ -15,10 +15,11 @@ from evaluation.PipelineEvaluation import PipelineEvaluation
 
 
 def evaluate_pipeline(absolute_dir):
-    ref_face_embedding_model = RefFaceEmbeddingModel()
-    face_embedding_model = get_model().eval()
+
     dataset_path = join(absolute_dir, "data", "lfw_crop")
-    eval_log_path = join(absolute_dir, "evaluation", "results", "normal_model_with_fixed_threshold_")
+    eval_log_path = join(absolute_dir, "evaluation", "results", "ref_model_")
+    ref_face_embedding_model = RefFaceEmbeddingModel(dataset_path)
+    face_embedding_model = get_model().eval()
 
     if not os.path.exists(join(absolute_dir, "evaluation", "results")):
         os.makedirs(join(absolute_dir, "evaluation", "results"))
@@ -29,12 +30,6 @@ def evaluate_pipeline(absolute_dir):
     for fixed_threshold in thresholds:
         eval_log_path_fix = eval_log_path + str(fixed_threshold) + ".txt"
         registration_database = RegistrationDatabase(fixed_initial_threshold=fixed_threshold)
-        pipeline_evaluation = PipelineEvaluation(dataset_path, eval_log_path_fix,
-                                            face_embedding_model, registration_database)
+        pipeline_evaluation = PipelineEvaluation(dataset_path, eval_log_path_fix, ref_face_embedding_model, registration_database)
         pipeline_evaluation.run()
         pipeline_evaluation.plot_results()
-        break
-
-
-if __name__ == '__main__':
-    evaluate_pipeline()

@@ -70,11 +70,11 @@ class PipelineEvaluation():
         accept = 0
         reject = 0
         rec_number = 0
-        for i, (label, image_path) in enumerate(eval_loader):
+        for i, (label, image) in enumerate(eval_loader):
             label = label[0]
             
             # Face detection and alignment
-            detected_face = image_path[0].unsqueeze(0)
+            detected_face = image[0].unsqueeze(0)
 
             detected_face = detected_face.to(device)
 

@@ -33,7 +33,6 @@ class RegistrationDatabase():
         os.makedirs(save_dir, exist_ok=True)
         self.database_file = os.path.join(save_dir, 'database.pkl')
 
-        print("test")
         if os.path.exists(self.database_file):
             print('Database already exists. Pickle file will be loaded...')
             self.database = pd.read_pickle(self.database_file)
