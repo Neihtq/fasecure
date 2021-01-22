@@ -2,6 +2,7 @@ import os
 import torch
 import torch.nn as nn
 import pytorch_lightning as pl
+import torchvision.models as models
 
 from os import listdir
 from pytorch_lightning.metrics import Metric
@@ -10,11 +11,28 @@ from pytorch_metric_learning import miners, losses
 from .FaceNet import FaceNet
       
 
+class FaceNetInceptionV3(nn.Module):
+    def __init__(self, embedding_dimension=128, pretrained=False):
+        self.model = models.inception_v3(pretrained=pretrained)
+
+        input_features_fc_layer = self.model.in_features
+        self.model.fc = nn.Sequential(
+            nn.Linear(input_features_fc_layer, embedding_dimension, bias=False),
+            nn.BatchNorm1d(embedding_dimension, eps=0.001, momentum=0.1, affine=True)
+        )
+
+    def forward(self, x):
+        x = self.model(x)
+        x = F.normalize(x, p=2, dim=1)
+        
+        return x
+
+
 class LightningFaceNet(pl.LightningModule):
-    def __init__(self, hparams, num_classes, embedding_size=128, pretrained=False):
+    def __init__(self, hparams, num_classes, model, embedding_size=128, pretrained=False):
         super(LightningFaceNet, self).__init__()
         self.hparams = hparams
-        self.model = FaceNet(pretrained=pretrained, num_classes=num_classes, embedding_size=embedding_size)
+        self.model = model
         self.train_metric = EmbeddingAccuracy()
         self.val_metric = EmbeddingAccuracy()
         self.miner = miners.BatchHardMiner()
@@ -25,7 +43,6 @@ class LightningFaceNet(pl.LightningModule):
         
     def general_step(self, batch, mode):
         labels, data = batch
-        
         embeddings = self.forward(data)
         triplets = self.miner(embeddings, labels)
 
@@ -40,7 +57,6 @@ class LightningFaceNet(pl.LightningModule):
     
     def training_step(self, batch, batch_idx):
         label, path = batch
-        
         loss = self.general_step(batch, "train")
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
 
@@ -66,7 +82,39 @@ class LightningFaceNet(pl.LightningModule):
         self.log("test_loss", loss, prog_bar=True, logger=True)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.hparams['lr'], weight_decay=self.hparams['weight_decay'])
+        if self.hparams['optimizer'] == "sgd":
+            optimizer = optim.SGD(
+                params=self.model.parameters(),
+                lr=self.hparams['lr'],
+                momentum=0.9,
+                dampening=0,
+                nesterov=False
+            )
+        elif self.hparams['optimizer'] == "adagrad":
+            optimizer = optim.Adagrad(
+                params=self.model.parameters(),
+                lr=self.hparams['lr'],
+                lr_decay=0,
+                initial_accumulator_value=0.1,
+                eps=1e-10
+            )
+        elif self.hparams['optimizer'] == "rmsprop":
+            optimizer = optim.RMSprop(
+                params=self.model.parameters(),
+                lr=self.hparams['lr'],
+                alpha=0.99,
+                eps=1e-08,
+                momentum=0,
+                centered=False
+            )
+        elif self.hparams['optimizer'] == "adam":
+            optimizer = optim.Adam(
+                params=self.model.parameters(),
+                lr=self.hparams['lr'],
+                betas=(0.9, 0.999),
+                eps=1e-08,
+                amsgrad=False
+            )
                     
         return optimizer
 

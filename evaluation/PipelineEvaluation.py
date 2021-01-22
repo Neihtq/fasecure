@@ -33,8 +33,8 @@ from PIL import Image
 from scipy import interpolate
 from scipy.optimize import fsolve
 
-from dataset.LFWDataset import LFWEvaluationDataset
-from utils.prep import img_augmentation
+from data.dataset import LFWEvaluationDataset
+from utils.preprocess import augment
 
 
 class PipelineEvaluation():
@@ -96,7 +96,7 @@ class PipelineEvaluation():
             detected_face = detected_face.to(device)
 
 
-            augmented_imgs = img_augmentation(detected_face)            
+            augmented_imgs = augment(detected_face)            
             embedding = self.face_embedding_model(augmented_imgs[0])
 
             # Face recognition

@@ -7,13 +7,15 @@ import pytorch_lightning as pl
 
 from datetime import datetime
 from torchvision import transforms
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_metric_learning.samplers import MPerClassSampler
 
-from data.LFWDataset import LFWDataset
+from utils.MetricsCallback import MetricsCallback
+from data.dataset import ImageDataset
 from face_detection.face_detection import face_detection
-from models.FaceNetPytorchLightning import LightningFaceNet
+from models.FaceNetPytorchLightning import LightningFaceNet, FaceNetInceptionV3
 from models.FaceNet import FaceNet
 from registration_database.RegistrationDatabase import RegistrationDatabase
 
@@ -25,11 +27,11 @@ parser.add_argument('--num-epochs', default=200, type=int, metavar='NE',
 parser.add_argument('--batch-size', default=16, type=int, metavar='BS',
                     help='batch size (default: 16)')
 
-parser.add_argument('--num-workers', default=0, type=int, metavar='NW',
-                    help='number of workers (default: 0)')
+parser.add_argument('--num-workers', default=os.cpu_count(), type=int, metavar='NW',
+                    help='number of workers (default: os.cpu_count() - Your max. amount of cpus)')
 
-parser.add_argument('--learning-rate', default=0.001, type=float, metavar='LR',
-                    help='learning rate (default: 0.001)')
+parser.add_argument('--learning-rate', default=0.05, type=float, metavar='LR',
+                    help='learning rate (default: 0.05)')
 
 parser.add_argument('--margin', default=0.02, type=float, metavar='MG',
                     help='margin for TripletLoss (default: 0.02)')
@@ -38,10 +40,13 @@ parser.add_argument('--train-data-dir', default='./data/images/lfw_crop', type=s
                     help='path to train root dir')
 
 parser.add_argument('--val-data-dir', default=None, type=str,
-                    help='path to train root dir')                    
+                    help='path to train root dir (if not specified, 10% of training set will be used instead')                    
 
 parser.add_argument('--model-dir', default='./models/results', type=str,
                     help='path to train root dir')
+
+parser.add_argument('--optimizer', default='adagrad', type=str,
+                    help='Optimizer Algorithm for learning (default: adagrad')
 
 parser.add_argument('--weight-decay', default=1e-5, type=float, metavar='SZ',
                     help='Decay learning rate (default: 1e-5)')
@@ -50,14 +55,15 @@ parser.add_argument('--pretrained', action='store_true')
 
 parser.add_argument('--load-last', action='store_true')
 
+parser.add_argument('--backbone', default='InceptionV3', type=str,
+                    help='Deep Neural Network architecture used backbone:\n- Resnet50\n- InceptionV3 (default)')
+
 args = parser.parse_args()
 
-
-def main():
-    train()
+architectures = {'InceptionV3': FaceNetInceptionV3 }
 
 
-def initialize_dataset(data_dir):
+def get_dataloader(dataset):
     batch_size = args.batch_size
     num_workers = args.num_workers
 
@@ -66,16 +72,13 @@ def initialize_dataset(data_dir):
         transforms.ToTensor(), 
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
     )
-    print("Initialize Dataset.")
-    train_set = LFWDataset(data_dir, transform=transform)
-    num_classes = len(train_set.label_to_number.keys())
-
+    
     print("Initialize DataLoader.")
     train_loader = torch.utils.data.DataLoader(
-        train_set, batch_size=batch_size, num_workers=num_workers, shuffle=True
+        dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True
     )
 
-    return train_loader, num_classes
+    return train_loader
 
 
 def train():
@@ -83,11 +86,16 @@ def train():
     hparams = {
         'margin': args.margin,
         'lr': args.learning_rate,
-        'weight_decay': args.weight_decay
+        'weight_decay': args.weight_decay,
+        "optimizer": args.optimizer
     }
     pretrained = args.pretrained
     num_epochs = args.num_epochs
     load_last = args.load_last
+    backbone = args.backbone
+    if backbone not in architectures:
+        print("Specified architecture not support.")
+
     model_dir = os.path.expanduser(args.model_dir)
     if not os.path.exists(model_dir):
         os.mkdir(model_dir)
@@ -98,27 +106,39 @@ def train():
         os.mkdir(subdir)
 
     train_dir = os.path.expanduser(args.train_data_dir)
-    train_loader, num_classes = initialize_dataset(train_dir)
+    train_set = ImageDataset(train_dir, transform=transform)
+    labels = list(train_set.label_to_number.keys())
+    sampler = MPerClassSampler(labels, 10)
 
-    val_loader = None
     if args.val_data_dir:
-        val_dir = os.path.expanduser()
-        val_loader, _ = initialize_dataset(val_dir)        
+        val_dir = os.path.expanduser(args.val_data_dir)
+        val_set = ImageDataset(val_dir, transform=transform)
+        val_loader = get_dataloader(val_dir)        
+    else:
+        train_length = int(0.9 * len(train_set))
+        val_length = len(train_set) - train_length)
+        train_set, val_set = random_split(dataset, [train_length, val_length])
+
+    train_loader = get_dataloader(train_set)
 
     checkpoint_dir = './checkpoints/last_checkpoint'
     checkpoint_callback = ModelCheckpoint(
         filepath=checkpoint_dir,
         verbose=True,
-        monitor='val_loss' if val_loader else 'train_loss',
-        mode='min'
+        monitor='val_loss',
+        mode='min',
+        save_top_k=1
     )
+    callback = [MetricsCallback()]
     logger = TensorBoardLogger('tb_logs', name='Training')
-    model = LightningFaceNet(hparams, num_classes, pretrained=pretrained)
+
+    model = LightningFaceNet(hparams, num_classes, architectures[backbone], pretrained=pretrained)
     trainer = pl.Trainer(
         gpus=1 if torch.cuda.is_available() else 0,
         max_epochs=num_epochs,
         logger=logger,
-        checkpoint_callback=checkpoint_callback,
+        checkpoint_callback=checkpoint_callback,;
+        callbacks=callback
         resume_from_checkpoint=checkpoint_dir if load_last else None
     )
 
@@ -134,5 +154,5 @@ def train():
 
 
 if __name__ == '__main__':
-    main()
+    train()
     sys.exit(0)

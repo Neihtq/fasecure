@@ -1,11 +1,7 @@
-import csv
 import os
 import random
 import torch
 import glob
-import pathlib
-import numpy as np
-import pandas as pd
 
 from random import shuffle
 from os import listdir
@@ -16,13 +12,17 @@ from itertools import compress
 from torch.utils.data import Dataset
 from torchvision import transforms
     
-from models.FaceNet import FaceNet
-
-ABSOLUTE_DIR = dirname(abspath(__file__))
-MODEL_DIR = os.path.join(ABSOLUTE_DIR, '..', 'models', 'FaceNetOnLFW.pth')
-
 
 class ImageDataset(Dataset):
+    '''Regular Dataset where images are stored like this:
+    path_to_data/
+    |--label/
+    |----x.jpg
+    |----y.jpg
+
+    root: path to images
+    transform: functions from torchvisions.transforms to apply on images
+    '''
     def __init__(self, root, transform=None):
         self.root = root
         self.label_to_number = {}
@@ -48,7 +48,6 @@ class ImageDataset(Dataset):
         
     def get_image(self, img_path):
         '''Returns Pytorch.Tensor of image'''
-        img_path = pathlib.Path(img_path)
         img = Image.open(img_path).convert('RGB')
         
         if self.transform:

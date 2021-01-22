@@ -58,7 +58,7 @@ if __name__ == "__main__":
     
     image_path = pathlib.Path('./data/images')
     destination = pathlib.Path('./data/lfw.zip')
-    destination.parent.makedirs(parent=True, exist_ok=True)
+    destination.parent.mkdir(parents=True, exist_ok=True)
     
     download_from_google_drive(url, destination)       
     unzip(destination, image_path)
