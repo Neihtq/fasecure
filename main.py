@@ -22,19 +22,22 @@ from registration_database.RegistrationDatabase import RegistrationDatabase
 parser = argparse.ArgumentParser(description='Face Recognition using Triplet Loss')
 
 parser.add_argument('--num-epochs', default=200, type=int, metavar='NE',
-                    help='number of epochs to train (default: 200)')
+                    help='Number of epochs to train (default: 200)')
 
 parser.add_argument('--batch-size', default=16, type=int, metavar='BS',
-                    help='batch size (default: 16)')
+                    help='Batch size (default: 16)')
 
 parser.add_argument('--num-workers', default=os.cpu_count(), type=int, metavar='NW',
-                    help='number of workers (default: os.cpu_count() - Your max. amount of cpus)')
+                    help='Number of workers (default: os.cpu_count() - Your max. amount of cpus)')
 
 parser.add_argument('--learning-rate', default=0.05, type=float, metavar='LR',
-                    help='learning rate (default: 0.05)')
+                    help='Learning rate (default: 0.05)')
 
 parser.add_argument('--margin', default=0.02, type=float, metavar='MG',
-                    help='margin for TripletLoss (default: 0.02)')
+                    help='Margin for TripletLoss (default: 0.02)')
+
+parser.add_argument('--sample-size', default=40, type=int, metavar='SS',
+                    help='<sample-size> face per identity per mini-batch (default: 40, if batch-size >= 40)')
 
 parser.add_argument('--train-data-dir', default='./data/images/lfw_crop', type=str,
                     help='path to train root dir')
@@ -64,7 +67,12 @@ architectures = {'InceptionV3': FaceNetInceptionV3 }
 
 
 def get_dataloader(dataset):
+    sample_size = args.sample_size
+
     batch_size = args.batch_size
+    if batch_size >= 40:
+        sample_size = 40
+
     num_workers = args.num_workers
 
     transform = transforms.Compose([
@@ -73,9 +81,12 @@ def get_dataloader(dataset):
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
     )
     
+    labels = list(dataset.label_to_number.keys())
+    sampler = MPerClassSampler(labels, sample_size)
+
     print("Initialize DataLoader.")
     train_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True
+        dataset, batch_size=batch_size, num_workers=num_workers, sampler=sampler
     )
 
     return train_loader

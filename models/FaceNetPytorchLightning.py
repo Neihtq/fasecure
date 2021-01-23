@@ -9,23 +9,6 @@ from pytorch_lightning.metrics import Metric
 from pytorch_metric_learning import miners, losses
 
 from .FaceNet import FaceNet
-      
-
-class FaceNetInceptionV3(nn.Module):
-    def __init__(self, embedding_dimension=128, pretrained=False):
-        self.model = models.inception_v3(pretrained=pretrained)
-
-        input_features_fc_layer = self.model.in_features
-        self.model.fc = nn.Sequential(
-            nn.Linear(input_features_fc_layer, embedding_dimension, bias=False),
-            nn.BatchNorm1d(embedding_dimension, eps=0.001, momentum=0.1, affine=True)
-        )
-
-    def forward(self, x):
-        x = self.model(x)
-        x = F.normalize(x, p=2, dim=1)
-        
-        return x
 
 
 class LightningFaceNet(pl.LightningModule):
@@ -35,7 +18,7 @@ class LightningFaceNet(pl.LightningModule):
         self.model = model
         self.train_metric = EmbeddingAccuracy()
         self.val_metric = EmbeddingAccuracy()
-        self.miner = miners.BatchHardMiner()
+        self.miner = miners.TripletMarginMiner(type_of_triplets='semihard')
         self.loss_func = losses.TripletMarginLoss(margin=self.hparams['margin'])
 
     def forward(self, x):
