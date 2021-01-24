@@ -1,37 +1,63 @@
 import os
 import cv2
 import numpy as np
-import multiprocessing as mp
+import matplotlib.pyplot as plt
 
-from face_detection.face_detection import detect
+from face_detection.face_alignment import FaceAlignment
 
+face_cascade = cv2.CascadeClassifier('./face_detection/model/haarcascade_frontalface_default.xml')
 
-def detect_and_align(img):
+output = "./data/images/lfw_aligned/"
+
+def detect_and_align(img_path):
+    img = cv2.imread(img_path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     detections = detect(img)
-    start_x, start_y, end_x, end_y = select_closest_face(detections)
-    cropped_img = crop_img(img, start_x, start_y, end_x, end_y)
-    
+    try:
+        x, y, w, h = select_closest_face(detections,  img.shape[:2])
+        cropped_img = crop_img(img, x-20, y-20, w+20, h+20)
+    except:
+        return
 
+    fa = FaceAlignment()
+    try:
+        aligned_img = fa.align(cropped_img)
+    except:
+        aligned_img = cropped_img
 
-def select_closest_face(detections):
+    head, fpath = os.path.split(img_path)
+    _, folder = os.path.split(head)
+    dest = os.path.join(output, folder)
+    if not os.path.exists(dest):
+        try:
+            os.mkdir(dest)
+        except:
+            print(dest, "already exists")
+
+    save_path = os.path.join(dest, fpath)
+    try:
+        cv2.imwrite(save_path, aligned_img)
+    except:
+        pass
+
+def select_closest_face(detections, shape):
     face_dict = {}
     areas = []
-    for i in np.arange(0, detections.shape[2]):
-        confidence = detections[0, 0, i, 2]
-        
-        if confidence < THRESHOLD:
-            continue
-        
-        box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-        start_x, start_y, end_x, end_y = box.astype("int")
-        height, width = end_y - start_y, end_x - start_x
-        area = height * width
-        face_dict[area] = (start_x, start_y, end_x, end_y)
+    for (x, y, w, h) in detections:        
+        width, height = w + 40, h + 40
+        area = width * height
+        face_dict[area] = (x, y, w, h)
         areas.append(area)
+
     return face_dict[np.array(areas).max()]
 
-def crop_img(img, start_x, start_y, end_x, end_y):
-    height, width = end_y - start_y, end_x - start_x
-    crop_img = img[start_y:start_y+height, start_x:start_x+width]
-    crop_img = cv2.resize(crop_img, (400, 400))
+def crop_img(img, x, y, w, h):
+    crop_img = img[x-20:x+w+20, y-20:y+h+20]
+    crop_img = cv2.resize(crop_img, (224, 224))
     return crop_img
+
+def detect(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+    return faces
+
