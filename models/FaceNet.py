@@ -99,6 +99,6 @@ class FaceNetInceptionV3(nn.Module):
 
     def forward(self, x):
         x = self.model(x)
-        x = F.normalize(x.logits, p=2, dim=1)
+        x = F.normalize(x, p=2, dim=1)
         
         return x

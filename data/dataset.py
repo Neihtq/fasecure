@@ -59,6 +59,61 @@ class ImageDataset(Dataset):
         return img.float()
     
 
+
+class LFWDataset(Dataset):
+    def __init__(self, root, pairs_txt, transform=None):
+        self.root = root
+        self.pairs = []
+        self.transform = transform
+        self.read_pairs_txt(pairs_txt)
+        
+    def read_pairs_txt(self, pairs_txt):
+        with open(pairs_txt, 'r') as f:
+            lines = f.readlines()[1:]
+            for line in lines:
+                line_split = line.split()
+                if len(line_split) == 3:
+                    name, img_1, img_2 = line_split
+                    img_1, img_2 = int(img_1), int(img_2)
+                    fpath_1 = self.add_suffix(os.path.join(self.root, name, name + '_' + f"{img_1:04d}"))
+                    fpath_2 = self.add_suffix(os.path.join(self.root, name, name + '_' + f"{img_2:04d}"))
+                    same = True
+                else:
+                    name_1, img_1, name_2, img_2 = line_split
+                    img_1, img_2 = int(img_1), int(img_2)
+                    fpath_1 = self.add_suffix(os.path.join(self.root, name_1, name_1 + '_' + f"{img_1:04d}"))
+                    fpath_2 = self.add_suffix(os.path.join(self.root, name_2, name_2 + '_' + f"{img_2:04d}"))
+                    same = False
+
+                self.pairs.append((fpath_1, fpath_2, same))
+
+    def add_suffix(self, path):
+        if os.path.exists(path + '.jpg'):
+            return path + '.jpg'
+        return path + '.png'            
+
+    def __len__(self):
+        return len(self.pairs)
+
+    def __getitem__(self, idx):
+        fpath_1, fpath_2, same = self.pairs[idx]
+        img_1 = self.get_image(fpath_1)
+        img_2 = self.get_image(fpath_2)
+        
+        return img_1, img_2, same
+        
+    def get_image(self, img_path):
+        '''Returns Pytorch.Tensor of image'''
+        img = Image.open(img_path).convert('RGB')
+        if self.transform:
+            img = self.transform(img)
+        if not torch.is_tensor(img):        
+            img = transforms.ToTensor()(img)
+        
+        return img.float()
+
+
+
 class LFWEvaluationDataset(Dataset):
     def __init__(self, root, transform=None, cropped_faces=False):
         self.root = root
