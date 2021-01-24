@@ -9,10 +9,10 @@ from tqdm import tqdm
 def download_data(url):
     ''' helper download function for e.g. lfw-deepfunneled: http://vis-www.cs.umass.edu/lfw/lfw-deepfunneled.tgz'''
     req = requests.get(url, allow_redirects=True)
-    open("data.tgz", 'wb').write(req.content)
+    open("./data/data.tgz", 'wb').write(req.content)
 
-    with tarfile.open('data.tgz', 'r') as f:
-        f.extractall('data')
+    with tarfile.open('./data/data.tgz', 'r') as f:
+        f.extractall('lfw')
         f.close()
 
 
@@ -54,14 +54,15 @@ def unzip(path, destination):
 
 
 if __name__ == "__main__":
-    url = "https://drive.google.com/file/d/1d5bOxxJ3ZcMP3zXxwI685T5_Cawhl0V1/view?usp=sharing"
+    #url = "https://drive.google.com/file/d/1d5bOxxJ3ZcMP3zXxwI685T5_Cawhl0V1/view?usp=sharing"
+    url = "http://vis-www.cs.umass.edu/lfw/lfw.tgz"
+    #image_path = pathlib.Path('./data/images')
+    #destination = pathlib.Path('./data/lfw.zip')
+    #destination.parent.makedirs(parent=True, exist_ok=True)
     
-    image_path = pathlib.Path('./data/images')
-    destination = pathlib.Path('./data/lfw.zip')
-    destination.parent.makedirs(parent=True, exist_ok=True)
-    
-    download_from_google_drive(url, destination)       
-    unzip(destination, image_path)
+    download_data(url)
+    #download_from_google_drive(url, destination)       
+    #unzip(destination, image_path)
     
     
     
