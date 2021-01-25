@@ -8,6 +8,10 @@ from os.path import dirname, abspath
 
 from datetime import datetime
 from torchvision import transforms
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 3645c15042d01fe01edf30f6008c23f518299479
 from torch.utils.data import DataLoader, random_split
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -17,6 +21,10 @@ from utils.MetricsCallback import MetricsCallback
 from data.dataset import ImageDataset
 from face_detection.face_detection import face_detection
 from models.FaceNetPytorchLightning import LightningFaceNet, FaceNetInceptionV3
+<<<<<<< HEAD
+=======
+from torch.utils.data import DataLoader
+>>>>>>> 3645c15042d01fe01edf30f6008c23f518299479
 #from pytorch_lightning.loggers import TensorBoardLogger
 #from pytorch_lightning.callbacks import ModelCheckpoint
 
@@ -188,4 +196,8 @@ if __name__ == '__main__':
     #input_pipeline()
     #main()
     sys.exit(0)
+<<<<<<< HEAD
 >>>>>>> 196eb500f095c0e734e7cb0bf7c501239b3af0a9
+=======
+>>>>>>> 5e0eeb57ec35f100d707795ecd9daca6122b7fc8
+>>>>>>> 3645c15042d01fe01edf30f6008c23f518299479

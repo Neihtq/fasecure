@@ -36,8 +36,6 @@ from scipy.optimize import fsolve
 from data.dataset import LFWEvaluationDataset
 from utils.preprocess import augment
 
-
-
 class PipelineEvaluation():
     def __init__(self, dataset_path, eval_log_path, face_embedding_model, registration_database):
         self.dataset_path = dataset_path
