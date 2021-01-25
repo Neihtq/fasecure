@@ -3,6 +3,7 @@ import os
 import sys
 import timeit
 import torch
+from os.path import dirname, abspath
 #import pytorch_lightning as pl
 
 from datetime import datetime
@@ -13,6 +14,8 @@ from torch.utils.data import DataLoader
 
 from data.LFWDataset import LFWDataset
 from face_detection.input_pipeline import input_pipeline
+from evaluations import evaluate_results
+from evaluation.overall_evaluation import evaluate_pipeline
 #from models.FaceNetPytorchLightning import LightningFaceNet
 from models.FaceNet import FaceNet
 from registration_database.RegistrationDatabase import RegistrationDatabase
@@ -137,6 +140,10 @@ def train():
 
 if __name__ == '__main__':
 
-    input_pipeline()
+    absolute_dir = dirname(abspath(__file__))
+    #evaluate_results(absolute_dir)
+    evaluate_pipeline(absolute_dir)
+
+    #input_pipeline()
     #main()
     sys.exit(0)
