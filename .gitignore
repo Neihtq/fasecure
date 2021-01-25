@@ -154,3 +154,4 @@ models/results/*
 checkpoints/*
 data/vgg-faces
 .venv/
+data/lfw*

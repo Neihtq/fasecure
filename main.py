@@ -3,10 +3,12 @@ import os
 import sys
 import timeit
 import torch
-import pytorch_lightning as pl
+from os.path import dirname, abspath
+#import pytorch_lightning as pl
 
 from datetime import datetime
 from torchvision import transforms
+<<<<<<< HEAD
 from torch.utils.data import DataLoader, random_split
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -16,8 +18,19 @@ from utils.MetricsCallback import MetricsCallback
 from data.dataset import ImageDataset
 from face_detection.face_detection import face_detection
 from models.FaceNetPytorchLightning import LightningFaceNet, FaceNetInceptionV3
+from torch.utils.data import DataLoader
+#from pytorch_lightning.loggers import TensorBoardLogger
+#from pytorch_lightning.callbacks import ModelCheckpoint
+
+from data.LFWDataset import LFWDataset
+from face_detection.input_pipeline import input_pipeline
+from evaluations import evaluate_results
+from evaluation.overall_evaluation import evaluate_pipeline
+#from models.FaceNetPytorchLightning import LightningFaceNet
 from models.FaceNet import FaceNet
 from registration_database.RegistrationDatabase import RegistrationDatabase
+
+
 
 parser = argparse.ArgumentParser(description='Face Recognition using Triplet Loss')
 
@@ -165,5 +178,16 @@ def train():
 
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     train()
     sys.exit(0)
+=======
+
+    absolute_dir = dirname(abspath(__file__))
+    #evaluate_results(absolute_dir)
+    evaluate_pipeline(absolute_dir)
+
+    #input_pipeline()
+    #main()
+    sys.exit(0)
+>>>>>>> 5e0eeb57ec35f100d707795ecd9daca6122b7fc8
