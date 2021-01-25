@@ -20,14 +20,13 @@ from sklearn.neighbors import NearestNeighbors
 ABSOLUTE_DIR = dirname(abspath(__file__))
 
 class RegistrationDatabase():
-    def __init__(self, fixed_threshold, mode='inner_product'):        
-        super().__init__()
+    def __init__(self, fixed_initial_threshold, mode='inner_product'):        
         # Choose similarity calculation between "inner product" and "euclidean distance"
         self.mode = mode
         if self.mode == 'euclidean_distance':
             self.recognition_model = NearestNeighbors(n_neighbors=1)
         
-        self.fixed_threshold = fixed_threshold
+        self.fixed_threshold = fixed_initial_threshold
         self.len_embeddings_list = 0
                              
         save_dir = join(ABSOLUTE_DIR, "./reg_database")
@@ -161,7 +160,9 @@ class RegistrationDatabase():
         '''Grants access of closes person in embedding space could be found; denies acces otherwise'''
         if self.len_embeddings_list == 0:
             print("Person is unkown")
-            return
+            closest_label = None
+            check = "Decline"
+            return closest_label, check
 
         img_embedding_numpy = self.convert_to_numpy(img_embedding_tensor)
 
