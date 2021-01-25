@@ -14,7 +14,7 @@ args = parser.parse_args()
 def main():
     src = args.dir
     
-    output = pathlib.Path(output(args.dir))
+    output = pathlib.Path(args.o)
     output.mkdir(parents=True, exist_ok=True)
     
     paths = []
