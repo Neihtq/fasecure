@@ -9,7 +9,11 @@ from face_detection.face_alignment import FaceAlignment
 
 def detect_and_align(pair):
     img_path, output = pair
-    img = np.array(Image.open(img_path))
+    try:
+        img = Image.open(img_path).convert("RGB")
+        img = np.array(img)
+    except:
+        return
                      
     fa = FaceAlignment()
     detections = fa.detector(img, 0)
