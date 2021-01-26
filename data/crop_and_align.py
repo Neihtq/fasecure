@@ -9,8 +9,21 @@ from face_detection.face_alignment import FaceAlignment
 
 def detect_and_align(pair):
     img_path, output = pair
+    head, fpath = os.path.split(img_path)
+    _, folder = os.path.split(head)
+    dest = os.path.join(output, folder)
+    if not os.path.exists(dest):
+        try:
+            os.mkdir(dest)
+        except:
+            print(dest, "already exists")
+
+    save_path = os.path.join(dest, fpath)
+    if os.path.exists(save_path):
+        return
+    
     img = np.array(Image.open(img_path))
-                     
+
     fa = FaceAlignment()
     detections = fa.detector(img, 0)
     try:
@@ -24,16 +37,6 @@ def detect_and_align(pair):
     except:
         aligned_img = cropped_img
 
-    head, fpath = os.path.split(img_path)
-    _, folder = os.path.split(head)
-    dest = os.path.join(output, folder)
-    if not os.path.exists(dest):
-        try:
-            os.mkdir(dest)
-        except:
-            print(dest, "already exists")
-
-    save_path = os.path.join(dest, fpath)
     try:
         aligned_img = Image.fromarray(aligned_img)
         aligned_img.save(save_path)
