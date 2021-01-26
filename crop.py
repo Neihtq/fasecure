@@ -1,4 +1,5 @@
 import os
+import pathlib
 import argparse
 import tqdm
 import multiprocessing as mp
@@ -13,18 +14,18 @@ args = parser.parse_args()
 def main():
     src = args.dir
     
-    output = args.dir
-    if not os.path.exists(output):
-        os.mkdir(output)
+    output = pathlib.Path(args.o)
+    output.mkdir(parents=True, exist_ok=True)
+    
     paths = []
     for folder in os.listdir(src):
         tmp = os.path.join(src, folder)
         dest = os.path.join(output, folder)
-        if not os.path.exists(dest):
-            os.mkdir(dest)
+        pathlib.Path(dest).mkdir(parents=True, exist_ok=True)
+
         for img in os.listdir(tmp):
             fpath = os.path.join(tmp, img)
-            paths.append((fpath, output))
+            paths.append((fpath, str(output)))
 
     with mp.Pool(processes=os.cpu_count()) as pool:
         res = list(tqdm.tqdm(pool.imap(detect_and_align, paths), total=len(paths)))
