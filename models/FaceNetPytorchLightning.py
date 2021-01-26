@@ -72,8 +72,6 @@ class LightningFaceNet(pl.LightningModule):
         self.log("recall", recall, logger=True)
         self.log("roc_auc", roc_auc, logger=True)
 
-        return tp_rate, fp_rate, acc
-
     def configure_optimizers(self):
         if self.hparams['optimizer'] == "sgd":
             optimizer = optim.SGD(
@@ -117,18 +115,18 @@ class LFWEvalAccuracy(Metric):
         super().__init__(compute_on_step=False)
         self.num_folds = num_folds
         self.fa_rate_target = far_target
-        self.l2_distance = PairwiseDistance(p=2)
         self.distances = []
         self.labels = []
 
     def update(self, enc_1, enc_2, same):      
-        dist = self.l2_distance(enc_1, enc_2)
+        dist = torch.dist(enc_1, enc_2, 2)
         self.distances.append(dist)
         self.labels.append(same)
 
     def compute(self):
         tp_rate, fp_rate, precision, recall, acc, best_dist, roc_auc = self.evaluate()
-        return tp_rate, fp_rate, precision, recall, acc, best_dist, roc_auc
+
+        return tp_rate.mean(), fp_rate.mean(), precision.mean(), recall.mean(), acc.mean(), best_dist.mean(), roc_auc.mean()
 
     def evaluate(self):
         thresholds = torch.arange(0, 4, 0.01)
@@ -155,30 +153,29 @@ class LFWEvalAccuracy(Metric):
         for fold_index, (train_set, test_set) in enumerate(k_fold.split(indices)):
             acc_train = torch.zeros(num_thresholds)
             for threshold_index, threshold in enumerate(thresholds):
-                _, _, _, _, acc_trainset[threshold_index] = self.calculate_metrics(
-                    threshold=threshold, dist=self.distances[train_set], label=self.labels[train_set]
+                _, _, _, _, acc_train[threshold_index] = self.calculate_metrics(
+                    threshold=threshold, dist=distances_tensor[train_set], label=labels_tensor[train_set]
                 )
-            best_threshold_index = torch.argmax(acc_trainset)
+            best_threshold_index = torch.argmax(acc_train)
 
             for threshold_index, threshold in enumerate(thresholds):
-                tp_rate[fold_index, threshold_index], fp_rates[fold_index, threshold_index], _, _, _ = self.calculate_metrics(
-                    threshold=threshold, dist=self.distances[test_set], label=self.labels[test_set]
+                tp_rates[fold_index, threshold_index], fp_rates[fold_index, threshold_index], _, _, _ = self.calculate_metrics(
+                    threshold=threshold, dist=distances_tensor[test_set], label=labels_tensor[test_set]
                 )
 
             _, _, precision[fold_index], recall[fold_index], acc[fold_index] = self.calculate_metrics(
-                threshold=threshold, dist=self.distances[test_set], label=self.labels[test_set]
+                threshold=threshold, dist=distances_tensor[test_set], label=labels_tensor[test_set]
             )
 
             tp_rate = torch.mean(tp_rates, 0)
             fp_rate = torch.mean(tp_rates, 0)
-            best_dists[fod_index] = thresholds[best_threshold_index]
+            best_dists[fold_index] = thresholds[best_threshold_index]
 
-        return tp_rate, fp_rate, precision, recall, accuracy, best_distances
+        return tp_rate, fp_rate, precision, recall, acc, best_dists
             
-    def calculate_metrics(self, dist, label):
+    def calculate_metrics(self, threshold, dist, label):
         # distance les than threshold -> prediction = True
         pred = torch.less(dist, threshold)        
-
         tp = torch.sum(torch.logical_and(pred, label))
         fp = torch.sum(torch.logical_and(pred, torch.logical_not(label)))
         tn = torch.sum(torch.logical_and(torch.logical_not(pred), torch.logical_not(label)))
@@ -188,6 +185,6 @@ class LFWEvalAccuracy(Metric):
         fp_rate = 0 if (fp + tn == 0 ) else float(fp) / float(fp + tn)
         precision = 0 if (tp + fp) == 0 else float(tp) / float(tp + fp)
         recall = 0 if (tp + fn) == 0 else float(tp) / float(tp + fn)
-        accuracy = float(tp + tn) /  torch.numel()
+        accuracy = float(tp + tn) /  torch.numel(dist)
 
         return tp_rate, fp_rate, precision, recall, accuracy
