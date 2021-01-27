@@ -1,11 +1,38 @@
 import os
 import numpy as np
 
+try:
+    from deepface import DeepFace
+except ImportError:
+    raise ImportError("Could not import deepface")
+
 from PIL import Image
 from face_detection.face_alignment import FaceAlignment
 
-#output = "./data/lfw_aligned/"
-#output = "./data/vgg_aligned/"
+
+def deepface_align(pair):
+    img_path, output = pair    
+    head, fpath = os.path.split(img_path)
+    _, folder = os.path.split(head)
+    dest = os.path.join(output, folder)
+    if not os.path.exists(dest):
+        try:
+            os.mkdir(dest)
+        except:
+            print(dest, "already exists")
+
+    save_path = os.path.join(dest, fpath)
+    if os.path.exists(save_path):
+        return
+
+    try:
+        detected_face = DeepFace.detectFace(img_path, detector_backend='mtcnn')
+        img = Image.fromarray(np.uint8(detected_face*255)).convert('RGB')
+    except:
+        img = Image.open(img_path)
+   
+    img.save(save_path)
+
 
 def detect_and_align(pair):
     img_path, output = pair
@@ -43,6 +70,7 @@ def detect_and_align(pair):
     except:
         pass
 
+
 def select_closest_face(detections, shape):
     face_dict = {}
     areas = []
@@ -57,6 +85,7 @@ def select_closest_face(detections, shape):
         areas.append(area)
 
     return face_dict[np.array(areas).max()]
+
 
 def crop_img(img, x, y, w, h):
     crop_img = img[x-20:x+w+20, y-20:y+h+20]

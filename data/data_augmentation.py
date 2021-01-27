@@ -11,7 +11,7 @@ root = os.path.join('.','data','lfw_crop_augmented_1')
 
 #augmentation function
 def load_and_transform_img(path):
-
+    '''Loads images and prepares for data augmentation'''
     trfrm = transforms.Compose([transforms.Resize(224),  
                            transforms.ToTensor()]) 
                            #transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
