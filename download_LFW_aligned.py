@@ -59,7 +59,6 @@ def unzip(path, destination):
 
 if __name__ == "__main__":
     url = args.url
-    gdrive = args.gdrive
     
     image_path = pathlib.Path('./data/images')
     destination = pathlib.Path('./data/lfw.zip')
