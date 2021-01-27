@@ -36,6 +36,13 @@ def deepface_align(pair):
 
 def detect_and_align(pair):
     img_path, output = pair
+    try:
+        img = Image.open(img_path).convert("RGB")
+        img = np.array(img)
+    except:
+        return
+                     
+
     head, fpath = os.path.split(img_path)
     _, folder = os.path.split(head)
     dest = os.path.join(output, folder)
