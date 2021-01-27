@@ -8,34 +8,22 @@ from os.path import dirname, abspath
 
 from datetime import datetime
 from torchvision import transforms
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 3645c15042d01fe01edf30f6008c23f518299479
+
 from torch.utils.data import DataLoader, random_split
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_metric_learning.samplers import MPerClassSampler
-
 from utils.MetricsCallback import MetricsCallback
 from data.dataset import ImageDataset
 from face_detection.face_detection import face_detection
 from models.FaceNetPytorchLightning import LightningFaceNet, FaceNetInceptionV3
-<<<<<<< HEAD
-=======
-from torch.utils.data import DataLoader
->>>>>>> 3645c15042d01fe01edf30f6008c23f518299479
-#from pytorch_lightning.loggers import TensorBoardLogger
-#from pytorch_lightning.callbacks import ModelCheckpoint
 
-from data.dataset import LFWDataset
+from data.dataset import ImageDataset, LFWDataset
 from face_detection.input_pipeline import input_pipeline
 from evaluations import evaluate_results
 from evaluation.overall_evaluation import evaluate_pipeline
-#from models.FaceNetPytorchLightning import LightningFaceNet
 from models.FaceNet import FaceNet
 from registration_database.RegistrationDatabase import RegistrationDatabase
-
 
 
 parser = argparse.ArgumentParser(description='Face Recognition using Triplet Loss')
@@ -63,6 +51,8 @@ parser.add_argument('--train-data-dir', default='./data/images/lfw_crop', type=s
 
 parser.add_argument('--val-data-dir', default=None, type=str,
                     help='path to train root dir (if not specified, 10% of training set will be used instead')                    
+parser.add_argument('--val-labels-dir', default=None, type=str,
+                    help='Path to pairs.txt of Valkidation data.')                   
 
 parser.add_argument('--model-dir', default='./models/results', type=str,
                     help='path to train root dir')
@@ -73,19 +63,14 @@ parser.add_argument('--optimizer', default='adagrad', type=str,
 parser.add_argument('--weight-decay', default=1e-5, type=float, metavar='SZ',
                     help='Decay learning rate (default: 1e-5)')
 
-parser.add_argument('--pretrained', action='store_true')
-
+parser.add_argument('--checkpoint', default=None, type=str,
+                    help='Path to checkpoint.')
 parser.add_argument('--load-last', action='store_true')
-
-parser.add_argument('--backbone', default='InceptionV3', type=str,
-                    help='Deep Neural Network architecture used backbone:\n- Resnet50\n- InceptionV3 (default)')
 
 args = parser.parse_args()
 
-architectures = {'InceptionV3': FaceNetInceptionV3 }
 
-
-def get_dataloader(dataset):
+def get_dataloader(dataset, train=True):
     sample_size = args.sample_size
 
     batch_size = args.batch_size
@@ -93,22 +78,18 @@ def get_dataloader(dataset):
         sample_size = 40
 
     num_workers = args.num_workers
-
-    transform = transforms.Compose([
-        transforms.Resize((250, 250)),
-        transforms.ToTensor(), 
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-    )
     
-    labels = list(dataset.label_to_number.keys())
-    sampler = MPerClassSampler(labels, sample_size)
+    sampler = None
+    if train:
+        labels = list(dataset.label_to_number.keys())
+        sampler = MPerClassSampler(labels, sample_size)
 
     print("Initialize DataLoader.")
-    train_loader = torch.utils.data.DataLoader(
+    dataloader = torch.utils.data.DataLoader(
         dataset, batch_size=batch_size, num_workers=num_workers, sampler=sampler
     )
 
-    return train_loader
+    return dataloader
 
 
 def train():
@@ -119,13 +100,10 @@ def train():
         'weight_decay': args.weight_decay,
         "optimizer": args.optimizer
     }
-    pretrained = args.pretrained
+    load_checkpoint = args.load_checkpoint
     num_epochs = args.num_epochs
     load_last = args.load_last
-    backbone = args.backbone
-    if backbone not in architectures:
-        print("Specified architecture not support.")
-
+  
     model_dir = os.path.expanduser(args.model_dir)
     if not os.path.exists(model_dir):
         os.mkdir(model_dir)
@@ -136,20 +114,19 @@ def train():
         os.mkdir(subdir)
 
     train_dir = os.path.expanduser(args.train_data_dir)
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(), 
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+    )
     train_set = ImageDataset(train_dir, transform=transform)
-    labels = list(train_set.label_to_number.keys())
-    sampler = MPerClassSampler(labels, 10)
-
-    if args.val_data_dir:
-        val_dir = os.path.expanduser(args.val_data_dir)
-        val_set = ImageDataset(val_dir, transform=transform)
-        val_loader = get_dataloader(val_dir)        
-    else:
-        train_length = int(0.9 * len(train_set))
-        val_length = len(train_set) - train_length)
-        train_set, val_set = random_split(dataset, [train_length, val_length])
-
     train_loader = get_dataloader(train_set)
+
+    val_loader = None
+    if args.val_data_dir and args.val_labels_dir:
+        val_dir = os.path.expanduser(args.val_data_dir)
+        val_set = LFWDataset(args.val_data_dir, args.val_labels_dir, transform=transform)
+        val_loader = get_dataloader(val_dir, train=False)
 
     checkpoint_dir = './checkpoints/last_checkpoint'
     checkpoint_callback = ModelCheckpoint(
@@ -160,14 +137,20 @@ def train():
         save_top_k=1
     )
     callback = [MetricsCallback()]
-    logger = TensorBoardLogger('tb_logs', name='Training')
-
-    model = LightningFaceNet(hparams, num_classes, architectures[backbone], pretrained=pretrained)
+    logger = TensorBoardLogger('tb_logs', name='FaceNet InceptionV3')
+    
+    print("Initialize inceptionv3 backbone")
+    inception = FaceNetInceptionV3()
+    
+    model = LightningFaceNet(hparams, inception)
+    if load_checkpoint:
+        model = LightningFaceNet.load_from_checkpoint(load_checkpoint, hparams=hparams, model=inception)
+    
     trainer = pl.Trainer(
         gpus=1 if torch.cuda.is_available() else 0,
         max_epochs=num_epochs,
         logger=logger,
-        checkpoint_callback=checkpoint_callback,;
+        checkpoint_callback=checkpoint_callback,
         callbacks=callback
         resume_from_checkpoint=checkpoint_dir if load_last else None
     )
@@ -184,20 +167,14 @@ def train():
 
 
 if __name__ == '__main__':
-<<<<<<< HEAD
     train()
     sys.exit(0)
-=======
 
-    absolute_dir = dirname(abspath(__file__))
+    #absolute_dir = dirname(abspath(__file__))
     #evaluate_results(absolute_dir)
-    evaluate_pipeline(absolute_dir)
+    #evaluate_pipeline(absolute_dir)
 
     #input_pipeline()
     #main()
-    sys.exit(0)
-<<<<<<< HEAD
->>>>>>> 196eb500f095c0e734e7cb0bf7c501239b3af0a9
-=======
->>>>>>> 5e0eeb57ec35f100d707795ecd9daca6122b7fc8
->>>>>>> 3645c15042d01fe01edf30f6008c23f518299479
+    #sys.exit(0)
+

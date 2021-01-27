@@ -89,7 +89,7 @@ class FaceNet(nn.Module):
 class FaceNetInceptionV3(nn.Module):
     def __init__(self, embedding_dimension=128, pretrained=False):
         super(FaceNetInceptionV3, self).__init__()
-        self.model = inception_v3(pretrained=pretrained)
+        self.model = inception_v3(pretrained=pretrained, aux_logits=False)
 
         input_features_fc_layer = self.model.fc.in_features
         self.model.fc = nn.Sequential(

@@ -32,7 +32,8 @@ class ImageDataset(Dataset):
             label_path = os.path.join(root, label)
             for img in listdir(label_path):
                 img_path = os.path.join(label_path, img)
-                self.data.append((i, img_path))
+                if os.path.exists(img_path):
+                    self.data.append((i, img_path))
 
         self.transform = transform
         shuffle(self.data)
@@ -84,8 +85,9 @@ class LFWDataset(Dataset):
                     fpath_1 = self.add_suffix(os.path.join(self.root, name_1, name_1 + '_' + f"{img_1:04d}"))
                     fpath_2 = self.add_suffix(os.path.join(self.root, name_2, name_2 + '_' + f"{img_2:04d}"))
                     same = False
-
-                self.pairs.append((fpath_1, fpath_2, same))
+                
+                if os.path.exists(fpath_1) and os.path.exists(fpath_2):
+                    self.pairs.append((fpath_1, fpath_2, same))
 
     def add_suffix(self, path):
         if os.path.exists(path + '.jpg'):
