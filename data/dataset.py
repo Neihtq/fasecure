@@ -29,8 +29,12 @@ class ImageDataset(Dataset):
         self.label_to_number = {}
         self.data = []
         
+        folder_pairs = list(enumerate(listdir(root)))
+        for i, label in folder_pairs:
+            self.label_to_number[i] = label
+        
         with mp.Pool(processes=20) as pool:
-            data = pool.map(self.aggregate_data, list(enumerate(listdir(root))))
+            data = pool.map(self.aggregate_data, folder_pairs)
             flattened = [pair for person in data for pair in person]
             self.data = flattened
         
@@ -40,7 +44,6 @@ class ImageDataset(Dataset):
     def aggregate_data(self, folder_index_tuple):
         data = []
         i, label = folder_index_tuple
-        self.label_to_number[i] = label
         label_path = os.path.join(self.root, label)
         for img in listdir(label_path):
             img_path = os.path.join(label_path, img)
