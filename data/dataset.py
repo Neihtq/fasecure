@@ -2,6 +2,7 @@ import os
 import random
 import torch
 import glob
+import multiprocessing as mp
 
 from random import shuffle
 from os import listdir
@@ -27,16 +28,26 @@ class ImageDataset(Dataset):
         self.root = root
         self.label_to_number = {}
         self.data = []
-        for i, label in enumerate(listdir(root)):
-            self.label_to_number[i] = label
-            label_path = os.path.join(root, label)
-            for img in listdir(label_path):
-                img_path = os.path.join(label_path, img)
-                if os.path.exists(img_path):
-                    self.data.append((i, img_path))
-
+        
+        with mp.Pool(processes=20) as pool:
+            data = pool.map(self.aggregate_data, list(enumerate(listdir(root))))
+            flattened = [pair for person in data for pair in person]
+            self.data = flattened
+        
         self.transform = transform
         shuffle(self.data)
+
+    def aggregate_data(self, folder_index_tuple):
+        data = []
+        i, label = folder_index_tuple
+        self.label_to_number[i] = label
+        label_path = os.path.join(self.root, label)
+        for img in listdir(label_path):
+            img_path = os.path.join(label_path, img)
+            if os.path.exists(img_path):
+                data.append((i, img_path))
+        
+        return data
         
     def __len__(self):
         return len(self.data)

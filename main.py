@@ -4,7 +4,7 @@ import sys
 import timeit
 import torch
 from os.path import dirname, abspath
-#import pytorch_lightning as pl
+import pytorch_lightning as pl
 
 from datetime import datetime
 from torchvision import transforms
@@ -13,17 +13,17 @@ from torch.utils.data import DataLoader, random_split
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_metric_learning.samplers import MPerClassSampler
-from utils.MetricsCallback import MetricsCallback
-from data.dataset import ImageDataset
-from face_detection.face_detection import face_detection
-from models.FaceNetPytorchLightning import LightningFaceNet, FaceNetInceptionV3
-
+from models.MetricsCallback import MetricsCallback
+from models.FaceNetPytorchLightning import LightningFaceNet
+from models.FaceNet import FaceNetInceptionV3
 from data.dataset import ImageDataset, LFWDataset
-from face_detection.input_pipeline import input_pipeline
-from evaluations import evaluate_results
-from evaluation.overall_evaluation import evaluate_pipeline
-from models.FaceNet import FaceNet
-from registration_database.RegistrationDatabase import RegistrationDatabase
+
+#from face_detection.face_detection import face_detection
+#from face_detection.input_pipeline import input_pipeline
+#from evaluations import evaluate_results
+#from evaluation.overall_evaluation import evaluate_pipeline
+#from models.FaceNet import FaceNet
+#from registration_database.RegistrationDatabase import RegistrationDatabase
 
 
 parser = argparse.ArgumentParser(description='Face Recognition using Triplet Loss')
@@ -54,7 +54,7 @@ parser.add_argument('--val-data-dir', default=None, type=str,
 parser.add_argument('--val-labels-dir', default=None, type=str,
                     help='Path to pairs.txt of Valkidation data.')                   
 
-parser.add_argument('--model-dir', default='./models/results', type=str,
+parser.add_argument('--model-dir', default='./results', type=str,
                     help='path to train root dir')
 
 parser.add_argument('--optimizer', default='adagrad', type=str,
@@ -63,9 +63,8 @@ parser.add_argument('--optimizer', default='adagrad', type=str,
 parser.add_argument('--weight-decay', default=1e-5, type=float, metavar='SZ',
                     help='Decay learning rate (default: 1e-5)')
 
-parser.add_argument('--checkpoint', default=None, type=str,
+parser.add_argument('--load-checkpoint', default=None, type=str,
                     help='Path to checkpoint.')
-parser.add_argument('--load-last', action='store_true')
 
 args = parser.parse_args()
 
@@ -83,8 +82,10 @@ def get_dataloader(dataset, train=True):
     if train:
         labels = list(dataset.label_to_number.keys())
         sampler = MPerClassSampler(labels, sample_size)
-
-    print("Initialize DataLoader.")
+    if train:
+        print("Initialize training dataloader.")
+    else:
+        print("Initialize validation dataloader.")
     dataloader = torch.utils.data.DataLoader(
         dataset, batch_size=batch_size, num_workers=num_workers, sampler=sampler
     )
@@ -102,7 +103,6 @@ def train():
     }
     load_checkpoint = args.load_checkpoint
     num_epochs = args.num_epochs
-    load_last = args.load_last
   
     model_dir = os.path.expanduser(args.model_dir)
     if not os.path.exists(model_dir):
@@ -126,14 +126,14 @@ def train():
     if args.val_data_dir and args.val_labels_dir:
         val_dir = os.path.expanduser(args.val_data_dir)
         val_set = LFWDataset(args.val_data_dir, args.val_labels_dir, transform=transform)
-        val_loader = get_dataloader(val_dir, train=False)
+        val_loader = get_dataloader(val_set, train=False)
 
     checkpoint_dir = './checkpoints/last_checkpoint'
     checkpoint_callback = ModelCheckpoint(
         filepath=checkpoint_dir,
         verbose=True,
-        monitor='val_loss',
-        mode='min',
+        monitor='val_acc',
+        mode='max',
         save_top_k=1
     )
     callback = [MetricsCallback()]
@@ -152,7 +152,6 @@ def train():
         logger=logger,
         checkpoint_callback=checkpoint_callback,
         callbacks=callback
-        resume_from_checkpoint=checkpoint_dir if load_last else None
     )
 
     print("Begin Training.")
@@ -164,7 +163,6 @@ def train():
     print("Save trained weights.")
     model_name = os.path.join(subdir, time_stamp + '.pth')
     torch.save(model.model.state_dict(), model_name)
-
 
 if __name__ == '__main__':
     train()
