@@ -140,10 +140,11 @@ def train():
 
 if __name__ == '__main__':
 
-    absolute_dir = dirname(abspath(__file__))
+    #absolute_dir = dirname(abspath(__file__))
     #evaluate_results(absolute_dir)
-    evaluate_pipeline(absolute_dir)
+    #evaluate_pipeline(absolute_dir)
 
-    #input_pipeline()
+    input_pipeline()
     #main()
+
     sys.exit(0)
