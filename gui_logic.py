@@ -11,10 +11,12 @@ from models.FaceNet import get_model
 from registration_database.RegistrationDatabase import RegistrationDatabase
 from utils.prep import img_augmentation
 
+prev_frame_time = 0
+new_frame_time = 0
 
 absolute_dir = dirname(abspath(__file__))
-face_detection_prototxt = join(absolute_dir, "model", "deploy.prototxt")
-face_detection_path = join(absolute_dir, "model", "res10_300x300_ssd_iter_140000.caffemodel")
+face_detection_prototxt = join(absolute_dir,"face_detection", "model", "deploy.prototxt")
+face_detection_path = join(absolute_dir,"face_detection", "model", "res10_300x300_ssd_iter_140000.caffemodel")
 detection_threshold = 0.5
 
 # Face detection model
@@ -31,12 +33,34 @@ face_embedding_model.eval()
 fixed_initial_registration_threshold = 98.5
 registration_database = RegistrationDatabase(fixed_initial_registration_threshold)
 
-
+"""
 def detect(image):
     blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
     face_detection_model.setInput(blob)
     detections = face_detection_model.forward()
     return detections
+"""
+def face_detection(frame, h, w):
+    #detections = detect(frame)
+    blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
+    face_detection_model.setInput(blob)
+    detections = face_detection_model.forward()
+        
+    for i in np.arange(0, detections.shape[2]):
+        confidence = detections[0, 0, i, 2]
+        
+        if confidence < detection_threshold:
+            continue
+        
+        box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+        start_x , start_y, end_x, end_y = box.astype("int")
+
+    try:
+        return start_x , start_y, end_x, end_y
+            
+    except:
+        start_x , start_y, end_x, end_y = None, None, None, None
+        return start_x , start_y, end_x, end_y
 
 def crop_img(img, start_x, start_y, end_x, end_y):
     height, width = end_y - start_y, end_x - start_x
@@ -74,15 +98,19 @@ def register(augmented_imgs, label):
     print("registration for ", label, " successful")
 
 def take_shot(directory, filename, frame, start_x, start_y, end_x, end_y):        
-    print("Takeshot in function frame after crop before crop: "+ str(start_x))
     cropped_img = crop_img(frame, start_x-20, start_y-20, end_x+20, end_y+20)
-    print("Takeshot in function frame after crop: "+ str(start_x))
     cropped_aligned_img = face_alignment.align(cropped_img, start_x, start_y, end_x, end_y)
-    print("Takeshot in function frame after align: "+ str(start_x))
     write_root = join(directory, filename)
     cv2.imwrite(write_root, cropped_aligned_img)
 
-    print("Snapshot taken and saved as: " + filename)
+
+def fps(frame, new_frame_time, prev_frame_time):
+    new_frame_time = time.time()
+    fps = 1 / (new_frame_time - prev_frame_time)
+    prev_frame_time = new_frame_time
+    fps = str(int(fps))
+    cv2.putText(frame, fps, (7, 70), cv2.FONT_HERSHEY_SIMPLEX, 3, (100, 255, 0), 3, cv2.LINE_AA)
+    return frame, new_frame_time, prev_frame_time
 
 if __name__ == '__main__':
     gui_frame()
