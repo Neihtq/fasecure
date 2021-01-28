@@ -29,7 +29,7 @@ class LightningFaceNet(pl.LightningModule):
         embeddings = self.forward(data)
         triplets = self.miner(embeddings, labels)
 
-        loss = self.loss_func(embeddings, labels, triplets)
+        loss = self.loss_func(detect_and_align, labels, triplets)
         
         '''
         if mode == 'train':

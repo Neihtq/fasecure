@@ -1,6 +1,5 @@
 import cv2
 import torch
-import imutils
 import time
 import numpy as np
 import sys
