@@ -140,6 +140,7 @@ dmypy.json
 /yolov3-wider_16000.weights
 .vscode
 
+*.png
 *.jpg
 *.tgz
 *.tar
