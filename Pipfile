@@ -1,0 +1,29 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pylint = "*"
+
+[packages]
+jupyterlab = "*"
+opencv-python = "*"
+pytorch-lightning = "*"
+ipywidgets = "*"
+imutils = "*"
+matplotlib = "*"
+scikit-learn = "*"
+jupyter = "*"
+deepface = "*"
+facenet = "*"
+align = "*"
+numpy = "==1.19.3"
+scikit-metrics = "*"
+pytorch-metric-learning = "*"
+online-triplet-loss = "*"
+faiss-gpu = "*"
+pyqt5 = "*"
+
+[requires]
+python_version = "3.7"

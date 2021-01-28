@@ -39,14 +39,21 @@ def input_pipeline(callback=None):
     access = 0
 
     # Choose camera input (maybe have to adapt input parameter to "1")
-    cam = cv2.VideoCapture(1)
+    cam = cv2.VideoCapture(0)
 
     while True:
         _, frame = cam.read()
         
+
+        #start_x , start_y, end_x, end_y = face_detection(frame)
+
         h, w = frame.shape[:2]
+    
+        blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
+        face_detection_model.setInput(blob)
+        detections = face_detection_model.forward()
         
-        # Face detection
+        # --- FACE DETECTION ---
         detections = detect(frame)
 
         for i in np.arange(0, detections.shape[2]):
@@ -61,15 +68,7 @@ def input_pipeline(callback=None):
             color =(255, 0, 0)
             stroke = 3
             cv2.rectangle(frame, (start_x-30, start_y-30), (end_x+30, end_y+30), color, stroke)
-            
-
-            if callback:
-                tensor = callback(frame)
-                print(tensor.shape)
-                print(tensor)
-                cam.release()
-                cv2.destroyAllWindows()
-                return
+            #h, w = frame.shape[:2]   
 
 
         new_frame_time = time.time()
@@ -79,31 +78,39 @@ def input_pipeline(callback=None):
         cv2.putText(frame, fps, (7, 70), cv2.FONT_HERSHEY_SIMPLEX, 3, (100, 255, 0), 3, cv2.LINE_AA)
         
         # SHOW WEBCAM INPUT
+        #frame = cv2.resize(frame, (300, 300))
         cv2.imshow('Webcam', frame)
-                
+        
         # CLOSE APPLICATION        
         if cv2.waitKey(20) & 0xFF == ord('q'):
             break
-
+    
 
         # --- FACE REGISTRATION ---
 
         # if key "6" pressed, then take current frame and register user as "Tobias"      
+        
         if cv2.waitKey(20) & 0xFF == ord('6'):
-            embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
-            if embedding == None:
-                continue
-            label = "tobias"
-            register(augmented_imgs, label)
-
+            if start_x:
+                embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
+                if embedding == None:
+                    continue
+                label = "Tobias"
+                register(augmented_imgs, label)
+            else:
+                print("No Face detected. Please try again!")
+        
         # if key "7" pressed, then take current frame and register user as "Cao"    
         if cv2.waitKey(20) & 0xFF == ord('7'):
-            embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
-            if embedding == None:
-                continue
-            label = "Cao"
-            register(augmented_imgs, label)
-        """    
+            if start_x:
+                embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
+                if embedding == None:
+                    continue
+                label = "Cao"
+                register(augmented_imgs, label)
+            else:
+                print("No Face detected. Please try again!")
+        """   
         # if key "8" pressed, then take current frame and register user as "Thien"
         if cv2.waitKey(20) & 0xFF == ord('8'):
             embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
@@ -118,41 +125,48 @@ def input_pipeline(callback=None):
         """
 
         # if key "c" pressed, then reset the database
+        
         if cv2.waitKey(20) & 0xFF == ord('c'):           
             registration_database.clean_database()
             print("database was cleaned...")
-
+        
 
         # --- FACE RECOGNITION ---
-
+        
         # if key "1" is pressed, then take current frame and recognize user
         if cv2.waitKey(20) & 0xFF == ord('1'):
+            if start_x:
+                embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
+                if embedding == None:
+                    continue
+                closest_label, check = registration_database.face_recognition(embedding)
 
-            embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
-            if embedding == None:
-                continue
-            closest_label, check = registration_database.face_recognition(embedding)
-
-            if check == 'Access':
-                print("User recognized - " + closest_label + " - Access Granted!")
-                
-                cv2.putText(frame, "User recognized - " + closest_label + " - Access Granted!", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3, cv2.LINE_AA)
-            elif check == 'Decline':
-                print("User not recognized - Access Denied!")
-                cv2.putText(frame, "User not recognized - Access Denied!", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3, cv2.LINE_AA)
-
-
+                if check == 'Access':
+                    print("User recognized - " + closest_label + " - Access Granted!")
+                    
+                    cv2.putText(frame, "User recognized - " + closest_label + " - Access Granted!", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3, cv2.LINE_AA)
+                elif check == 'Decline':
+                    print("User not recognized - Access Denied!")
+                    cv2.putText(frame, "User not recognized - Access Denied!", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3, cv2.LINE_AA)
+            else:
+                print("No Face detected. Please try again!")
+        
         # --- TAKE SHOT ---
-           
+         
         if cv2.waitKey(20) & 0xFF == ord('s'):
-            print(type(blob))
-            directory = '.\images\snap_shot'
-            filename = "testshot_input_pipeline.png"
-            
-            take_shot(directory, filename, frame, start_x, start_y, end_x, end_y)
-
+            if start_x:
+                print(type(blob))
+                directory = '.\images\snap_shot'
+                filename = "testshot_input_pipeline.png"
+                
+                take_shot(directory, filename, frame, start_x, start_y, end_x, end_y)
+            else:
+                print("No Face detected. Please try again!")
+        
+        start_x = None
     cam.release()
     cv2.destroyAllWindows()
+    return
 
 
 
@@ -173,7 +187,7 @@ def align_embed(frame, start_x, start_y, end_x, end_y):
     cropped_img = crop_img(frame, start_x-20, start_y-20, end_x+20, end_y+20)
     
     #align image
-    detected_face_numpy = face_alignment.align(cropped_img)
+    detected_face_numpy = face_alignment.align(cropped_img, start_x, start_y, end_x, end_y)
     
     if detected_face_numpy is None:
         print("Error during Face Detection. Please try again!")
@@ -199,7 +213,7 @@ def register(augmented_imgs, label):
 
 def take_shot(directory, filename, frame, start_x, start_y, end_x, end_y):        
     cropped_img = crop_img(frame, start_x-20, start_y-20, end_x+20, end_y+20)
-    cropped_aligned_img = face_alignment.align(cropped_img)
+    cropped_aligned_img = face_alignment.align(cropped_img, start_x, start_y, end_x, end_y)
 
     write_root = join(directory, filename)
     cv2.imwrite(write_root, cropped_aligned_img)
