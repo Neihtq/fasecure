@@ -1,8 +1,8 @@
-import numpy as np
 import cv2
+import numpy as np
+
 from sklearn.externals import joblib
 
-# Code is adapted from: https://medium.com/visionwizard/face-spoofing-detection-in-python-e46761fe5947
 
 def calc_hist(img):
     histogram = [0] * 3
@@ -14,7 +14,6 @@ def calc_hist(img):
 
 
 def face_spoofing_live():
-
     modelFile = "./pretrained_model/res10_300x300_ssd_iter_140000.caffemodel"
     configFile = "./pretrained_model/deploy.prototxt"
     face_detection_model = cv2.dnn.readNetFromCaffe(configFile, modelFile)

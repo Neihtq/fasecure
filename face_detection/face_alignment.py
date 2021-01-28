@@ -1,6 +1,6 @@
 import numpy as np
 import dlib
-import cv2
+
 from PIL import Image
 
 class FaceAlignment():         
@@ -49,20 +49,8 @@ class FaceAlignment():
         
     def align(self, image, start_x, start_y, end_x, end_y):
         img = image
+        rects = self.detector(img, 0)
 
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
-        rects = self.detector(gray, 0)
-        
-        """
-        if len(rects) > 0:
-            
-            for rect in rects:
-                x = rect.left()
-                y = rect.top()
-                w = rect.right()
-                h = rect.bottom()
-                shape = self.predictor(gray, rect)
-            """
         x = start_x
         y = start_y
         w = end_x - start_x
@@ -74,7 +62,6 @@ class FaceAlignment():
         bottom = end_y - start_y 
         dlibRect = dlib.rectangle(left, top, right, bottom) 
         shape = self.predictor(gray, dlibRect)        
-        
 
         shape = self.shape_to_normal(shape)
         nose, left_eye, right_eye = self.get_eyes_nose_dlib(shape)

@@ -1,32 +1,32 @@
 import os
 import torch
+import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
 
-from torchvision.models import resnet50
+from torchvision.models import resnet50, inception_v3
 from torch.hub import download_url_to_file
+
+from constants import PRETRAINED_URL, PRETRAINED_MODEL_DIR
 
 
 def load_state():
-    path = 'https://github.com/khrlimam/facenet/releases/download/acc-0.92135/model921-af60fb4f.pth'
-
-    model_dir = "./pretrained_model"
     os.makedirs(model_dir, exist_ok=True)
-
-    cached_file = os.path.join(model_dir, os.path.basename(path))
+    cached_file = os.path.join(PRETRAINED_MODEL_DIR, os.path.basename(path))
     if not os.path.exists(cached_file):
-        download_url_to_file(path, cached_file)
+        download_url_to_file(PRETRAINED_URL, cached_file)
 
     state_dict = torch.load(cached_file)  
     
     return state_dict
+
 
 def get_model(pretrained=True):
     model = FaceNet(pretrained)
     if pretrained:
         state = load_state()
         model.load_state_dict(state['state_dict'])
+    
     return model
 
 
@@ -59,7 +59,6 @@ class FaceNet(nn.Module):
             nn.Linear(fc_dim, embedding_size)
         )
         
-        self.model.classifier = nn.Linear(embedding_size, num_classes)
 
     def l2_norm(self, input):
         input_size = input.size()
@@ -80,7 +79,38 @@ class FaceNet(nn.Module):
         
         return features
 
-    def forward_classifier(self, x):
-        features = self.forward(x)
-        res = self.model.classifier(features)
-        return res
+
+class FaceNetInceptionV3(nn.Module):
+    def __init__(self, embedding_dimension=128, pretrained=False):
+        super(FaceNetInceptionV3, self).__init__()
+        self.model = inception_v3(pretrained=pretrained)
+
+        input_features_fc_layer = self.model.fc.in_features
+        self.model.fc = nn.Sequential(
+            nn.Linear(input_features_fc_layer, embedding_dimension, bias=False),
+            nn.BatchNorm1d(embedding_dimension, eps=0.001, momentum=0.1, affine=True)
+        )
+
+    def forward(self, x):
+        x = self.model(x)
+        x = F.normalize(x, p=2, dim=1)
+        
+        return x
+    
+    
+class FaceNetResnet(nn.Module):
+    def __init__(self, embedding_dimension=128, pretrained=False):
+        super(FaceNetResnet, self).__init__()
+        self.model = resnet50(pretrained=pretrained)
+
+        input_features_fc_layer = self.model.fc.in_features
+        self.model.fc = nn.Sequential(
+            nn.Linear(input_features_fc_layer, embedding_dimension, bias=False),
+            nn.BatchNorm1d(embedding_dimension, eps=0.001, momentum=0.1, affine=True)
+        )
+
+    def forward(self, x):
+        x = self.model(x)
+        x = F.normalize(x, p=2, dim=1)
+        
+        return x
