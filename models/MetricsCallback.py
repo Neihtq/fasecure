@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import auc
 from pytorch_lightning import Callback
 
-RESULTS_DIR = './results/'
+from utils.constants import RESULTS_DIR
 
 
 class MetricsCallback(Callback):
@@ -36,6 +36,7 @@ class MetricsCallback(Callback):
     def on_test_end(self, trainer, pl_module):
         metrics = trainer.logged_metrics
         acc = metrics["test_acc"]
+        print(acc)
     
     def on_fit_end(self, trainer, pl_module):
         self.plot_roc()

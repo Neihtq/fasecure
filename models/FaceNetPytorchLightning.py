@@ -52,6 +52,8 @@ class LightningFaceNet(pl.LightningModule):
         loss = self.general_step(loss_batch)
         self.log("val_loss", loss)
         
+        return {"val_loss": loss}
+
     def validation_epoch_end(self, validation_step_outputs):
         tp_rate, fp_rate, precision, recall, acc, roc_auc, best_dist, tar, far = self.val_metric.compute()
         self.log("val_acc", acc, logger=True)
@@ -61,15 +63,13 @@ class LightningFaceNet(pl.LightningModule):
         self.log("recall", recall, logger=True)
         self.log("roc_auc", roc_auc, logger=True)
 
-        return tp_rate, fp_rate, acc
-
     def test_step(self, batch, batch_idx):
         img_1, img_2, same = batch
         enc_1, enc_2 = self.forward(img_1), self.forward(img_2)
         self.test_metric(enc_1, enc_2, same)
 
     def test_epoch_end(self, test_step_outputs):
-        tp_rate, fp_rate, precision, recall, acc, roc_auc, best_dist, tar, far = self.val_metric.compute()
+        tp_rate, fp_rate, precision, recall, acc, roc_auc, best_dist, tar, far = self.test_metric.compute()
         self.log("test_acc", acc, logger=True)
         self.log("tp_rate", tp_rate, logger=True)
         self.log("fp_rate", fp_rate, logger=True)

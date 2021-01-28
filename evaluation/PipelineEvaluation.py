@@ -33,8 +33,9 @@ from PIL import Image
 from scipy import interpolate
 from scipy.optimize import fsolve
 
-from data.dataset import LFWEvaluationDataset
+from data.datasets import LFWDataset
 from utils.preprocess import augment
+
 
 class PipelineEvaluation():
     def __init__(self, dataset_path, eval_log_path, face_embedding_model, registration_database):
@@ -44,7 +45,7 @@ class PipelineEvaluation():
         self.evaluation_database = registration_database
 
         # Directly load cropped images for evaluation
-        self.eval_dataset = LFWEvaluationDataset(self.dataset_path, cropped_faces=True)
+        self.eval_dataset = LFWDataset(self.dataset_path, cropped_faces=True)
 
     def run(self):
         subset_size = 10

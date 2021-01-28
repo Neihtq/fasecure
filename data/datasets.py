@@ -73,9 +73,8 @@ class ImageDataset(Dataset):
         return label, img
         
     def get_image(self, img_path):
-        '''Returns Pytorch.Tensor of image'''
         img = Image.open(img_path).convert('RGB')
-        
+       
         if self.transform:
             img = self.transform(img)
        
@@ -85,8 +84,7 @@ class ImageDataset(Dataset):
         return img.float()
     
 
-
-class LFWDataset(Dataset):
+class LFWValidationDataset(Dataset):
     def __init__(self, root, pairs_txt, transform=None):
         self.root = root
         self.pairs = []
@@ -140,8 +138,7 @@ class LFWDataset(Dataset):
         return img.float()
 
 
-
-class LFWEvaluationDataset(Dataset):
+class LFWDataset(Dataset):
     def __init__(self, root, transform=None, cropped_faces=False):
         self.root = root
         self.cropped_faces = cropped_faces
@@ -159,6 +156,7 @@ class LFWEvaluationDataset(Dataset):
                     self.mask.append(False)
 
         self.image_filenames = glob.glob(os.path.join(root, "**/*.jpg"), recursive=True)
+        
         # Use mask to filter classes with less than certain amount of images
         self.image_filenames = list(compress(self.image_filenames, self.mask))
 
