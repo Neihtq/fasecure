@@ -28,19 +28,29 @@ class LightningFaceNet(pl.LightningModule):
     def forward(self, x):
         return self.model(x)
             
-    def training_step(self, batch, batch_idx):
+    def general_step(self, batch):
         labels, data = batch
         embeddings = self.forward(data)
         triplets = self.miner(embeddings, labels)
         loss = self.loss_func(embeddings, labels, triplets)
+        
+        return loss
+    
+    def training_step(self, batch, batch_idx):
+        loss = self.general_step(batch)
         self.log("train_loss", loss)
 
         return {"loss": loss}
 
-    def validation_step(self, batch, batch_idx):      
-        img_1, img_2, same = batch
+    def validation_step(self, batch, batch_idx):
+        lfw_batch, loss_batch = batch
+        
+        img_1, img_2, same = lfw_batch
         enc_1, enc_2 = self.forward(img_1), self.forward(img_2)
         self.val_metric(enc_1, enc_2, same)
+        
+        loss = self.general_step(loss_batch)
+        self.log("val_loss", loss)
         
     def validation_epoch_end(self, validation_step_outputs):
         tp_rate, fp_rate, precision, recall, acc, roc_auc, best_dist, tar, far = self.val_metric.compute()

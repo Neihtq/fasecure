@@ -15,8 +15,8 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_metric_learning.samplers import MPerClassSampler
 from models.MetricsCallback import MetricsCallback
 from models.FaceNetPytorchLightning import LightningFaceNet
-from models.FaceNet import FaceNetInceptionV3, FaceNetResnet152
-from data.dataset import ImageDataset, LFWDataset
+from models.FaceNet import FaceNetInceptionV3, FaceNetResnet
+from data.dataset import ImageDataset, LFWDataset, TupleDataset
 
 #from face_detection.face_detection import face_detection
 #from face_detection.input_pipeline import input_pipeline
@@ -69,7 +69,7 @@ parser.add_argument('--load-checkpoint', default=None, type=str,
 args = parser.parse_args()
 
 
-def get_dataloader(dataset, train=True):
+def get_dataloader(dataset, labels=None, train=False):
     sample_size = args.sample_size
 
     batch_size = args.batch_size
@@ -78,18 +78,12 @@ def get_dataloader(dataset, train=True):
 
     num_workers = args.num_workers
     
-    sampler = None
-    if train:
-        labels = list(dataset.label_to_number.keys())
-        sampler = MPerClassSampler(labels, sample_size)
     if train:
         print("Initialize training dataloader.")
     else:
         print("Initialize validation dataloader.")
-    dataloader = torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size, num_workers=num_workers, sampler=sampler
-    )
-
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    
     return dataloader
 
 
@@ -119,15 +113,23 @@ def train():
         transforms.ToTensor(), 
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
     )
-    train_set = ImageDataset(train_dir, transform=transform)
-    train_loader = get_dataloader(train_set)
-
+       
     val_loader = None
+    len_lfw_set = 0
     if args.val_data_dir and args.val_labels_dir:
         val_dir = os.path.expanduser(args.val_data_dir)
-        val_set = LFWDataset(args.val_data_dir, args.val_labels_dir, transform=transform)
-        val_loader = get_dataloader(val_set, train=False)
-
+        lfw_set = LFWDataset(args.val_data_dir, args.val_labels_dir, transform=transform)
+        len_lfw_set = len(lfw_set)
+    
+    dataset = ImageDataset(train_dir, transform=transform)
+    labels = list(dataset.label_to_number.keys())
+    len_train_set = len(dataset) - len_lfw_set
+    train_set, val_set = random_split(dataset, [len_train_set, len_lfw_set])
+    train_loader = get_dataloader(train_set, labels=labels, train=True)
+    
+    tuple_set = TupleDataset(lfw_set, val_set)
+    val_loader = get_dataloader(tuple_set, train)
+    
     checkpoint_dir = './checkpoints/last_checkpoint'
     checkpoint_callback = ModelCheckpoint(
         filepath=checkpoint_dir,
@@ -139,10 +141,10 @@ def train():
     callback = [MetricsCallback()]
     logger = TensorBoardLogger('tb_logs', name='FaceNet InceptionV3')
     
-    print("Initialize Resnet152 backbone")
-    inception = FaceNetResnet152()
+    print("Initialize resnet50 backbone")
+    backbone = FaceNetResnet(pretrained=True)
     
-    model = LightningFaceNet(hparams, inception)
+    model = LightningFaceNet(hparams, backbone)
     if load_checkpoint:
         model = LightningFaceNet.load_from_checkpoint(load_checkpoint, hparams=hparams, model=inception)
     

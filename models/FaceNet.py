@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
-from torchvision.models import resnet50, inception_v3, resnet152
+from torchvision.models import resnet50, inception_v3, resnet101, resnet18
 from torch.hub import download_url_to_file
 
 
@@ -89,7 +89,7 @@ class FaceNet(nn.Module):
 class FaceNetInceptionV3(nn.Module):
     def __init__(self, embedding_dimension=128, pretrained=False):
         super(FaceNetInceptionV3, self).__init__()
-        self.model = inception_v3(pretrained=pretrained, aux_logits=False)
+        self.model = inception_v3(pretrained=pretrained)
 
         input_features_fc_layer = self.model.fc.in_features
         self.model.fc = nn.Sequential(
@@ -104,10 +104,10 @@ class FaceNetInceptionV3(nn.Module):
         return x
     
     
-class FaceNetResnet152(nn.Module):
+class FaceNetResnet(nn.Module):
     def __init__(self, embedding_dimension=128, pretrained=False):
-        super(FaceNetInceptionV3, self).__init__()
-        self.model = resnet152(pretrained=pretrained)
+        super(FaceNetResnet, self).__init__()
+        self.model = resnet50(pretrained=pretrained)
 
         input_features_fc_layer = self.model.fc.in_features
         self.model.fc = nn.Sequential(

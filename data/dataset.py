@@ -14,6 +14,17 @@ from torch.utils.data import Dataset
 from torchvision import transforms
     
 
+class TupleDataset(Dataset):
+    def __init__(self, *datasets):
+        self.datasets = datasets
+    
+    def __getitem__(self, idx):
+        return tuple(d[idx] for d in self.datasets)
+    
+    def __len__(self):
+        return min(len(d) for d in self.datasets)
+    
+    
 class ImageDataset(Dataset):
     '''Regular Dataset where images are stored like this:
     path_to_data/

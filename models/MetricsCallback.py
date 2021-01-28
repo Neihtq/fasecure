@@ -11,8 +11,9 @@ RESULTS_DIR = './results/'
 class MetricsCallback(Callback):
     def __init__(self):
         super().__init__()
-        self.val_acc = []
+        self.val_loss = []
         self.loss = []
+        self.val_acc = []
         self.acc = []
         self.fp_rate = []
         self.tp_rate = []
@@ -21,6 +22,7 @@ class MetricsCallback(Callback):
         
     def on_validation_epoch_end(self, trainer, pl_module):
         metrics = trainer.logged_metrics
+        self.val_loss.append(float(metrics['val_loss']))
         self.val_acc.append(float(metrics["val_acc"]))
         self.tp_rate.append(float(metrics["tp_rate"]))
         self.fp_rate.append(float(metrics["fp_rate"]))
@@ -41,11 +43,13 @@ class MetricsCallback(Callback):
         self.plot_loss()
     
     def plot_loss(self):
-        train_loss = self.loss
+        train_loss, val_loss = self.loss, self.val_loss
         fig = plt.figure()
         epochs = self.epochs
         plt.plot(range(epochs), train_loss, color='red', label='Train Loss on VGG')
-        plt.title('Loss')
+        plt.plot(range(epochs), train_loss, color='blue', label='Val Loss on VGG')
+        plt.ylim(bottom=0)
+        plt.title('Loss curve on VGG')
         plt.legend(loc='upper right')
         fig.savefig(os.path.join(RESULTS_DIR, "losses.png"), dpi=fig.dpi)
         plt.show()
