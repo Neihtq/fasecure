@@ -153,3 +153,4 @@ tb_logs/*
 models/results/*
 checkpoints/*
 data/lfw*
+tb_logs/
