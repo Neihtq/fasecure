@@ -1,34 +1,9 @@
-# Input: 
-# - path where dataset is stored (LFW, as it has less images per person on average. Thus closer to one-shot learning)
-# - path were the evaluation log should be stored
-# - Face Detection & Alignment model
-# - Face Embedding model
-# - RegistrationDatabase
-
-# Class
-# Methods:
-# - run()
-# - plot_results()
-
-# Procedure run: 
-# 1. Read all images and shuffle them randomly (so that images of same person don´t appear right after each other)
-#       Use random seed for shuffling, so that order is always the same
-# for-loop (each image)
-    # 2. Pass image through whole pipeline (detection & alignment # embedding)
-    # 3. Try to recognize person and then adapt TA, TR, ... (for first person, directly register --- for first people, use fixed threshold)
-    # 4. Register person to database (only if it doesn´t already exist (one-shot learning). Use function for augmentation which also the main programm uses)
-    # print every 100 images intermediate results
-# 5. Calculate overall accuracy
-
-
-# --- Output: Overall Accuracy
+import glob
 import torch
-import sys
 import numpy as np
 import matplotlib.pyplot as plt
-from os.path import split, join
-import glob
 
+from os.path import split, join
 from PIL import Image
 from scipy import interpolate
 from scipy.optimize import fsolve
@@ -37,14 +12,13 @@ from data.LFWDataset import LFWEvaluationDataset
 from utils.prep import img_augmentation
 
 
-class PipelineEvaluation():
+class EvaluationPipeline():
     def __init__(self, dataset_path, eval_log_path, face_embedding_model, registration_database):
         self.dataset_path = dataset_path
         self.eval_log_path = eval_log_path
         self.face_embedding_model = face_embedding_model
         self.evaluation_database = registration_database
 
-        # Directly load cropped images for evaluation
         self.eval_dataset = LFWEvaluationDataset(self.dataset_path, cropped_faces=True)
 
     def run(self):
@@ -90,7 +64,7 @@ class PipelineEvaluation():
                 # 1) Joe gets access, although he is not registered at all
                 # 2) Joe gets access, he is registered, but the model has mixed up Joe with someone else who is registered
                 # 3) Joe gets access, he is registered and the model recognizes him (Correct)
-                if check == 'Access':
+                if check:
                     accept += 1
                     # Case 1)
                     if not self.evaluation_database.contains(label):
@@ -103,7 +77,7 @@ class PipelineEvaluation():
                 # 2 cases with Joe in the image and he gets declined
                 # 1) Joe gets declined, although is is registered
                 # 2) Joe gets declined, since he is not registered
-                if check == 'Decline':
+                if check:
                     reject += 1
                     if self.evaluation_database.contains(label):
                         fr += 1

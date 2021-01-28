@@ -140,6 +140,7 @@ dmypy.json
 /yolov3-wider_16000.weights
 .vscode
 
+*.png
 *.jpg
 *.tgz
 *.tar
@@ -153,3 +154,4 @@ tb_logs/*
 models/results/*
 checkpoints/*
 data/lfw*
+tb_logs/

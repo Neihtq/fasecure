@@ -1,5 +1,9 @@
 import os
+import pathlib  
+import argparse
+import tqdm
 import numpy as np
+import multiprocessing as mp
 
 from PIL import Image
 from face_detection.face_alignment import FaceAlignment
@@ -13,6 +17,16 @@ try:
     from face_detection.input_pipeline import detect, crop_img, THRESHOLD
 except ImportError:
     raise ImportError("Could not import CV2 face detector")
+
+parser = argparse.ArgumentParser(description='Detect, crop and align faces.')
+
+parser.add_argument('--dir', type=str, help='Directory of images')
+
+parser.add_argument('--o', type=str, help='Directory where aligned images will be saved.')
+
+parser.add_argument('--deepface', action='store_true', help='User deepface library.')
+
+args = parser.parse_args()
 
 
 def deepface_align(pair):
@@ -80,7 +94,6 @@ def detect_and_align_cv2(pair):
         aligned_img.save(save_path)
     except:
         Image.open(img_path).save(save_path)
-
 
 
 def detect_and_align(pair):
@@ -163,3 +176,37 @@ def crop_img(img, x, y, w, h):
     crop_img = img[x-20:x+w+20, y-20:y+h+20]
     crop_img = Image.fromarray(crop_img).resize((224,224))
     return np.array(crop_img)
+
+
+def main():
+    src = args.dir
+    
+    output = pathlib.Path(args.o)
+    output.mkdir(parents=True, exist_ok=True)
+    
+    deepface = args.deepface
+
+    paths = []
+    for folder in os.listdir(src):
+        tmp = os.path.join(src, folder)
+        dest = os.path.join(output, folder)
+        pathlib.Path(dest).mkdir(parents=True, exist_ok=True)
+
+        for img in os.listdir(tmp):
+            fpath = os.path.join(tmp, img)
+            paths.append((fpath, str(output)))
+
+    with mp.Pool(processes=os.cpu_count()) as pool:
+        if deepface:
+            res = list(tqdm.tqdm(pool.imap(deepface_align, paths), total=len(paths)))
+        else:
+            res = list(tqdm.tqdm(pool.imap(detect_and_align_cv2, paths), total=len(paths)))
+        
+    for folder in os.listdir(output):
+        tmp = os.path.join(output, folder)
+        if len(os.listdir(tmp)) == 0:
+            os.rmdir(tmp)
+
+
+if __name__ == '__main__':
+    main()
