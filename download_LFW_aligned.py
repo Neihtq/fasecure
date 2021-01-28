@@ -13,10 +13,10 @@ args = parser.parse_args()
 
 def download_data(url):
     req = requests.get(url, allow_redirects=True)
-    open("data.tgz", 'wb').write(req.content)
+    open("./data/data.tgz", 'wb').write(req.content)
 
-    with tarfile.open('data.tgz', 'r') as f:
-        f.extractall('data')
+    with tarfile.open('./data/data.tgz', 'r') as f:
+        f.extractall('lfw')
         f.close()
 
 

@@ -8,8 +8,8 @@ from PIL import Image
 from scipy import interpolate
 from scipy.optimize import fsolve
 
-from data.LFWDataset import LFWEvaluationDataset
-from utils.prep import img_augmentation
+from data.datasets import LFWDataset
+from utils.preprocess import augment
 
 
 class EvaluationPipeline():
@@ -19,7 +19,8 @@ class EvaluationPipeline():
         self.face_embedding_model = face_embedding_model
         self.evaluation_database = registration_database
 
-        self.eval_dataset = LFWEvaluationDataset(self.dataset_path, cropped_faces=True)
+        # Directly load cropped images for evaluation
+        self.eval_dataset = LFWDataset(self.dataset_path, cropped_faces=True)
 
     def run(self):
         subset_size = 10
@@ -52,7 +53,7 @@ class EvaluationPipeline():
 
             detected_face = detected_face.to(device)
 
-            augmented_imgs = img_augmentation(detected_face)            
+            augmented_imgs = augment(detected_face)            
             embedding = self.face_embedding_model(augmented_imgs[0])
 
             # Face recognition
