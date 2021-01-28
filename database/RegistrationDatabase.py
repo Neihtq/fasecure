@@ -8,37 +8,35 @@ from os.path import join, dirname, abspath
 from PIL import Image
 from sklearn.neighbors import NearestNeighbors
 
-# input: 128 dim embedding as tensor (convert it internally to numpy array)
-#               - registration: embedding + name
-#               - deregistration: name
-#               - recognition: embedding
-# ---------------------------------------------------------------------------
-# output:       - registration: "registered successfully"
-#               - deregistration: "deregistered successfully"
-#               - recognition: closest person + access/intruder
+from utils.constants import UNKNOWN_PERSON, ACCESS, DECLINE, CANNOT_WIPE_DATBABASE, USER_NOT_REGISTERED, DATABASE_DIR, DATABASE_EXIST, CREATE_NEW_DATABASE, EUCLIDEAN_DISTANCE, WIPE_DATABASE, INNER_PRODUCT, UNDEFINED_THRESHOLD
 
-ABSOLUTE_DIR = dirname(abspath(__file__))
 
 class RegistrationDatabase():
-    def __init__(self, fixed_initial_threshold, mode='inner_product'):        
+    '''128 dim embeddings arrays stored in Pandas DataFrame
+    input: 
+        - registration: embedding + name
+        - deregistration: name
+        - recognition: embedding
+    output:
+        - registration: "registered successfully"
+        - deregistration: "deregistered successfully"
+        - recognition: closest person + access/intruder'''
+    def __init__(self, fixed_initial_threshold, mode=INNER_PRODUCT):        
         # Choose similarity calculation between "inner product" and "euclidean distance"
         self.mode = mode
-        if self.mode == 'euclidean_distance':
+        if self.mode == EUCLIDEAN_DISTANCE:
             self.recognition_model = NearestNeighbors(n_neighbors=1)
         
         self.fixed_threshold = fixed_initial_threshold
         self.len_embeddings_list = 0
-                             
-        save_dir = join(ABSOLUTE_DIR, "./reg_database")
-        os.makedirs(save_dir, exist_ok=True)
-        self.database_file = os.path.join(save_dir, 'database.pkl')
+        self.database_file = DATABASE_DIR
 
         if os.path.exists(self.database_file):
-            print('Database already exists. Pickle file will be loaded...')
+            print(DATABASE_EXIST)
             self.database = pd.read_pickle(self.database_file)
             self.update_embeddings()
         else: 
-            print("No database availabe. Empty database will be created...")
+            print(CREATE_NEW_DATABASE)
             self.database = pd.DataFrame(columns=['label','embedding','threshold'])
             self.save_database()
     
@@ -49,21 +47,18 @@ class RegistrationDatabase():
     def clean_database(self):
         '''wipes database'''
         if os.path.exists(self.database_file):
-            print('database.pkl exists and will be cleaned...')
+            print(WIPE_DATABASE)
             self.database = pd.DataFrame(columns=['label','embedding','threshold'])
             self.update_embeddings()
             self.save_database()
         else: 
-            print("No database.pkl file exists. Hence, it cannot be cleaned...")      
+            print(CANT_WIPE_DATBABASE)      
 
     def contains(self, label):
         '''Check if database contains specified label'''
-        label_indices = self.database[ self.database['label'] == label ].index
-        if len(label_indices) == 0:
-            return False
-        elif len(label_indices) > 0:
-            return True
-
+        label_indices = self.database[self.database['label'] == label].index
+        
+        return len(label_indices) > 0
     
     def update_embeddings(self):
         '''Update length of embedding list, embedding list itself and the thresholds of every person'''
@@ -74,7 +69,7 @@ class RegistrationDatabase():
         # Adapt threshold for first embedding (can be deleted?)
         if self.database['label'].nunique() == 1:
             self.database.iloc[:,2] = 98.0
-        elif self.database['label'].nunique() > 1:
+        else:
             # Calculate the similarity score between a selected embedding and all the other embeddings
             for i in range(self.len_embeddings_list):
                 temp_embeddings_list = self.embeddings_list.copy()
@@ -85,7 +80,7 @@ class RegistrationDatabase():
                 for index in sorted(cur_label_indices, reverse=True): # reverse order --> doesn´t throw off subsequent indices
                     del temp_embeddings_list[index]
 
-                if self.mode == 'inner_product':
+                if self.mode == INNER_PRODUCT:
                     # Inner product is 100, when two vectors are identical
                     inner_products = np.inner(temp_embedding,temp_embeddings_list)
 
@@ -95,15 +90,15 @@ class RegistrationDatabase():
                     else:
                         self.database.iloc[i,2] = self.fixed_threshold
 
-                elif self.mode == 'euclidean_distance':
+                elif self.mode == EUCLIDEAN_DISTANCE:
                     self.recognition_model.fit(temp_embeddings_list)
-                    print("----------- Fixed threshold not defined so far! --------------")
+                    print(UNDEFINED_THRESHOLD)
 
                     closest_embedding_dist = self.recognition_model.kneighbors(temp_embedding.reshape((1,128)))[0].tolist()[0][0]
                     self.database.iloc[i,2] = closest_embedding_dist
 
 
-        if self.len_embeddings_list > 0 and self.mode == 'euclidean_distance':
+        if self.len_embeddings_list > 0 and self.mode == EUCLIDEAN_DISTANCE:
             self.recognition_model.fit(self.embeddings_list)
 
     def convert_to_numpy(self, img_embedding_tensor):
@@ -112,12 +107,10 @@ class RegistrationDatabase():
 
     def get_label(self, index):
         '''Get the label at given index in database'''
-        label = self.database.iloc[index,0].reset_index(drop=True)[0]
-        return label
+        return self.database.iloc[index,0].reset_index(drop=True)[0]
 
     def get_similarity_threshold(self, index):
-        similarity_threshold = self.database.iloc[index,2].reset_index(drop=True)[0]
-        return similarity_threshold
+        return self.database.iloc[index,2].reset_index(drop=True)[0]
     
     def closest_embedding_euclidean_distance(self, img_embedding):
         '''Find closest embedding based on euclidean distance (use KNN with k=1)'''
@@ -128,12 +121,9 @@ class RegistrationDatabase():
         similarity_threshold = self.get_similarity_threshold(label_index)
 
         # The smaller the distance the closer the embeddings to each other
-        if max_similarity <= similarity_threshold:
-            check = "Access"
-        else:
-            check = "Decline"
-
-        return closest_label, check
+        access = max_similarity <= similarity_threshold
+        
+        return closest_label, access
 
     def closest_embedding_inner_product(self, img_embedding):
         '''Find closest embedding based on inner product and adaptive thresholds'''
@@ -148,30 +138,26 @@ class RegistrationDatabase():
         similarity_threshold = self.get_similarity_threshold(label_index)
 
         # The larger the similarity the closer the embeddings to each other
-        if max_similarity >= similarity_threshold:
-            check = "Access"
+        access = max_similarity >= similarity_threshold
 
-        else:
-            check = "Decline"
-
-        return closest_label, check
+        return closest_label, access
         
     def face_recognition(self, img_embedding_tensor):
         '''Grants access of closes person in embedding space could be found; denies acces otherwise'''
         if self.len_embeddings_list == 0:
-            print("Person is unkown")
+            print(UNKNOWN_PERSON)
             closest_label = None
-            check = "Decline"
-            return closest_label, check
+            access = False
+            return closest_label, access
 
         img_embedding_numpy = self.convert_to_numpy(img_embedding_tensor)
 
-        if self.mode == 'inner_product':
-            closest_label, check = self.closest_embedding_inner_product(img_embedding_numpy)
-        elif self.mode == 'euclidean_distance':
-            closest_label, check = self.closest_embedding_euclidean_distance(img_embedding_numpy)  
+        if self.mode == INNER_PRODUCT:
+            closest_label, access = self.closest_embedding_inner_product(img_embedding_numpy)
+        elif self.mode == EUCLIDEAN_DISTANCE:
+            closest_label, access = self.closest_embedding_euclidean_distance(img_embedding_numpy)  
 
-        return closest_label, check
+        return closest_label, access
 
     def face_registration(self, name, img_embedding_tensor):
         '''Register new face to database using face embeddings'''
@@ -184,7 +170,7 @@ class RegistrationDatabase():
         '''Removes face and its embedding from database'''
         drop_indices = self.database[ self.database['label'] == name ].index
         if len(drop_indices) == 0:
-            print('Specified name not in database registered. User can not be deregistered!')
+            print(USER_NOT_REGISTERED)
             return
 
         self.database.drop(drop_indices, inplace=True)
