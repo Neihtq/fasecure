@@ -33,17 +33,14 @@ def main():
     w, h = sg.Window.get_screen_size()
 
     # define the window layout
-    layout = [[sg.Text('fasecure', size=(38, 1), justification='center', font='OpenSans-ExtraBold 40')],
+    layout = [[sg.Text('fasecure', size=(41, 1), justification='center', font='OpenSans-ExtraBold 40')],
                 [#sg.Button('Face Recognition', size=(25, 2), font='OpenSans-Regular 15'),
-                sg.Button('Register New Person', size=(29, 2), font='OpenSans-Regular 17'),
-                sg.Button('Database', size=(29, 2), font='OpenSans-Regular 17'),
-                sg.Button('Clear Database', size=(29, 2), font='OpenSans-Regular 17')
-                #sg.Button('Exit System', size=(30, 2), font='OpenSans-Regular 16')
-                #sg.Button('Take Shot', size=(25, 2), font='OpenSans-Regular 15')
-                ],
-              #[sg.Text("No face detected", size=(40, 1), justification='center', font='Helvetica 20')],
+                sg.Button('Register New Person', size=(27, 1), font='OpenSans-Regular 18'),
+                sg.Button('Database', size=(27, 1), font='OpenSans-Regular 18'),
+                sg.Button('Clear Database', size=(26, 1), font='OpenSans-Regular 18')],
+                [sg.Text('', key='-TEXT-', background_color='blue', size=(46, 1), font='OpenSans-ExtraBold 35')],
               [sg.Image(filename='', key='image')],
-              [sg.Output(key='-OUT-', size=(165, 10))]
+              [sg.Output(key='-OUT-', size=(165, 8))]
               ]
 
     # create the window and show it without the plot
@@ -65,23 +62,23 @@ def main():
 
         _, frame = cap.read()
         h, w = frame.shape[:2]
-        
+
         # FACE DETECTION
         start_x , start_y, end_x, end_y = face_detection(frame, h, w)
         if start_x:
             cv2.rectangle(frame, (start_x-30, start_y-30), (end_x+30, end_y+30), box_color, 3)
-   
+
         # SHOW FPS
         frame, new_frame_time, prev_frame_time = fps(frame, new_frame_time, prev_frame_time)
- 
-        # SHOW WEBCAM 
-        frame_rezised = cv2.resize(frame, (1174, 663))
+
+        # SHOW WEBCAM
+        frame_rezised = cv2.resize(frame, (1010, 570))
         imgbytes = cv2.imencode('.png', frame_rezised)[1].tobytes()  # ditto
         window['image'].update(data=imgbytes)
 
 
         # --- FUNCTION BUTTONS ---
-        if t % 10 == 0: 
+        if t % 10 == 0:
         #if event == 'Face Recognition':
             if start_x:
                 embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
@@ -89,10 +86,14 @@ def main():
 
                 if check == 'Access':
                     print("User recognized - " + closest_label + " - Access Granted!")
+                    window['-TEXT-'].update('                                                   Access Granted')
+                    window['-TEXT-'].update(background_color='green')
                     #cv2.putText(frame, "User recognized - " + closest_label + " - Access Granted!", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3, cv2.LINE_AA)
                     box_color =(0, 255, 0)
                 elif check == 'Decline':
                     print("User not recognized - Access Denied!")
+                    window['-TEXT-'].update('                                                    Access Denied')
+                    window['-TEXT-'].update(background_color='red')
                     #cv2.putText(frame, "User not recognized - Access Denied!", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3, cv2.LINE_AA)
                     box_color =(0, 0, 255)
             else:
@@ -102,7 +103,7 @@ def main():
             if start_x:
                 directory = '.\images\snap_shot'
                 filename = "testshot_input_pipeline_gui.png"
-                
+
                 take_shot(directory, filename, frame, start_x, start_y, end_x, end_y)
             else:
                 print("No Face detected. Please try again!")
@@ -115,7 +116,7 @@ def main():
                     embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
                     label = sg.popup_get_text('Name', 'Registration')
                     register(augmented_imgs, label)
-                    database_list.append(label)    
+                    database_list.append(label)
                 else:
                     print("Password incorrect - Access to data base denied")
             else:
@@ -149,5 +150,3 @@ def main():
 if __name__ == '__main__':
     main()
     sys.exit(0)
-
-
