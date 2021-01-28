@@ -155,3 +155,4 @@ checkpoints/*
 data/vgg-faces
 .venv/
 data/lfw*
+tb_logs/

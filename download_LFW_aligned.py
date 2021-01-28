@@ -1,13 +1,17 @@
+import re
 import pathlib
 import requests
-import re
 import zipfile
 import tarfile 
+import argparse
 
 from tqdm import tqdm
 
+parser = argparse.ArgumentParser(description='Download zip from Google Drive')
+parser.add_argument('--url', type=str)
+args = parser.parse_args()
+
 def download_data(url):
-    ''' helper download function for e.g. lfw-deepfunneled: http://vis-www.cs.umass.edu/lfw/lfw-deepfunneled.tgz'''
     req = requests.get(url, allow_redirects=True)
     open("./data/data.tgz", 'wb').write(req.content)
 
@@ -54,15 +58,13 @@ def unzip(path, destination):
 
 
 if __name__ == "__main__":
-    #url = "https://drive.google.com/file/d/1d5bOxxJ3ZcMP3zXxwI685T5_Cawhl0V1/view?usp=sharing"
-    url = "http://vis-www.cs.umass.edu/lfw/lfw.tgz"
-    #image_path = pathlib.Path('./data/images')
-    #destination = pathlib.Path('./data/lfw.zip')
-    #destination.parent.makedirs(parent=True, exist_ok=True)
+    url = args.url
     
-    download_data(url)
-    #download_from_google_drive(url, destination)       
-    #unzip(destination, image_path)
+    image_path = pathlib.Path('./data/images')
+    destination = pathlib.Path('./data/lfw.zip')
     
+    image_path.mkdir(parents=True, exist_ok=True)
+    destination.parent.mkdir(parents=True, exist_ok=True)
     
-    
+    download_from_google_drive(url, destination)       
+    unzip(destination, image_path)
