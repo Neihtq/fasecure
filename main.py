@@ -15,7 +15,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_metric_learning.samplers import MPerClassSampler
 from models.MetricsCallback import MetricsCallback
 from models.FaceNetPytorchLightning import LightningFaceNet
-from models.FaceNet import FaceNetInceptionV3
+from models.FaceNet import FaceNetInceptionV3, FaceNetResnet152
 from data.dataset import ImageDataset, LFWDataset
 
 #from face_detection.face_detection import face_detection
@@ -139,8 +139,8 @@ def train():
     callback = [MetricsCallback()]
     logger = TensorBoardLogger('tb_logs', name='FaceNet InceptionV3')
     
-    print("Initialize inceptionv3 backbone")
-    inception = FaceNetInceptionV3()
+    print("Initialize Resnet152 backbone")
+    inception = FaceNetResnet152()
     
     model = LightningFaceNet(hparams, inception)
     if load_checkpoint:
