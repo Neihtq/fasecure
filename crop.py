@@ -4,7 +4,7 @@ import argparse
 import tqdm
 import multiprocessing as mp
 
-from data.crop_and_align import detect_and_align, deepface_align
+from data.crop_and_align import detect_and_align, deepface_align, detect_and_align_cv2
 
 parser = argparse.ArgumentParser(description='Detect, crop and align faces.')
 
@@ -39,7 +39,7 @@ def main():
         if deepface:
             res = list(tqdm.tqdm(pool.imap(deepface_align, paths), total=len(paths)))
         else:
-            res = list(tqdm.tqdm(pool.imap(detect_and_align, paths), total=len(paths)))
+            res = list(tqdm.tqdm(pool.imap(detect_and_align_cv2, paths), total=len(paths)))
         
     for folder in os.listdir(output):
         tmp = os.path.join(output, folder)
