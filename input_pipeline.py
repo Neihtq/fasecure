@@ -4,7 +4,9 @@ import torch
 import time
 import numpy as np
 import sys
-from face_detection.face_alignment import FaceAlignment
+from frontend.face_detection.face_alignment import FaceAlignment
+
+from PIL import Image
 
 from os.path import join, dirname, abspath
 from frontend.face_detection.face_alignment import FaceAlignment
@@ -14,8 +16,8 @@ from backend.face_recognition.utils.data_augmentation import augment
 
 
 absolute_dir = dirname(abspath(__file__))
-face_detection_prototxt = join(absolute_dir, "model", "deploy.prototxt")
-face_detection_path = join(absolute_dir, "model", "res10_300x300_ssd_iter_140000.caffemodel")
+face_detection_prototxt = join(absolute_dir,"frontend", "face_detection", "model", "deploy.prototxt")
+face_detection_path = join(absolute_dir,"frontend", "face_detection", "model", "res10_300x300_ssd_iter_140000.caffemodel")
 detection_threshold = 0.5
 
 # Face detection model
@@ -188,27 +190,36 @@ def align_embed(frame, start_x, start_y, end_x, end_y):
     cropped_img = crop_img(frame, start_x-20, start_y-20, end_x+20, end_y+20)
     
     #align image
-    detected_face_numpy = face_alignment.align(cropped_img, start_x, start_y, end_x, end_y)
-    
+    #detected_face_numpy = np.transpose(face_alignment.align(cropped_img, start_x, start_y, end_x, end_y))#.permute(2, 1, 0)
+    detected_face_numpy = face_alignment.align(cropped_img, start_x, start_y, end_x, end_y)#.permute(2, 1, 0)
+    detected_face_numpy = cv2.cvtColor(detected_face_numpy, cv2.COLOR_BGR2RGB)
+
+    #print(detected_face_numpy)
+    #print(detected_face_numpy.shape)
+    #print(detected_face_numpy.dtype)
+
+    #temp = Image.fromarray(detected_face_numpy)
+    #temp.show()
+
     if detected_face_numpy is None:
         print("Error during Face Detection. Please try again!")
         return None, None
 
-    detected_face = torch.from_numpy(detected_face_numpy).permute(2, 1, 0).unsqueeze(0).float()
+    #detected_face = torch.from_numpy(detected_face_numpy).permute(2, 1, 0).unsqueeze(0).float()
 
     # to do: Swap color channels from opencv (BGR) to pytorch (RGB) implementation
 
     # perform augmentations
-    augmented_imgs = img_augmentation(detected_face)
+    augmented_imgs = augment(detected_face_numpy)
     
     # embedding model   
-    embedding = face_embedding_model(augmented_imgs[0]) 
+    embedding = face_embedding_model(augmented_imgs[0].unsqueeze(0)) 
 
     return embedding, augmented_imgs
 
 def register(augmented_imgs, label):
     for aug_img in augmented_imgs:
-        img_embedding_tensor = face_embedding_model(aug_img)
+        img_embedding_tensor = face_embedding_model(aug_img.unsqueeze(0))
         registration_database.face_registration(label, img_embedding_tensor)
     print("registration for ", label, " successful")
 

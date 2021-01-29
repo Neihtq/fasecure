@@ -6,11 +6,11 @@ import torch.nn.functional as F
 from torchvision.models import resnet50, inception_v3
 from torch.hub import download_url_to_file
 
-from face_recognition.utils.constants import PRETRAINED_URL, PRETRAINED_MODEL_DIR, MODEL_DIR
+from backend.face_recognition.utils.constants import PRETRAINED_URL, PRETRAINED_MODEL_DIR, MODEL_DIR
 
 
 def load_state():
-    cached_file = os.path.join(PRETRAINED_MODEL_DIR, os.path.basename(path))
+    cached_file = os.path.join(PRETRAINED_MODEL_DIR, os.path.basename(PRETRAINED_URL))
     if not os.path.exists(cached_file):
         download_url_to_file(PRETRAINED_URL, cached_file)
 
@@ -56,6 +56,7 @@ class FaceNet(nn.Module):
             Flatten(),
             nn.Linear(fc_dim, embedding_size)
         )
+        self.model.classifier = nn.Linear(embedding_size, num_classes)
 
     def l2_norm(self, input):
         input_size = input.size()

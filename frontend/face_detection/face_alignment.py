@@ -6,7 +6,7 @@ from PIL import Image
 class FaceAlignment():         
     def __init__(self):
         self.detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor('face_detection/shape_predictor_5_face_landmarks.dat')
+        self.predictor = dlib.shape_predictor('frontend/face_detection/model/shape_predictor_5_face_landmarks.dat')
     
     def shape_to_normal(self, shape):
         shape_normal = []
@@ -47,8 +47,7 @@ class FaceAlignment():
             qy = oy + np.sin(angle) * (px - ox) + np.cos(angle) * (py - oy)
             return qx, qy
         
-    def align(self, image, start_x, start_y, end_x, end_y):
-        img = image
+    def align(self, img, start_x, start_y, end_x, end_y):
         rects = self.detector(img, 0)
 
         x = start_x
@@ -61,7 +60,8 @@ class FaceAlignment():
         right = end_x - start_x
         bottom = end_y - start_y 
         dlibRect = dlib.rectangle(left, top, right, bottom) 
-        shape = self.predictor(gray, dlibRect)        
+        
+        shape = self.predictor(img, dlibRect)        
 
         shape = self.shape_to_normal(shape)
         nose, left_eye, right_eye = self.get_eyes_nose_dlib(shape)
