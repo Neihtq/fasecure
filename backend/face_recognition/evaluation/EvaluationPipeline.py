@@ -23,7 +23,7 @@ class EvaluationPipeline():
         self.eval_dataset = LFWDataset(self.dataset_path, cropped_faces=True)
 
     def run(self):
-        subset_size = 10
+        subset_size = 1
         n_samples = int(self.eval_dataset.__len__()/subset_size)
         shuffled_indices = np.random.RandomState(seed=42).permutation(n_samples)
         eval_dataset_shuffled = torch.utils.data.Subset(self.eval_dataset, indices=shuffled_indices)   
@@ -61,7 +61,7 @@ class EvaluationPipeline():
             if rec_number > 0:
                 closest_label, check = self.evaluation_database.face_recognition(embedding)
 
-                print(check)
+                #print(check)
                 
                 # Allegedly known
                 # 3 cases with Joe in the image and he gets access:
@@ -81,7 +81,7 @@ class EvaluationPipeline():
                 # 2 cases with Joe in the image and he gets declined
                 # 1) Joe gets declined, although is is registered
                 # 2) Joe gets declined, since he is not registered
-                if check:
+                if not check:
                     reject += 1
                     if self.evaluation_database.contains(label):
                         fr += 1

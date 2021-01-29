@@ -18,7 +18,7 @@ LFW_CROP_DIR = os.path.join(DATA_DIR, "lfw_crop")
 RESULTS_DIR = os.path.join(root, "results")
 EVAL_RESULTS_DIR = os.path.join(RESULTS_DIR, "evaluation", "refmodel")
 
-OVERALL_EVAL_LFW_DIR = os.path.join(DATA_DIR, "lfw_crop")
+OVERALL_EVAL_LFW_DIR = os.path.join(DATA_DIR, "lfw_overall_eval_all")
 OVERALL_EVAL_RESULTS_DIR = os.path.join(RESULTS_DIR, "evaluation", "overall_evaluation")
 
 DATABASE_DIR = os.path.join(root, "database", "reg_database", "database.pkl")
