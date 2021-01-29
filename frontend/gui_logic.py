@@ -11,7 +11,7 @@ from face_detection.face_alignment import FaceAlignment
 from os.path import join, dirname, abspath
 from face_recognition.models.FaceNet import get_model
 from database.RegistrationDatabase import RegistrationDatabase
-from utils.prep import img_augmentation
+from utils.constants.import VERIFY_ENDPOINT
 
 prev_frame_time = 0
 new_frame_time = 0
@@ -50,8 +50,9 @@ def register(frame, start_x, start_y, end_x, end_y, label):
     return response
 
 def verify(frame, start_x, start_y, end_x, end_y):
-    embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
-    closest_label, check = registration_database.face_recognition(embedding)
+    aligned_img = align_embed(frame, start_x, start_y, end_x, end_y)
+    data = {'image': aligned_img.tolist()}
+    closest_label, check = requests.post(VERIFY_ENDPOINT, json=data)
 
     return closest_label, check
 
@@ -85,24 +86,24 @@ def crop_img(img, start_x, start_y, end_x, end_y):
 
 def align_embed(frame, start_x, start_y, end_x, end_y):
     cropped_img = crop_img(frame, start_x-20, start_y-20, end_x+20, end_y+20)
+    aligned_img = face_alignment.align(cropped_img, start_x, start_y, end_x, end_y)
 
-    detected_face_numpy = face_alignment.align(cropped_img, start_x, start_y, end_x, end_y)
-    
-    if detected_face_numpy is None:
+
+    if aligned_img is None:
         print("Error during Face Detection. Please try again!")
         return None, None
 
-    detected_face = torch.from_numpy(detected_face_numpy).permute(2, 1, 0).unsqueeze(0).float()
+    #detected_face = torch.from_numpy(detected_face_numpy).permute(2, 1, 0).unsqueeze(0).float()
 
     # to do: Swap color channels from opencv (BGR) to pytorch (RGB) implementation
 
     # perform augmentations
-    augmented_imgs = img_augmentation(detected_face)
+    #augmented_imgs = img_augmentation(detected_face)
     
     # embedding model   
     #embedding = face_embedding_model(augmented_imgs[0])
 
-    return augmented_imgs
+    return aligned_img
 
 def register(augmented_imgs, label):
     for aug_img in augmented_imgs:
