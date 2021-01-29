@@ -1,67 +1,74 @@
 import os
 import sys
 import glob
-import args
+import argparse
 
 from PIL import Image
 from torchvision import transforms
 
-from face_recognition.utils.constants import LFW_DIR
+from backend.face_recognition.utils.constants import LFW_DIR
 
-# parser = args.ArgumentParser(description='Script for agumenting LFW dataset')
+parser = argparse.ArgumentParser(description='Script for agumenting LFW dataset')
 
 # parser.add_argument('--data-dir', default=LFW_DIR, type=str, help='Path to LFW dataset (default: ./data/images/lfw/')
 
-# args = parser.parse_args()
+argparse = parser.parse_args()
 
 
-def augment(path, normalize=True):
-    '''Loads images and prepares for data augmentation
-    input:
-        - path: path to image to be augmented
-    '''
-    transformers = [transforms.Resize(224), transforms.ToTensor()]
-    if normalize: 
-        transformers.append(transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+def augment(tensor_img):
+    augmentation_1 = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.Resize(224),  
+        transforms.ToTensor(), 
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])   
+
+    augmentation_2 = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.ColorJitter(brightness=0.8, contrast=0, saturation=0, hue=0),
+        transforms.ToTensor()])   
+
+    augmentation_3 = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.ColorJitter(brightness=0, contrast=0.8, saturation=0, hue=0),
+        transforms.ToTensor()]) 
     
-    transform = transforms.Compose(transformers)
-    #prepare preprocess pipeline
+    augmentation_4 = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.ColorJitter(brightness=0, contrast=0, saturation=0.8, hue=0),
+        transforms.ToTensor()]) 
+    
+    augmentation_5 = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0.1),
+        transforms.ToTensor()]) 
+    
+    augmentation_6 = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.RandomHorizontalFlip(p=1),
+        transforms.ToTensor()])   
 
-    augmentations = [transforms.Compose([
-                        transforms.ToPILImage(),
-                        transforms.ColorJitter(brightness=0.8, contrast=0, saturation=0, hue=0),
-                        transforms.ToTensor()]),
-                    transforms.Compose([
-                        transforms.ToPILImage(),
-                        transforms.ColorJitter(brightness=0, contrast=0.8, saturation=0, hue=0),
-                        transforms.ToTensor()]),
-                    transforms.Compose([
-                        transforms.ToPILImage(),
-                        transforms.ColorJitter(brightness=0, contrast=0, saturation=0.8, hue=0),
-                        transforms.ToTensor()]),
-                    transforms.Compose([
-                        transforms.ToPILImage(),
-                        transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0.1),
-                        transforms.ToTensor()]),
-                    transforms.Compose([
-                        transforms.ToPILImage(),
-                        transforms.RandomHorizontalFlip(p=1),
-                        transforms.ToTensor()]),
-                    transforms.Compose([
-                        transforms.ToPILImage(),
-                        transforms.RandomPerspective(distortion_scale=0.1, p=1),
-                        transforms.ToTensor()])]
+    augmentation_7 = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.RandomPerspective(distortion_scale=0.1, p=1),
+        transforms.ToTensor()])  
+    
+    
+    # with newer torchvision version, one can also transform tensor batches (but cannot update torchvision)
+    # Thus, I have to convert it to an PIL image first
+    aug_img_1 = augmentation_1(tensor_img.squeeze(0)).unsqueeze(0)
+    aug_img_2 = augmentation_2(aug_img_1.squeeze(0)).unsqueeze(0)
+    aug_img_3 = augmentation_3(aug_img_1.squeeze(0)).unsqueeze(0)
+    aug_img_4 = augmentation_4(aug_img_1.squeeze(0)).unsqueeze(0)
+    aug_img_5 = augmentation_5(aug_img_1.squeeze(0)).unsqueeze(0)
+    aug_img_6 = augmentation_6(aug_img_1.squeeze(0)).unsqueeze(0)
+    aug_img_7 = augmentation_7(aug_img_1.squeeze(0)).unsqueeze(0)
+   
 
-    aug_imgs = [transform(Image.open(path)).unsqueeze(0)]
-    for aug in augmentations:
-        aug_img = aug(aug_imgs[0].squeeze(0)).unsqueeze(0)
-        aug_imgs.append(aug_img)
-
-    return aug_imgs
+    return aug_img_1, aug_img_2, aug_img_3, aug_img_4, aug_img_5, aug_img_6, aug_img_7
 
 
 def augment_LFW_folder(data_dir):
-    for folder in glob.glob(data_dir +"/*"):
+    for folder in glob.glob(data_dir + "/*"):
         number = 0
         for img in glob.glob(folder+"/*"):
             aug_imgs = augment(img)

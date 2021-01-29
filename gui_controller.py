@@ -8,7 +8,7 @@ import sys
 
 from os.path import join, dirname, abspath
 from backend.face_recognition.models.FaceNet import get_model
-from backend.database.RegistrationDatabase import RegistrationDatabase
+from backend.face_recognition.database.RegistrationDatabase import RegistrationDatabase
 
 
 # Face embedding model
