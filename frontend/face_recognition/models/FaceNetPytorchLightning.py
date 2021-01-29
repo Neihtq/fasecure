@@ -64,7 +64,7 @@ class LightningFaceNet(pl.LightningModule):
         self.log_evaluation(tp_rate, fp_rate, precision, recall, roc_auc, best_dist, tar, far)
         self.log("test_acc", acc, logger=True)
 
-    def log_evaluation(self, tp_rate, fp_rate, precision, recall, roc_auc, best_dist, tar, far)
+    def log_evaluation(self, tp_rate, fp_rate, precision, recall, roc_auc, best_dist, tar, far):
         self.log("tp_rate", tp_rate, logger=True)
         self.log("fp_rate", fp_rate, logger=True)
         self.log("precision", precision, logger=True)
