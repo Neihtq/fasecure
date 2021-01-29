@@ -1,5 +1,5 @@
 from flask import Flask, request
-
+from face_recognition.evaluate import evaluate
 
 
 app = Flask(__name__)
@@ -32,4 +32,5 @@ def wipe():
 
 
 if __name__=='__main__':
-    app.run(debug=True)
+    evaluate()
+    #app.run(debug=True)

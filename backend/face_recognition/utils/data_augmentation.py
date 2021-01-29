@@ -8,11 +8,11 @@ from torchvision import transforms
 
 from face_recognition.utils.constants import LFW_DIR
 
-parser = args.ArgumentParser(description='Script for agumenting LFW dataset')
+# parser = args.ArgumentParser(description='Script for agumenting LFW dataset')
 
-parser.add_argument('--data-dir', default=LFW_DIR, type=str, help='Path to LFW dataset (default: ./data/images/lfw/')
+# parser.add_argument('--data-dir', default=LFW_DIR, type=str, help='Path to LFW dataset (default: ./data/images/lfw/')
 
-args = parser.parse_args()
+# args = parser.parse_args()
 
 
 def augment(path, normalize=True):
@@ -20,9 +20,9 @@ def augment(path, normalize=True):
     input:
         - path: path to image to be augmented
     '''
-    transformers = [transforms.Resize(224), transforms.ToTensor()])
+    transformers = [transforms.Resize(224), transforms.ToTensor()]
     if normalize: 
-        transformers.append(transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+        transformers.append(transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
     
     transform = transforms.Compose(transformers)
     #prepare preprocess pipeline
@@ -75,7 +75,7 @@ def augment_LFW_folder(data_dir):
                 aug_img_pil.save(dest)
 
 
-if __name__ = '__main__':
+if __name__ == '__main__':
     data_dir = args.data_dir
     augment_LFW_folder(data_dir)
     sys.exit(0)
