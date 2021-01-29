@@ -52,7 +52,8 @@ class EvaluationPipeline():
 
             detected_face = detected_face.to(device)
 
-            augmented_imgs = augment(detected_face)            
+            augmented_imgs = augment(detected_face)           
+
             embedding = self.face_embedding_model(augmented_imgs[0])
 
             # Face recognition

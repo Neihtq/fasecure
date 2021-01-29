@@ -178,3 +178,80 @@ class LFWDataset(Dataset):
             img_tensor = self.transform(img_tensor)
         
         return img_tensor
+
+#from orderedset import OrderedSet
+class LFWEvaluationDatasetEthics(Dataset):
+    def __init__(self, root, transform=None, cropped_faces=False):
+
+        # root
+        self.root = "./data/ethical_bias_infos/male_names.txt"
+        self.cropped_faces = cropped_faces
+        self.labels = []
+        self.mask = []
+        self.transform = transform
+
+        self.race_labels = self.get_label_from_txt(self.root)
+        
+        print("Anzahl males: ", len(self.race_labels))
+
+        for label in self.race_labels:
+            img_path = os.path.join(root, label)
+            
+            # to provide comparable results to other evaluations and same amount for intern evaluations
+            if (len(listdir(img_path)) == 3) and (self.__len__() <= 252):
+                for imgs_per_folder in range(len(listdir(img_path))):
+                    self.labels.append(label)
+                    self.mask.append(True)
+            else:
+                for imgs_per_folder in range(len(listdir(img_path))):
+                    self.mask.append(False)
+
+        self.image_filenames = glob.glob(os.path.join(root, "**/*.jpg"), recursive=True)
+        # Use mask to filter classes with less than certain amount of images
+        self.image_filenames = list(compress(self.image_filenames, self.mask))
+
+        print("länge: ", self.__len__())
+
+        # Save dataset to csv (for ethical bias evaluation)
+        # Change to " > 5 " some lines above!!!
+        # dict = {"path": self.image_filenames}
+        # df = pd.DataFrame(dict)
+        # df.to_csv('./data/ethical_bias_dataset_paths.csv')
+        # print("------------ geklappt ----------")
+        sys.exit()
+
+    def get_label_from_txt(self, file_path):
+        # read text from specified path
+        with open(file_path) as f:
+            content = f.readlines()
+
+        # extract label
+        labels = [x.split('_0')[0] for x in content]       
+
+        # Get unique labels
+        content_set = OrderedSet(labels)
+        labels = list(content_set)
+
+        return labels
+
+
+    def __len__(self):
+        return len(self.labels)
+    
+    def __getitem__(self, idx):
+        label = self.labels[idx]
+        img = self.image_filenames[idx]
+        
+        if self.cropped_faces:
+            img = self.get_image(img)
+
+        return label, img
+        
+    def get_image(self, img_path):
+        img = Image.open(img_path)
+        img_tensor = transforms.ToTensor()(img)
+        
+        if self.transform:
+            img_tensor = self.transform(img_tensor)
+        
+        return img_tensor
