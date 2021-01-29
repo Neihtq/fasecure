@@ -1,9 +1,11 @@
 import cv2
 import torch
+import sys
 #import imutils
 import time
+import requests
 import numpy as np
-import sys
+
 from face_detection.face_alignment import FaceAlignment
 
 from os.path import join, dirname, abspath
@@ -40,6 +42,19 @@ def detect(image):
     detections = face_detection_model.forward()
     return detections
 """
+
+def register(frame, start_x, start_y, end_x, end_y, label):
+    augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
+    response = post_register(augmented_imgs, label)
+
+    return response
+
+def verify(frame, start_x, start_y, end_x, end_y):
+    embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
+    closest_label, check = registration_database.face_recognition(embedding)
+
+    return closest_label, check
+
 def face_detection(frame, h, w):
     #detections = detect(frame)
     blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
@@ -69,10 +84,8 @@ def crop_img(img, start_x, start_y, end_x, end_y):
     return crop_img
 
 def align_embed(frame, start_x, start_y, end_x, end_y):
-    #crop image
     cropped_img = crop_img(frame, start_x-20, start_y-20, end_x+20, end_y+20)
-    
-    #align image
+
     detected_face_numpy = face_alignment.align(cropped_img, start_x, start_y, end_x, end_y)
     
     if detected_face_numpy is None:
@@ -87,9 +100,9 @@ def align_embed(frame, start_x, start_y, end_x, end_y):
     augmented_imgs = img_augmentation(detected_face)
     
     # embedding model   
-    embedding = face_embedding_model(augmented_imgs[0]) 
+    #embedding = face_embedding_model(augmented_imgs[0])
 
-    return embedding, augmented_imgs
+    return augmented_imgs
 
 def register(augmented_imgs, label):
     for aug_img in augmented_imgs:

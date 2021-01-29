@@ -2,16 +2,13 @@
 import PySimpleGUI as sg
 import cv2
 import numpy as np
-from gui_logic import crop_img, align_embed, take_shot, fps, face_detection#, register
+from gui_logic import crop_img, align_embed, take_shot, fps, face_detection, register, verify
 import time
 import sys
 
-from os.path import join, dirname, abspath
 from backend.face_recognition.models.FaceNet import get_model
 from backend.database.RegistrationDatabase import RegistrationDatabase
 
-
-# Face embedding model
 face_embedding_model = get_model()
 face_embedding_model.eval()
 
@@ -22,11 +19,12 @@ detection_threshold = 0.5
 
 
 def register(augmented_imgs, label):
-    for aug_img in augmented_imgs:
+    '''for aug_img in augmented_imgs:
         img_embedding_tensor = face_embedding_model(aug_img)
         registration_database.face_registration(label, img_embedding_tensor)
     print("registration for ", label, " successful")
-
+    '''
+    pass
 
 def main():
     sg.theme('Reddit')
@@ -56,7 +54,6 @@ def main():
     prev_frame_time = 0
     new_frame_time = 0
 
-
     while True:
         event, values = window.read(timeout=20)
 
@@ -81,16 +78,15 @@ def main():
         if t % 10 == 0:
         #if event == 'Face Recognition':
             if start_x:
-                embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
-                closest_label, check = registration_database.face_recognition(embedding)
+                closest_label, check = verify(frame, start_x, start_y, end_x, end_y)
 
-                if check == 'Access':
+                if check:
                     print("User recognized - " + closest_label + " - Access Granted!")
                     window['-TEXT-'].update('                                                   Access Granted')
                     window['-TEXT-'].update(background_color='green')
                     #cv2.putText(frame, "User recognized - " + closest_label + " - Access Granted!", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3, cv2.LINE_AA)
                     box_color =(0, 255, 0)
-                elif check == 'Decline':
+                else:
                     print("User not recognized - Access Denied!")
                     window['-TEXT-'].update('                                                    Access Denied')
                     window['-TEXT-'].update(background_color='red')
@@ -113,10 +109,12 @@ def main():
                 passwordpopup = sg.popup_get_text('Password for autenthication required', 'Autenthication')
                 if passwordpopup == password:
                     print("Password correct - Access to database granted")
-                    embedding, augmented_imgs = align_embed(frame, start_x, start_y, end_x, end_y)
                     label = sg.popup_get_text('Name', 'Registration')
-                    register(augmented_imgs, label)
-                    database_list.append(label)
+                    response = register(frame, start_x, start_y, end_x, end_y, label)
+                    if response != 0:
+                        print("register failed")
+                    else:
+                        database_list.append(label)
                 else:
                     print("Password incorrect - Access to data base denied")
             else:
