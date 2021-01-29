@@ -1,7 +1,7 @@
 import os
 import sys
 import glob
-import args
+import argparse
 
 from PIL import Image
 from torchvision import transforms
