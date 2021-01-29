@@ -57,12 +57,11 @@ class EvaluationPipeline():
 
             embedding = self.face_embedding_model(augmented_imgs[0])
 
-            print(embedding[:,:20])
-            os.sys.exit()
-
             # Face recognition
             if rec_number > 0:
                 closest_label, check = self.evaluation_database.face_recognition(embedding)
+
+                print(check)
                 
                 # Allegedly known
                 # 3 cases with Joe in the image and he gets access:
