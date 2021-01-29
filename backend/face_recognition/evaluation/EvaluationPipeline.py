@@ -35,7 +35,6 @@ class EvaluationPipeline():
                                                     sampler=None,
                                                     collate_fn=None)
 
-
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         self.evaluation_database.clean_database()
@@ -57,6 +56,9 @@ class EvaluationPipeline():
             augmented_imgs = augment(detected_face)           
 
             embedding = self.face_embedding_model(augmented_imgs[0])
+
+            print(embedding[:,:20])
+            os.sys.exit()
 
             # Face recognition
             if rec_number > 0:
