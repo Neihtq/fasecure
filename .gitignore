@@ -155,3 +155,4 @@ data/vgg-faces
 .venv/
 data/lfw*
 face_recognition/tb_logs/
+.idea/
