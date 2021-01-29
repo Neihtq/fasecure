@@ -136,8 +136,6 @@ dmypy.json
 *.ppm
 *.pkl
 
-/yolov3.cfg
-/yolov3-wider_16000.weights
 .vscode
 
 *.jpg
@@ -149,10 +147,10 @@ dmypy.json
 *.zip
 *.npy
 
-face_recognition/models/results/*
-checkpoints/*
-data/vgg-faces
+frontend/face_recognition/models/results/*
+frontend/face_recognition/checkpoints/*
+frontend/face_recognition/data/vgg-faces
 .venv/
-data/lfw*
-face_recognition/tb_logs/
+frontend/face_recognition/data/lfw*
+frontend/face_recognition/tb_logs/
 .idea/
