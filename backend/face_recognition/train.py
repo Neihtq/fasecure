@@ -15,7 +15,7 @@ from face_recognition.models.MetricsCallback import MetricsCallback
 from face_recognition.models.FaceNetPytorchLightning import LightningFaceNet
 from face_recognition.models.FaceNet import FaceNetResnet
 from face_recognition.data.datasets import ImageDataset, LFWValidationDataset, TupleDataset
-from face_recognition.utils.constants import MODEL_DIR, LFW_ALIGNED_DIR, CHECKPOINTS_DIR
+from face_recognition.utils.constants import MODEL_DIR, CHECKPOINTS_DIR
 
 parser = argparse.ArgumentParser(description='Face Recognition using Triplet Loss')
 
@@ -58,18 +58,18 @@ parser.add_argument('--load-checkpoint', default=None, type=str,
 args = parser.parse_args()
 
 
-def get_dataloader(dataset, labels=None, train=False):
+def get_dataloader(dataset, train=False):
     batch_size = args.batch_size
     num_workers = args.num_workers
 
     phase = "training" if train else 'validation'
-    print(f"Initialize {training} dataloader.")
+    print(f"Initialize {phase} dataloader.")
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
 
     return dataloader
 
 
-def init_datasets(train_dir):
+def init_datasets():
     train_dir = os.path.expanduser(args.train_data_dir)
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
@@ -78,11 +78,9 @@ def init_datasets(train_dir):
     )
 
     train_set = ImageDataset(train_dir, transform=transform)
-    labels = list(dataset.label_to_number.keys())
 
     val_loader = None
     if args.val_data_dir and args.val_labels_dir:
-        val_dir = os.path.expanduser(args.val_data_dir)
         lfw_set = LFWValidationDataset(args.val_data_dir, args.val_labels_dir, transform=transform)
         len_lfw_set = len(lfw_set)
 
@@ -92,7 +90,7 @@ def init_datasets(train_dir):
         tuple_set = TupleDataset(lfw_set, val_set)
         val_loader = get_dataloader(tuple_set, train)
 
-    train_loader = get_dataloader(train_set, labels=labels, train=True)
+    train_loader = get_dataloader(train_set, train=True)
 
     return train_loader, val_loader
 
@@ -120,13 +118,8 @@ def train():
     train_dir = os.path.expanduser(args.train_data_dir)
     if not train_dir:
         raise ValueError('No training data specified.')
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-    )
 
-    train_loader, val_loader = init_datasets(train_dir)
+    train_loader, val_loader = init_datasets()
 
     checkpoint_callback = ModelCheckpoint(
         filepath=CHECKPOINTS_DIR,

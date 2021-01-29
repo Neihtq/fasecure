@@ -46,8 +46,9 @@ class RegistrationDatabase():
             self.database = pd.DataFrame(columns=['label','embedding','threshold'])
             self.update_embeddings()
             self.save_database()
-        else: 
-            print(CANT_WIPE_DATBABASE)      
+            return 0
+        print(CANNOT_WIPE_DATBABASE)
+        return -1
 
     def contains(self, label):
         '''Check if database contains specified label'''
@@ -71,8 +72,8 @@ class RegistrationDatabase():
                 temp_embedding = temp_embeddings_list[i]
 
                 cur_label = self.get_label([i])
-                cur_label_indices = self.database[self.database['label']==cur_label].index.values.astype(int).tolist()
-                for index in sorted(cur_label_indices, reverse=True): # reverse order --> doesn´t throw off subsequent indices
+                cur_label_indices = self.database[self.database['label'] == cur_label].index.values.astype(int).tolist()
+                for index in sorted(cur_label_indices, reverse=True):
                     del temp_embeddings_list[index]
 
                 if self.mode == INNER_PRODUCT:
@@ -161,14 +162,18 @@ class RegistrationDatabase():
         self.update_embeddings()
         self.save_database()
 
+        return 0
+
     def face_deregistration(self, name):
         '''Removes face and its embedding from database'''
         drop_indices = self.database[ self.database['label'] == name ].index
         if len(drop_indices) == 0:
             print(USER_NOT_REGISTERED)
-            return
+            return -1
 
         self.database.drop(drop_indices, inplace=True)
         self.database.reset_index(drop=True,inplace=True)
         self.update_embeddings() 
         self.save_database()
+
+        return 0
