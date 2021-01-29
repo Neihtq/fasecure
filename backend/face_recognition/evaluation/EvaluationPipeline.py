@@ -23,7 +23,7 @@ class EvaluationPipeline():
         self.eval_dataset = LFWDataset(self.dataset_path, cropped_faces=True)
 
     def run(self):
-        subset_size = 1
+        subset_size = 10
         n_samples = int(self.eval_dataset.__len__()/subset_size)
         shuffled_indices = np.random.RandomState(seed=42).permutation(n_samples)
         eval_dataset_shuffled = torch.utils.data.Subset(self.eval_dataset, indices=shuffled_indices)   
