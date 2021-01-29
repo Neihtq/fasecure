@@ -3,14 +3,14 @@ import pathlib
 
 # Directory
 abs_path = os.path.dirname(os.path.abspath(__file__))
-root = os.path.join(abs_path, "../..")
+root = os.path.join(abs_path, "..")
 
 RESULTS_DIR = os.path.join(root, 'results')
 MODEL_DIR = os.path.join(RESULTS_DIR, 'models')
 PRETRAINED_MODEL_DIR = os.path.join(root, 'pretrained_model')
 CHECKPOINTS_DIR = os.path.join(root, 'checkpoints', 'last_checkpoint')
 
-DATA_DIR = os.path.join(root, "images")
+DATA_DIR = os.path.join(root, "data", "images")
 LFW_ALIGNED_DIR = os.path.join(root, 'data', 'images', 'lfw_aligned')
 LFW_DIR = os.path.join(DATA_DIR,"lfw")
 LFW_CROP_DIR = os.path.join(DATA_DIR, "lfw_crop")

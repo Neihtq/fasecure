@@ -6,7 +6,7 @@ import argparse
 from PIL import Image
 from torchvision import transforms
 
-from backend.face_recognition.utils.constants import LFW_DIR
+from face_recognition.utils.constants import LFW_DIR
 
 parser = argparse.ArgumentParser(description='Script for agumenting LFW dataset')
 

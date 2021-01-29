@@ -50,7 +50,7 @@ def evaluate_pipeline(dataset_path, eval_log_path, face_embedding_model_path=Non
         pass
     
     # Load also reference model (PCA)
-    ref_face_embedding_model = RefFaceEmbeddingModel(dataset_path)
+    # ref_face_embedding_model = RefFaceEmbeddingModel(dataset_path)
 
     eval_log_path = eval_log_path + "final_evaluations"
 
