@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from os.path import split, join
+import os
 from scipy import interpolate
 from scipy.optimize import fsolve
 
@@ -22,7 +23,7 @@ class EvaluationPipeline():
         self.eval_dataset = LFWDataset(self.dataset_path, cropped_faces=True)
 
     def run(self):
-        subset_size = 10
+        subset_size = 1.5
         n_samples = int(self.eval_dataset.__len__()/subset_size)
         shuffled_indices = np.random.RandomState(seed=42).permutation(n_samples)
         eval_dataset_shuffled = torch.utils.data.Subset(self.eval_dataset, indices=shuffled_indices)   
@@ -33,6 +34,7 @@ class EvaluationPipeline():
                                                     shuffle=False, 
                                                     sampler=None,
                                                     collate_fn=None)
+
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
 

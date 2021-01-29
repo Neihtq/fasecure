@@ -143,6 +143,7 @@ class LFWDataset(Dataset):
         self.labels = []
         self.mask = []
         self.transform = transform
+
         for label in listdir(root):
             img_path = os.path.join(root, label)
             if len(listdir(img_path)) > 5:
