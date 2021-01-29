@@ -10,7 +10,7 @@ from face_recognition.utils.constants import PRETRAINED_URL, PRETRAINED_MODEL_DI
 
 
 def load_state():
-    cached_file = os.path.join(PRETRAINED_MODEL_DIR, os.path.basename(path))
+    cached_file = os.path.join(PRETRAINED_MODEL_DIR, os.path.basename(PRETRAINED_URL))
     if not os.path.exists(cached_file):
         download_url_to_file(PRETRAINED_URL, cached_file)
 
