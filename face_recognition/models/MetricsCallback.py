@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import auc
 from pytorch_lightning import Callback
 
-from utils.constants import RESULTS_DIR
+from face_recognition.utils.constants import RESULTS_DIR
 
 
 class MetricsCallback(Callback):

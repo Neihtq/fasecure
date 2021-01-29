@@ -149,10 +149,9 @@ dmypy.json
 *.zip
 *.npy
 
-tb_logs/*
-models/results/*
+face_recognition/models/results/*
 checkpoints/*
 data/vgg-faces
 .venv/
 data/lfw*
-tb_logs/
+face_recognition/tb_logs/

@@ -2,10 +2,10 @@
 import os
 from os.path import join
 
-from models.FaceNet import get_model
-from models.RefFaceEmbeddingModel import RefFaceEmbeddingModel
-from evaluation.EvaluationPipeline import EvaluationPipeline
-from database.RegistrationDatabase import RegistrationDatabase
+from face_recognition.models.FaceNet import get_model
+from face_recognition.models.RefFaceEmbeddingModel import RefFaceEmbeddingModel
+from face_recognition.evaluation.EvaluationPipeline import EvaluationPipeline
+from face_recognition.database.RegistrationDatabase import RegistrationDatabase
 
 
 # Evaluate the face embedding model and the overall pipeline

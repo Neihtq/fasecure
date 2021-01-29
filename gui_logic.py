@@ -7,7 +7,7 @@ import sys
 from face_detection.face_alignment import FaceAlignment
 
 from os.path import join, dirname, abspath
-from models.FaceNet import get_model
+from face_recognition.models.FaceNet import get_model
 from database.RegistrationDatabase import RegistrationDatabase
 from utils.prep import img_augmentation
 

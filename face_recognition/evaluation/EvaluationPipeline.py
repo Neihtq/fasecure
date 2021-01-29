@@ -9,7 +9,7 @@ from scipy import interpolate
 from scipy.optimize import fsolve
 
 from data.datasets import LFWDataset
-from utils.preprocess import augment
+from face_recognition.utils.preprocess import augment
 
 
 class EvaluationPipeline():

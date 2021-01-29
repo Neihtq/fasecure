@@ -14,7 +14,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 
 from data.LFWDataset import LFWDataset
 from face_detection.input_pipeline import input_pipeline
-from models.FaceNetPytorchLightning import LightningFaceNet
+from face_recognition.models.FaceNetPytorchLightning import LightningFaceNet
 
 
 parser = argparse.ArgumentParser(description='Face Recognition using Triplet Loss')

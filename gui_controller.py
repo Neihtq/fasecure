@@ -7,7 +7,7 @@ import time
 import sys
 
 from os.path import join, dirname, abspath
-from models.FaceNet import get_model
+from face_recognition.models.FaceNet import get_model
 from registration_database.RegistrationDatabase import RegistrationDatabase
 
 

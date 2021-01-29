@@ -3,7 +3,7 @@ import pathlib
 
 # Directory
 abs_path = os.path.dirname(os.path.abspath(__file__))
-root = os.path.join(abs_path, "..")
+root = os.path.join(abs_path, "../..")
 
 RESULTS_DIR = os.path.join(root, 'results')
 MODEL_DIR = os.path.join(RESULTS_DIR, 'models')
@@ -34,6 +34,7 @@ WIPE_DATABASE = "database.pkl exists and will be wiped..."
 UNDEFINED_THRESHOLD = "----------- Fixed threshold not defined so far! --------------"
 USER_NOT_REGISTERED = "Specified name not in database registered. User can not be deregistered!"
 CANNOT_WIPE_DATBABASE = "No database.pkl file exists. Hence, it cannot be cleaned..."
+UNKNOWN_PERSON = "Person is unkown"
 
 
 # Strings
