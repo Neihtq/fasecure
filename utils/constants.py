@@ -20,11 +20,11 @@ EVAL_RESULTS_DIR = os.path.join(RESULTS_DIR, "evaluation", "refmodel")
 
 DATABASE_DIR = os.path.join(root, "database", "reg_database", "database.pkl")
 
-pathlib.Path(RESULTS_DIR).mkdir(parents=True exist_ok=True)
+pathlib.Path(RESULTS_DIR).mkdir(parents=True, exist_ok=True)
 pathlib.Path(DATABASE_DIR).parent.mkdir(parents=True, exist_ok=True)
 pathlib.Path(EVAL_RESULTS_DIR).parent.mkdir(parents=True, exist_ok=True)
-pathlib.Path(MODEL_DIR).mkdir(parents=True exist_ok=True)
-pathlib.Path(PRETRAINED_MODEL_DIR).mkdir(parents=True exist_ok=True)
+pathlib.Path(MODEL_DIR).mkdir(parents=True, exist_ok=True)
+pathlib.Path(PRETRAINED_MODEL_DIR).mkdir(parents=True, exist_ok=True)
 
 
 # Stdoutputs & stderrs

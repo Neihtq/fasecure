@@ -8,7 +8,7 @@ from face_detection.face_alignment import FaceAlignment
 
 from os.path import join, dirname, abspath
 from models.FaceNet import get_model
-from registration_database.RegistrationDatabase import RegistrationDatabase
+from database.RegistrationDatabase import RegistrationDatabase
 from utils.prep import img_augmentation
 
 prev_frame_time = 0

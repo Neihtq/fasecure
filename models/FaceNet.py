@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torchvision.models import resnet50, inception_v3
 from torch.hub import download_url_to_file
 
-from constants import PRETRAINED_URL, PRETRAINED_MODEL_DIR
+from utils.constants import PRETRAINED_URL, PRETRAINED_MODEL_DIR
 
 
 def load_state():

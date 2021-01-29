@@ -8,10 +8,7 @@ from os.path import join, dirname, abspath
 from PIL import Image
 from sklearn.neighbors import NearestNeighbors
 
-from utils.constants import UNKNOWN_PERSON, ACCESS, DECLINE, 
-                        CANNOT_WIPE_DATBABASE, USER_NOT_REGISTERED, DATABASE_DIR,
-                        DATABASE_EXIST, CREATE_NEW_DATABASE, EUCLIDEAN_DISTANCE, WIPE_DATABASE, 
-                        INNER_PRODUCT, UNDEFINED_THRESHOLD
+from utils.constants import UNKNOWN_PERSON, ACCESS, DECLINE, CANNOT_WIPE_DATBABASE, USER_NOT_REGISTERED, DATABASE_DIR, DATABASE_EXIST, CREATE_NEW_DATABASE, EUCLIDEAN_DISTANCE, WIPE_DATABASE, INNER_PRODUCT, UNDEFINED_THRESHOLD
 
 
 class RegistrationDatabase():
