@@ -1,4 +1,6 @@
-from flask import Flask, request
+import numpy as np
+
+from flask import Flask, request, jsonify
 
 from Recognition import Recognition
 
@@ -11,19 +13,21 @@ def hello_world():
     return 'Hello World!'
 
 
-@app.route('/verify', method=['POST'])
+@app.route('/verify', methods=['POST'])
 def recognize():
-    image = request.form['image']
+    data = request.json
+    image = np.array(data['image'])
     name,  access = model.verify(image)
     res = {'name': name, 'access': access}
 
-    return res
+    return jsonify(res)
 
 
 @app.route('/register', methods=['PUT'])
 def register():
-    image = request.form['image']
-    name = request.form['name']
+    data = request.json
+    image = np.array(data['image'])
+    name = data['name']
     status = model.register(name, image)
 
     return status
@@ -31,7 +35,7 @@ def register():
 
 @app.route('/deregister', methods=['DELETE'])
 def deregister():
-    name = request.form['name']
+    name = request.json['name']
     status = model.deregister(name)
 
     return status

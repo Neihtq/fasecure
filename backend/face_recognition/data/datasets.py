@@ -25,13 +25,13 @@ class TupleDataset(Dataset):
     
 class ImageDataset(Dataset):
     '''Regular Dataset where images are stored like this:
-    path_to_data/
-    |--label/
-    |----x.jpg
-    |----y.jpg
+        path_to_data/
+        |--label/
+        |----x.jpg
+        |----y.jpg
 
-    root: path to images
-    transform: functions from torchvisions.transforms to apply on images
+        root: path to images
+        transform: functions from torchvisions.transforms to apply on images
     '''
     def __init__(self, root, transform=None):
         self.root = root

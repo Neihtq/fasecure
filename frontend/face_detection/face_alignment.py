@@ -3,10 +3,13 @@ import dlib
 
 from PIL import Image
 
+from utils.constants import SHAPE_PREDICTOR
+
+
 class FaceAlignment():         
     def __init__(self):
         self.detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor('frontend/face_detection/model/shape_predictor_5_face_landmarks.dat')
+        self.predictor = dlib.shape_predictor(SHAPE_PREDICTOR)
     
     def shape_to_normal(self, shape):
         shape_normal = []

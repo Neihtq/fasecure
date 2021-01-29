@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from torchvision.models import resnet50, inception_v3
 from torch.hub import download_url_to_file
 
-from backend.face_recognition.utils.constants import PRETRAINED_URL, PRETRAINED_MODEL_DIR, MODEL_DIR
+from face_recognition.utils.constants import PRETRAINED_URL, PRETRAINED_MODEL_DIR, MODEL_DIR
 
 
 def load_state():

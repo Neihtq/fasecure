@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 
-from backend.face_recognition.utils.constants import UNKNOWN_PERSON, CANNOT_WIPE_DATBABASE, USER_NOT_REGISTERED, DATABASE_DIR, DATABASE_EXIST, CREATE_NEW_DATABASE, EUCLIDEAN_DISTANCE, WIPE_DATABASE, INNER_PRODUCT, UNDEFINED_THRESHOLD
+from face_recognition.utils.constants import UNKNOWN_PERSON, CANNOT_WIPE_DATBABASE, USER_NOT_REGISTERED, DATABASE_DIR, DATABASE_EXIST, CREATE_NEW_DATABASE, EUCLIDEAN_DISTANCE, WIPE_DATABASE, INNER_PRODUCT, UNDEFINED_THRESHOLD
 
 
 class RegistrationDatabase():
@@ -161,8 +161,6 @@ class RegistrationDatabase():
         self.database = self.database.append({'label': name, 'embedding': img_embedding_numpy, 'threshold': 0}, ignore_index=True)
         self.update_embeddings()
         self.save_database()
-
-        return 0
 
     def face_deregistration(self, name):
         '''Removes face and its embedding from database'''

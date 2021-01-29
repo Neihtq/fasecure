@@ -8,7 +8,7 @@ from scipy import interpolate
 from scipy.optimize import fsolve
 
 from face_recognition.data.datasets import LFWDataset
-from face_recognition.utils.data_augmentation import augment
+from face_recognition.utils.data_augmentation import augment_and_normalize
 
 
 class EvaluationPipeline():
@@ -52,7 +52,7 @@ class EvaluationPipeline():
 
             detected_face = detected_face.to(device)
 
-            augmented_imgs = augment(detected_face)            
+            augmented_imgs = augment_and_normalize(detected_face)
             embedding = self.face_embedding_model(augmented_imgs[0])
 
             # Face recognition
