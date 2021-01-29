@@ -1,89 +1,113 @@
-import argparse
 import os
 import sys
 import timeit
+import argparse
 import torch
-
 import pytorch_lightning as pl
 
 from datetime import datetime
-from torch.utils.data import DataLoader
 from torchvision import transforms
+from torch.utils.data import DataLoader, random_split
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 
-from data.LFWDataset import LFWDataset
-from face_detection.input_pipeline import input_pipeline
+from face_recognition.models.MetricsCallback import MetricsCallback
 from face_recognition.models.FaceNetPytorchLightning import LightningFaceNet
-
+from face_recognition.models.FaceNet import FaceNetResnet
+from face_recognition.data.datasets import ImageDataset, LFWValidationDataset, TupleDataset
+from face_recognition.utils.constants import MODEL_DIR, LFW_ALIGNED_DIR, CHECKPOINTS_DIR
 
 parser = argparse.ArgumentParser(description='Face Recognition using Triplet Loss')
 
 parser.add_argument('--num-epochs', default=200, type=int, metavar='NE',
-                    help='number of epochs to train (default: 200)')
+                    help='Number of epochs to train (default: 200)')
 
 parser.add_argument('--batch-size', default=16, type=int, metavar='BS',
-                    help='batch size (default: 16)')
+                    help='Batch size (default: 16)')
 
-parser.add_argument('--num-workers', default=0, type=int, metavar='NW',
-                    help='number of workers (default: 0)')
+parser.add_argument('--num-workers', default=os.cpu_count(), type=int, metavar='NW',
+                    help='Number of workers (default: os.cpu_count() - Your max. amount of cpus)')
 
-parser.add_argument('--learning-rate', default=0.001, type=float, metavar='LR',
-                    help='learning rate (default: 0.001)')
+parser.add_argument('--learning-rate', default=0.05, type=float, metavar='LR',
+                    help='Learning rate (default: 0.05)')
 
 parser.add_argument('--margin', default=0.02, type=float, metavar='MG',
-                    help='margin for TripletLoss (default: 0.02)')
+                    help='Margin for TripletLoss (default: 0.02)')
 
-parser.add_argument('--train-data-dir', default='./data/images/lfw_crop', type=str,
-                    help='path to train root dir')
+parser.add_argument('--train-data-dir', default=None, type=str,
+                    help='Path to training data')
 
 parser.add_argument('--val-data-dir', default=None, type=str,
-                    help='path to train root dir')                    
+                    help='Path to validation data')
 
-parser.add_argument('--model-dir', default='./models/results', type=str,
-                    help='path to train root dir')
+parser.add_argument('--val-labels-dir', default=None, type=str,
+                    help='Path to pairs.txt of validation data.')
+
+parser.add_argument('--model-dir', default=MODEL_DIR, type=str,
+                    help='Path where model will be saved')
+
+parser.add_argument('--optimizer', default='adagrad', type=str,
+                    help='Optimizer Algorithm for learning (default: adagrad')
 
 parser.add_argument('--weight-decay', default=1e-5, type=float, metavar='SZ',
                     help='Decay learning rate (default: 1e-5)')
 
-parser.add_argument('--pretrained', action='store_true')
-
-parser.add_argument('--load-last', action='store_true')
+parser.add_argument('--load-checkpoint', default=None, type=str,
+                    help='Path to checkpoint.')
 
 args = parser.parse_args()
 
 
-def initialize_dataset(data_dir):
+def get_dataloader(dataset, labels=None, train=False):
     batch_size = args.batch_size
     num_workers = args.num_workers
 
+    phase = "training" if train else 'validation'
+    print(f"Initialize {training} dataloader.")
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+
+    return dataloader
+
+
+def init_datasets(train_dir):
+    train_dir = os.path.expanduser(args.train_data_dir)
     transform = transforms.Compose([
-        transforms.Resize((250, 250)),
-        transforms.ToTensor(), 
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
     )
-    print("Initialize Dataset.")
-    train_set = LFWDataset(data_dir, transform=transform)
-    num_classes = len(train_set.label_to_number.keys())
 
-    print("Initialize DataLoader.")
-    train_loader = torch.utils.data.DataLoader(
-        train_set, batch_size=batch_size, num_workers=num_workers, shuffle=True
-    )
+    train_set = ImageDataset(train_dir, transform=transform)
+    labels = list(dataset.label_to_number.keys())
 
-    return train_loader, num_classes
+    val_loader = None
+    if args.val_data_dir and args.val_labels_dir:
+        val_dir = os.path.expanduser(args.val_data_dir)
+        lfw_set = LFWValidationDataset(args.val_data_dir, args.val_labels_dir, transform=transform)
+        len_lfw_set = len(lfw_set)
+
+        len_train_set = len(train_set) - len_lfw_set
+        train_set, val_set = random_split(train_set, [len_train_set, len_lfw_set])
+
+        tuple_set = TupleDataset(lfw_set, val_set)
+        val_loader = get_dataloader(tuple_set, train)
+
+    train_loader = get_dataloader(train_set, labels=labels, train=True)
+
+    return train_loader, val_loader
 
 
 def train():
-    """Train model with PyTorchLightning""" 
+    """Train model with PyTorchLightning"""
     hparams = {
         'margin': args.margin,
         'lr': args.learning_rate,
-        'weight_decay': args.weight_decay
+        'weight_decay': args.weight_decay,
+        "optimizer": args.optimizer
     }
-    pretrained = args.pretrained
+    load_checkpoint = args.load_checkpoint
     num_epochs = args.num_epochs
-    load_last = args.load_last
+
     model_dir = os.path.expanduser(args.model_dir)
     if not os.path.exists(model_dir):
         os.mkdir(model_dir)
@@ -94,28 +118,37 @@ def train():
         os.mkdir(subdir)
 
     train_dir = os.path.expanduser(args.train_data_dir)
-    train_loader, num_classes = initialize_dataset(train_dir)
-
-    val_loader = None
-    if args.val_data_dir:
-        val_dir = os.path.expanduser()
-        val_loader, _ = initialize_dataset(val_dir)        
-
-    checkpoint_dir = './checkpoints/last_checkpoint'
-    checkpoint_callback = ModelCheckpoint(
-        filepath=checkpoint_dir,
-        verbose=True,
-        monitor='val_loss' if val_loader else 'train_loss',
-        mode='min'
+    if not train_dir:
+        raise ValueError('No training data specified.')
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
     )
-    logger = TensorBoardLogger('tb_logs', name='Training')
-    model = LightningFaceNet(hparams, num_classes, pretrained=pretrained)
+
+    train_loader, val_loader = init_datasets(train_dir)
+
+    checkpoint_callback = ModelCheckpoint(
+        filepath=CHECKPOINTS_DIR,
+        verbose=True,
+        monitor='val_acc',
+        mode='max',
+        save_top_k=1
+    )
+    logger = TensorBoardLogger('tb_logs', name='FaceNet InceptionV3')
+    print("Initialize resnet50 backbone")
+    backbone = FaceNetResnet(pretrained=True)
+    model = LightningFaceNet(hparams, backbone)
+
+    if load_checkpoint:
+        model = LightningFaceNet.load_from_checkpoint(load_checkpoint, hparams=hparams, model=inception)
+
     trainer = pl.Trainer(
         gpus=1 if torch.cuda.is_available() else 0,
         max_epochs=num_epochs,
         logger=logger,
         checkpoint_callback=checkpoint_callback,
-        resume_from_checkpoint=checkpoint_dir if load_last else None
+        callbacks=[MetricsCallback()]
     )
 
     print("Begin Training.")
@@ -123,7 +156,7 @@ def train():
     trainer.fit(model, train_loader, val_loader)
     stop = timeit.default_timer()
     print("Finished Training in", stop - start, "seconds")
-    
+
     print("Save trained weights.")
     model_name = os.path.join(subdir, time_stamp + '.pth')
     torch.save(model.model.state_dict(), model_name)

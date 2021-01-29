@@ -4,11 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from os.path import split, join
-from PIL import Image
 from scipy import interpolate
 from scipy.optimize import fsolve
 
-from data.datasets import LFWDataset
+from face_recognition.data.datasets import LFWDataset
 from face_recognition.utils.preprocess import augment
 
 

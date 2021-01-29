@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from sklearn.decomposition import PCA
-from data.datasets import LFWDataset
+from face_recognition.data.datasets import LFWDataset
 
 
 class RefFaceEmbeddingModel(nn.Module):

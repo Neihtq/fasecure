@@ -1,6 +1,5 @@
 from face_recognition.evaluation.evaluations import evaluate_pipeline
-
-from constants import LFW_CROP_DIR, EVAL_RESULTS_DIR
+from face_recognition.utils.constants import LFW_CROP_DIR, EVAL_RESULTS_DIR
 
 
 if __name__ == '__main__':

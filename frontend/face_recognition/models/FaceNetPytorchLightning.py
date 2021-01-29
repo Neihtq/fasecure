@@ -1,11 +1,6 @@
-import os
-import torch
 import numpy as np
-import torch.nn as nn
 import pytorch_lightning as pl
-import torchvision.models as models
 
-from os import listdir
 from torch import optim
 from torch.nn import PairwiseDistance
 from pytorch_lightning.metrics import Metric
@@ -27,15 +22,15 @@ class LightningFaceNet(pl.LightningModule):
 
     def forward(self, x):
         return self.model(x)
-            
+
     def general_step(self, batch):
         labels, data = batch
         embeddings = self.forward(data)
         triplets = self.miner(embeddings, labels)
         loss = self.loss_func(embeddings, labels, triplets)
-        
+
         return loss
-    
+
     def training_step(self, batch, batch_idx):
         loss = self.general_step(batch)
         self.log("train_loss", loss)
@@ -44,24 +39,20 @@ class LightningFaceNet(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         lfw_batch, loss_batch = batch
-        
+
         img_1, img_2, same = lfw_batch
         enc_1, enc_2 = self.forward(img_1), self.forward(img_2)
         self.val_metric(enc_1, enc_2, same)
-        
+
         loss = self.general_step(loss_batch)
         self.log("val_loss", loss)
-        
+
         return {"val_loss": loss}
 
     def validation_epoch_end(self, validation_step_outputs):
         tp_rate, fp_rate, precision, recall, acc, roc_auc, best_dist, tar, far = self.val_metric.compute()
+        self.log_evaluation(tp_rate, fp_rate, precision, recall, roc_auc, best_dist, tar, far)
         self.log("val_acc", acc, logger=True)
-        self.log("tp_rate", tp_rate, logger=True)
-        self.log("fp_rate", fp_rate, logger=True)
-        self.log("precision", precision, logger=True)
-        self.log("recall", recall, logger=True)
-        self.log("roc_auc", roc_auc, logger=True)
 
     def test_step(self, batch, batch_idx):
         img_1, img_2, same = batch
@@ -70,7 +61,10 @@ class LightningFaceNet(pl.LightningModule):
 
     def test_epoch_end(self, test_step_outputs):
         tp_rate, fp_rate, precision, recall, acc, roc_auc, best_dist, tar, far = self.test_metric.compute()
+        self.log_evaluation(tp_rate, fp_rate, precision, recall, roc_auc, best_dist, tar, far)
         self.log("test_acc", acc, logger=True)
+
+    def log_evaluation(self, tp_rate, fp_rate, precision, recall, roc_auc, best_dist, tar, far)
         self.log("tp_rate", tp_rate, logger=True)
         self.log("fp_rate", fp_rate, logger=True)
         self.log("precision", precision, logger=True)
@@ -111,7 +105,7 @@ class LightningFaceNet(pl.LightningModule):
                 eps=1e-08,
                 amsgrad=False
             )
-                    
+
         return optimizer
 
 
@@ -124,7 +118,7 @@ class LFWEvalAccuracy(Metric):
         self.distances = []
         self.labels = []
 
-    def update(self, enc_1, enc_2, same):  
+    def update(self, enc_1, enc_2, same):
         distance = self.l2_distance(enc_1, enc_2)
         self.distances.append(distance.cpu().detach().numpy())
         self.labels.append(same.cpu().detach().numpy())
@@ -142,19 +136,19 @@ class LFWEvalAccuracy(Metric):
         # Calculate ROC metrics
         thresholds_roc = np.arange(0, 4, 0.01)
         true_positive_rate, false_positive_rate, precision, recall, accuracy, best_distances = self.calculate_roc_values(
-                thresholds=thresholds_roc, distances=distances, labels=labels, num_folds=num_folds
-            )
+            thresholds=thresholds_roc, distances=distances, labels=labels, num_folds=num_folds
+        )
 
         roc_auc = auc(false_positive_rate, true_positive_rate)
 
         # Calculate validation rate
         thresholds_val = np.arange(0, 4, 0.001)
         tar, far = self.calculate_val(
-            thresholds_val=thresholds_val, distances=distances, labels=labels, far_target=far_target, num_folds=num_folds
+            thresholds_val=thresholds_val, distances=distances, labels=labels, far_target=far_target,
+            num_folds=num_folds
         )
 
         return true_positive_rate, false_positive_rate, precision, recall, accuracy, roc_auc, best_distances, tar, far
-
 
     def calculate_roc_values(self, thresholds, distances, labels, num_folds=10):
         num_pairs = min(len(labels), len(distances))
@@ -181,9 +175,10 @@ class LFWEvalAccuracy(Metric):
 
             # Test on test set using the best distance threshold
             for threshold_index, threshold in enumerate(thresholds):
-                true_positive_rates[fold_index, threshold_index], false_positive_rates[fold_index, threshold_index], _, _, _ = self.calculate_metrics(
-                        threshold=threshold, dist=distances[test_set], actual_issame=labels[test_set]
-                    )
+                true_positive_rates[fold_index, threshold_index], false_positive_rates[
+                    fold_index, threshold_index], _, _, _ = self.calculate_metrics(
+                    threshold=threshold, dist=distances[test_set], actual_issame=labels[test_set]
+                )
 
             _, _, precision[fold_index], recall[fold_index], accuracy[fold_index] = self.calculate_metrics(
                 threshold=thresholds[best_threshold_index], dist=distances[test_set], actual_issame=labels[test_set]
@@ -194,7 +189,6 @@ class LFWEvalAccuracy(Metric):
             best_distances[fold_index] = thresholds[best_threshold_index]
 
         return true_positive_rate, false_positive_rate, precision, recall, accuracy, best_distances
-
 
     def calculate_metrics(self, threshold, dist, actual_issame):
         # If distance is less than threshold, then prediction is set to True
@@ -212,7 +206,7 @@ class LFWEvalAccuracy(Metric):
         false_positive_rate = 0 if (false_positives + true_negatives == 0) else \
             float(false_positives) / float(false_positives + true_negatives)
 
-        precision = 0 if (true_positives + false_positives) == 0 else\
+        precision = 0 if (true_positives + false_positives) == 0 else \
             float(true_positives) / float(true_positives + false_positives)
 
         recall = 0 if (true_positives + false_negatives) == 0 else \
@@ -221,7 +215,6 @@ class LFWEvalAccuracy(Metric):
         accuracy = float(true_positives + true_negatives) / dist.size
 
         return true_positive_rate, false_positive_rate, precision, recall, accuracy
-
 
     def calculate_val(self, thresholds_val, distances, labels, far_target=1e-3, num_folds=10):
         num_pairs = min(len(labels), len(distances))
@@ -251,7 +244,6 @@ class LFWEvalAccuracy(Metric):
             )
 
         return tar, far
-
 
     def calculate_val_far(self, threshold, dist, actual_issame):
         # If distance is less than threshold, then prediction is set to True

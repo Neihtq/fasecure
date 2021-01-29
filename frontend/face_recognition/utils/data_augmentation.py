@@ -18,13 +18,13 @@ args = parser.parse_args()
 def augment(path, normalize=True):
     '''Loads images and prepares for data augmentation
     input:
-    - path: path to image to be augmented
+        - path: path to image to be augmented
     '''
-    transfoms = [transforms.Resize(224), transforms.ToTensor()])
+    transformers = [transforms.Resize(224), transforms.ToTensor()])
     if normalize: 
         transformers.append(transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
     
-    transform = transforms.Compose(transfoms)
+    transform = transforms.Compose(transformers)
     #prepare preprocess pipeline
 
     augmentations = [transforms.Compose([

@@ -2,7 +2,6 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from sklearn.metrics import auc
 from pytorch_lightning import Callback
 
 from face_recognition.utils.constants import RESULTS_DIR
@@ -19,7 +18,7 @@ class MetricsCallback(Callback):
         self.tp_rate = []
         self.roc_auc = []
         self.epochs = 0
-        
+
     def on_validation_epoch_end(self, trainer, pl_module):
         metrics = trainer.logged_metrics
         self.val_loss.append(float(metrics['val_loss']))
@@ -27,7 +26,7 @@ class MetricsCallback(Callback):
         self.tp_rate.append(float(metrics["tp_rate"]))
         self.fp_rate.append(float(metrics["fp_rate"]))
         self.roc_auc.append(float(metrics["roc_auc"]))
-        
+
     def on_epoch_end(self, trainer, pl_module):
         self.epochs += 1
         metrics = trainer.logged_metrics
@@ -37,12 +36,12 @@ class MetricsCallback(Callback):
         metrics = trainer.logged_metrics
         acc = metrics["test_acc"]
         print(acc)
-    
+
     def on_fit_end(self, trainer, pl_module):
         self.plot_roc()
         self.plot_accuracy()
         self.plot_loss()
-    
+
     def plot_loss(self):
         train_loss, val_loss = self.loss, self.val_loss
         fig = plt.figure()
@@ -68,13 +67,14 @@ class MetricsCallback(Callback):
         plt.legend(loc='lower right')
         fig.savefig(os.path.join(RESULTS_DIR, "lfw_eval_accuracies.png"), dpi=fig.dpi)
         plt.show()
-            
+
     def plot_roc(self):
         false_positive_rate, true_positive_rate = self.tp_rate, self.fp_rate
         roc_auc = np.array(self.roc_auc).mean()
         fig = plt.figure()
         plt.plot(
-            false_positive_rate, true_positive_rate, color='red', lw=2, label="ROC Curve (area = {:.4f})".format(roc_auc)
+            false_positive_rate, true_positive_rate, color='red', lw=2,
+            label="ROC Curve (area = {:.4f})".format(roc_auc)
         )
         plt.plot([0, 1], [0, 1], color="blue", lw=2, linestyle="--", label="Random")
         plt.xlim([0.0, 1.0])
