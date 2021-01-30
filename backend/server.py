@@ -30,30 +30,34 @@ def register():
     image = np.array(data['image'])
     name = data['name']
     status = model.register(name, image)
+    res = {'status': status}
 
-    return str(status)
+    return jsonify(res)
 
 
 @app.route('/deregister', methods=['DELETE'])
 def deregister():
     name = request.json['name']
     status = model.deregister(name)
+    res = {'status': status}
 
-    return status
+    return jsonify(res)
 
 
 @app.route('/wipe', methods=['POST'])
 def wipe():
     status = model.wipe_db()
+    res = {'status': status}
 
-    return status
+    return jsonify(res)
 
 
-@app.route('/registered', methods=['GET'])
-def wipe():
-    # TODO: return list of registered faces
-    return ""
+@app.route('/listAll', methods=['GET'])
+def list_all():
+    label_list = model.list_labels()
+    res = {'names': label_list}
 
+    return jsonify(res)
 
 
 if __name__ == '__main__':

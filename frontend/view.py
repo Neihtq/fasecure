@@ -49,7 +49,6 @@ def main():
     window = init_window()
     cap = cv2.VideoCapture(0)
 
-    database_list = []
     t = 15
 
     prev_frame_time = 0
@@ -82,7 +81,6 @@ def main():
                     window['-TEXT-'].update(background_color='red')
                     box_color = (0, 0, 255)
 
-
         # --- FUNCTION BUTTONS ---
         if event == 'Take Shot':
             if start_x:
@@ -102,8 +100,6 @@ def main():
                     response = register(frame, start_x, start_y, end_x, end_y, label)
                     if response != 0:
                         print("register failed")
-                    else:
-                        database_list.append(label)
                 else:
                     print("Password incorrect - Access to data base denied")
             else:
@@ -112,10 +108,9 @@ def main():
         elif event == 'Database':
             password_dialog = sg.popup_get_text('Password for authenthication required', 'Autenthication')
             if password_dialog == password:
-                list = get_registered()
-                # TODO: display list of names for registered faces
+                list_names = get_registered()
                 print("Password correct - Access to database granted")
-                for i in database_list:
+                for i in list_names:
                     sg.Print(i)
             else:
                 print("Access to data base denied")
@@ -128,7 +123,6 @@ def main():
                 if response != 0:
                     print("Wiping database failed.")
                 else:
-                    database_list = []
                     print("database was cleaned...")
             else:
                 print("Access to data base denied")
@@ -138,6 +132,7 @@ def main():
             break
 
         t += 1
+        
 
 if __name__ == '__main__':
     main()

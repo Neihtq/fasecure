@@ -5,6 +5,7 @@ URL = "http://127.0.0.1:5000/"
 VERIFY_ENDPOINT = URL + 'verify'
 REGISTER_ENDPOINT = URL + 'register'
 WIPE_ENDPOINT = URL + 'wipe'
+LIST_ALL_ENDPOINT = URL + 'listAll'
 
 # DIRECTORIES
 root = join(dirname(abspath(__file__)), '..')

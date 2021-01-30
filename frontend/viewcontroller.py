@@ -4,29 +4,33 @@ import requests
 import numpy as np
 
 from face_detection.face_alignment import FaceAlignment
-from utils.constants import VERIFY_ENDPOINT, REGISTER_ENDPOINT, WIPE_ENDPOINT, DETECTION_THRESHOLD, FACE_DETECTION_MODEL, FACE_DETECTION_PROTOTXT
+from utils.constants import VERIFY_ENDPOINT, REGISTER_ENDPOINT, WIPE_ENDPOINT, DETECTION_THRESHOLD, FACE_DETECTION_MODEL, FACE_DETECTION_PROTOTXT, LIST_ALL_ENDPOINT
 
 face_detection_model = cv2.dnn.readNetFromCaffe(FACE_DETECTION_PROTOTXT, FACE_DETECTION_MODEL)
 face_alignment = FaceAlignment()
 
 
 def get_registered():
-    pass
-    # TODO: GET request for list of registered faces 
+    res = requests.get(LIST_ALL_ENDPOINT)
+    list_names = res.json()["names"]
 
+    return list_names
+    
 
 def wipe_database():
-    response = requests.post(WIPE_ENDPOINT)
+    res = requests.post(WIPE_ENDPOINT)
+    status = res.json()["status"]
 
-    return response
+    return status
 
 
 def register(frame, start_x, start_y, end_x, end_y, name):
     aligned_img = align(frame, start_x, start_y, end_x, end_y)
     if aligned_img is not None:
         data = {'image': aligned_img.tolist(), 'name': name}
-        response = requests.post(REGISTER_ENDPOINT, json=data)
-        return int(response)
+        res = requests.post(REGISTER_ENDPOINT, json=data)
+        status = res.json()["status"]
+        return status
 
     return None
 
@@ -63,7 +67,7 @@ def face_detection(frame, h, w):
 def crop_img(img, start_x, start_y, end_x, end_y):
     height, width = end_y - start_y, end_x - start_x
     cropped_img = img[start_y:start_y + height, start_x:start_x + width]
-    cropped_img = cv2.resize(cropped_img, (250, 250))
+    #cropped_img = cv2.resize(cropped_img, (224, 224))
     return cropped_img
 
 
@@ -74,8 +78,8 @@ def align(frame, start_x, start_y, end_x, end_y):
     if aligned_img is None:
         print("Error during Face Detection. Please try again!")
         return
-
-    return aligned_img
+    return cropped_img
+    #return aligned_img
 
 
 def take_shot(directory, filename, frame, start_x, start_y, end_x, end_y):

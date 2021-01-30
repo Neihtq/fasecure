@@ -58,6 +58,7 @@ class Recognition:
 
         return status
 
-    def list_registered(self):
-        pass
-        # TODO: return list of name for registered faces
+    def list_labels(self):
+        label_list = self.db.database["label"].unique().tolist()
+
+        return label_list

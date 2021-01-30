@@ -6,17 +6,17 @@ from PIL import Image
 from utils.constants import SHAPE_PREDICTOR
 
 
-class FaceAlignment():         
+class FaceAlignment():
     def __init__(self):
         self.detector = dlib.get_frontal_face_detector()
         self.predictor = dlib.shape_predictor(SHAPE_PREDICTOR)
-    
+
     def shape_to_normal(self, shape):
         shape_normal = []
         for i in range(0, 5):
             shape_normal.append((i, (shape.part(i).x, shape.part(i).y)))
         return shape_normal
-    
+
     def get_eyes_nose_dlib(self, shape):
         nose = shape[4][1]
         left_eye_x = int(shape[3][1][0] + shape[2][1][0]) // 2
@@ -32,39 +32,38 @@ class FaceAlignment():
         cos_a = -(length_line3 ** 2 - length_line2 ** 2 - length_line1 ** 2) / (2 * length_line2 * length_line1)
         return cos_a
 
-
     def is_between(self, point1, point2, point3, extra_point):
-        c1 = (point2[0] - point1[0]) * (extra_point[1] - point1[1]) - (point2[1] - point1[1]) * (extra_point[0] - point1[0])
-        c2 = (point3[0] - point2[0]) * (extra_point[1] - point2[1]) - (point3[1] - point2[1]) * (extra_point[0] - point2[0])
-        c3 = (point1[0] - point3[0]) * (extra_point[1] - point3[1]) - (point1[1] - point3[1]) * (extra_point[0] - point3[0])
+        c1 = (point2[0] - point1[0]) * (extra_point[1] - point1[1]) - (point2[1] - point1[1]) * (
+                    extra_point[0] - point1[0])
+        c2 = (point3[0] - point2[0]) * (extra_point[1] - point2[1]) - (point3[1] - point2[1]) * (
+                    extra_point[0] - point2[0])
+        c3 = (point1[0] - point3[0]) * (extra_point[1] - point3[1]) - (point1[1] - point3[1]) * (
+                    extra_point[0] - point3[0])
         if (c1 < 0 and c2 < 0 and c3 < 0) or (c1 > 0 and c2 > 0 and c3 > 0):
             return True
         else:
             return False
-        
+
     def rotate_point(self, origin, point, angle):
-            ox, oy = origin
-            px, py = point
+        ox, oy = origin
+        px, py = point
 
-            qx = ox + np.cos(angle) * (px - ox) - np.sin(angle) * (py - oy)
-            qy = oy + np.sin(angle) * (px - ox) + np.cos(angle) * (py - oy)
-            return qx, qy
-        
+        qx = ox + np.cos(angle) * (px - ox) - np.sin(angle) * (py - oy)
+        qy = oy + np.sin(angle) * (px - ox) + np.cos(angle) * (py - oy)
+        return qx, qy
+
     def align(self, img, start_x, start_y, end_x, end_y):
-        rects = self.detector(img, 0)
-
         x = start_x
         y = start_y
         w = end_x - start_x
-        h = end_y - start_y
 
         left = start_x
         top = start_y
         right = end_x - start_x
-        bottom = end_y - start_y 
-        dlibRect = dlib.rectangle(left, top, right, bottom) 
-        
-        shape = self.predictor(img, dlibRect)        
+        bottom = end_y - start_y
+        rect = dlib.rectangle(left, top, right, bottom)
+
+        shape = self.predictor(img, rect)
 
         shape = self.shape_to_normal(shape)
         nose, left_eye, right_eye = self.get_eyes_nose_dlib(shape)
@@ -81,7 +80,7 @@ class FaceAlignment():
 
         rotated_point = self.rotate_point(nose, center_of_forehead, angle)
         rotated_point = (int(rotated_point[0]), int(rotated_point[1]))
-        
+
         if self.is_between(nose, center_of_forehead, center_pred, rotated_point):
             angle = np.degrees(-angle)
         else:
@@ -89,8 +88,5 @@ class FaceAlignment():
 
         aligned_img = Image.fromarray(img)
         aligned_img = np.array(aligned_img.rotate(angle))
-        
-    
-    #else:
-        #    aligned_img = None       
+
         return aligned_img
