@@ -137,7 +137,7 @@ class LFWValidationDataset(Dataset):
 
 
 class LFWDataset(Dataset):
-    def __init__(self, root, transform=None, cropped_faces=False):
+    def __init__(self, root, transform=None, cropped_faces=False, bias_eval=False):
         self.root = root
         self.cropped_faces = cropped_faces
         self.labels = []
@@ -146,13 +146,22 @@ class LFWDataset(Dataset):
 
         for label in listdir(root):
             img_path = os.path.join(root, label)
-            if len(listdir(img_path)) > 5:
-                for imgs_per_folder in range(len(listdir(img_path))):
-                    self.labels.append(label)
-                    self.mask.append(True)
+            if bias_eval == False:
+                if len(listdir(img_path)) > 5:
+                    for imgs_per_folder in range(len(listdir(img_path))):
+                        self.labels.append(label)
+                        self.mask.append(True)
+                else:
+                    for imgs_per_folder in range(len(listdir(img_path))):
+                        self.mask.append(False)
             else:
-                for imgs_per_folder in range(len(listdir(img_path))):
-                    self.mask.append(False)
+                if len(listdir(img_path)) == 3:
+                    for imgs_per_folder in range(len(listdir(img_path))):
+                        self.labels.append(label)
+                        self.mask.append(True)
+                else:
+                    for imgs_per_folder in range(len(listdir(img_path))):
+                        self.mask.append(False)              
 
         self.image_filenames = glob.glob(os.path.join(root, "**/*.jpg"), recursive=True)
         
@@ -179,6 +188,8 @@ class LFWDataset(Dataset):
             img_tensor = self.transform(img_tensor)
         
         return img_tensor
+
+
 
 #from orderedset import OrderedSet
 class LFWEvaluationDatasetEthics(Dataset):

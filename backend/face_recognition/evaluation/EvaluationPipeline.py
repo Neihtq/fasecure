@@ -20,10 +20,12 @@ class EvaluationPipeline():
         self.evaluation_database = registration_database
 
         # Directly load cropped images for evaluation
-        self.eval_dataset = LFWDataset(self.dataset_path, cropped_faces=True)
+        self.eval_dataset = LFWDataset(self.dataset_path, cropped_faces=True, bias_eval=True)
 
     def run(self):
-        subset_size = 10
+        # lfw_overall_eval_all: 2
+        # lfw_overall_eval_female & male: 1
+        subset_size = 1
         n_samples = int(self.eval_dataset.__len__()/subset_size)
         shuffled_indices = np.random.RandomState(seed=42).permutation(n_samples)
         eval_dataset_shuffled = torch.utils.data.Subset(self.eval_dataset, indices=shuffled_indices)   
@@ -34,6 +36,9 @@ class EvaluationPipeline():
                                                     shuffle=False, 
                                                     sampler=None,
                                                     collate_fn=None)
+
+        # print(len(eval_loader))
+        # os.sys.exit()
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
 

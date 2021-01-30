@@ -50,10 +50,10 @@ def evaluate_pipeline(dataset_path, eval_log_path, face_embedding_model_path=Non
         pass
     
     # Load also reference model (PCA)
-    ref_face_embedding_model = RefFaceEmbeddingModel(dataset_path)
+    #ref_face_embedding_model = RefFaceEmbeddingModel(dataset_path)
 
 
-    eval_log_path = eval_log_path + "final_evaluations_"
+    eval_log_path = eval_log_path + "_final_evaluations_male_"
 
     # loop over different fixed thresholds to find the one resulting in the highest accuracy
     thresholds = [98.5]
