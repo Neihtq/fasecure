@@ -57,3 +57,7 @@ class Recognition:
         status = self.db.face_deregistration(name)
 
         return status
+
+    def list_registered(self):
+        pass
+        # TODO: return list of name for registered faces

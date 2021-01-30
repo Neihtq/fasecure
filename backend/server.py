@@ -49,6 +49,13 @@ def wipe():
     return status
 
 
+@app.route('/registered', methods=['GET'])
+def wipe():
+    # TODO: return list of registered faces
+    return ""
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
 

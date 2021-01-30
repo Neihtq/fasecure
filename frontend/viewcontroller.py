@@ -10,6 +10,11 @@ face_detection_model = cv2.dnn.readNetFromCaffe(FACE_DETECTION_PROTOTXT, FACE_DE
 face_alignment = FaceAlignment()
 
 
+def get_registered():
+    pass
+    # TODO: GET request for list of registered faces 
+
+
 def wipe_database():
     response = requests.post(WIPE_ENDPOINT)
 
@@ -21,7 +26,6 @@ def register(frame, start_x, start_y, end_x, end_y, name):
     if aligned_img is not None:
         data = {'image': aligned_img.tolist(), 'name': name}
         response = requests.post(REGISTER_ENDPOINT, json=data)
-        print("TESTEST", response)
         return int(response)
 
     return None

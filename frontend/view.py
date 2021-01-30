@@ -3,7 +3,7 @@ import time
 import cv2
 import PySimpleGUI as sg
 
-from viewcontroller import wipe_database, take_shot, face_detection, register, verify
+from viewcontroller import wipe_database, take_shot, face_detection, register, verify, get_registered
 
 password = "1234"
 box_color = (255, 0, 0)
@@ -112,6 +112,8 @@ def main():
         elif event == 'Database':
             password_dialog = sg.popup_get_text('Password for authenthication required', 'Autenthication')
             if password_dialog == password:
+                list = get_registered()
+                # TODO: display list of names for registered faces
                 print("Password correct - Access to database granted")
                 for i in database_list:
                     sg.Print(i)
