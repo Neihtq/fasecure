@@ -3,7 +3,7 @@ import time
 import cv2
 import PySimpleGUI as sg
 
-from gui_logic import wipe_database, take_shot, face_detection, register, verify
+from viewcontroller import wipe_database, take_shot, face_detection, register, verify
 
 password = "1234"
 box_color = (255, 0, 0)

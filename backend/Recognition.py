@@ -1,6 +1,7 @@
 import torch
+import torch.nn.functional as F
+import numpy as np
 
-from PIL import Image
 from torchvision import transforms
 
 from face_recognition.models.FaceNet import get_model
@@ -13,10 +14,7 @@ class Recognition:
         self.model = get_model()
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model.to(self.device)
-        self.transform = transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
+        self.normalize = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         self.db = RegistrationDatabase(fixed_initial_threshold=98.5)
 
     def embed(self, img):
@@ -24,23 +22,18 @@ class Recognition:
         input:
             - img: numpy array
         '''
-        tensor = torch.from_numpy(img)
-        tensor = self.transform(tensor)
-        embedding = self.model(tensor.unsqueeze(0))
+        tensor = torch.from_numpy(img).to(self.device).float().permute(2, 1, 0).unsqueeze(0)
+        tensor = F.interpolate(tensor, size=224)
+        tensor = self.normalize(tensor)
+        embedding = self.model(tensor)
 
         return embedding
-
-    def get_img_tensor(self, img):
-        img = Image.open(img)
-        tensor = self.transformers(img).to(self.device)
-
-        return tensor
 
     def verify(self, img):
         embedding = self.embed(img)
         label, access = self.db.face_recognition(embedding)
 
-        return label, access
+        return label, bool(access)
 
     def wipe_db(self):
         status = self.db.clean_database()
@@ -55,7 +48,7 @@ class Recognition:
         '''
         aug_images = augment_and_normalize(img)
         for aug_img in aug_images:
-            embedding = self.model(aug_img)
+            embedding = self.model(aug_img.to(self.device).unsqueeze(0))
             self.db.face_registration(name, embedding)
 
         return 0

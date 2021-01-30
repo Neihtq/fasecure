@@ -2,6 +2,7 @@ import os
 import sys
 import glob
 import argparse
+import numpy as np
 
 from PIL import Image
 from torchvision import transforms
@@ -24,7 +25,7 @@ def augment_and_normalize(img_input, normalize=True):
 
     if normalize:
         transformers += [transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]
-        img = Image.fromarray(img_input).resize((224, 224))
+        img = Image.fromarray(np.uint8(img_input))
     else:
         img = Image.open(img_input)
 

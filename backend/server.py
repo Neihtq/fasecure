@@ -10,6 +10,7 @@ model = Recognition()
 
 @app.route('/')
 def hello_world():
+    print("TESTESTSEET")
     return 'Hello World!'
 
 
@@ -23,14 +24,14 @@ def recognize():
     return jsonify(res)
 
 
-@app.route('/register', methods=['PUT'])
+@app.route('/register', methods=['PUT', 'POST'])
 def register():
     data = request.json
     image = np.array(data['image'])
     name = data['name']
     status = model.register(name, image)
 
-    return status
+    return str(status)
 
 
 @app.route('/deregister', methods=['DELETE'])

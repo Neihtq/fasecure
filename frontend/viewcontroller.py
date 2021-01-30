@@ -18,19 +18,23 @@ def wipe_database():
 
 def register(frame, start_x, start_y, end_x, end_y, name):
     aligned_img = align(frame, start_x, start_y, end_x, end_y)
-    if aligned_img is None:
+    if aligned_img is not None:
         data = {'image': aligned_img.tolist(), 'name': name}
         response = requests.post(REGISTER_ENDPOINT, json=data)
-        return response
+        print("TESTEST", response)
+        return int(response)
 
     return None
 
 
 def verify(frame, start_x, start_y, end_x, end_y):
     aligned_img = align(frame, start_x, start_y, end_x, end_y)
-    if aligned_img is None:
+    if aligned_img is not None:
         data = {'image': aligned_img.tolist()}
-        closest_label, check = requests.post(VERIFY_ENDPOINT, json=data)
+        res = requests.post(VERIFY_ENDPOINT, json=data)
+        res_json = res.json()
+        closest_label, check = res_json['name'], res_json['access']
+
         return closest_label, check
 
     return None, None

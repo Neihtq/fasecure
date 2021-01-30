@@ -1,7 +1,7 @@
 from os.path import join, dirname, abspath
 
 # BACKEND REST API
-URL = "http://localhost:5000/"
+URL = "http://127.0.0.1:5000/"
 VERIFY_ENDPOINT = URL + 'verify'
 REGISTER_ENDPOINT = URL + 'register'
 WIPE_ENDPOINT = URL + 'wipe'
