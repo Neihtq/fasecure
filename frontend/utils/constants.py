@@ -15,3 +15,21 @@ FACE_DETECTION_MODEL = join(root, "face_detection", "model", "res10_300x300_ssd_
 SHAPE_PREDICTOR = join(root,'face_detection', 'model', 'shape_predictor_5_face_landmarks.dat')
 
 DETECTION_THRESHOLD = 0.5
+
+# strings
+TITLE = 'fasecure'
+
+
+# messages: stdout & std errs
+ACCESS_DENIED = "User not recognized - Access Denied!"
+ACCESS_GRANTED = "User recognized Access Granted for:"
+BACKEND_UNREACHABLE = "Could not reach backend."
+DB_ACCESS_DENIED = "Password incorrect - Access to data base denied"
+DB_ACCESS_GRANTED = "Password correct - Access to database granted"
+SUCCESS = 'Success!'
+FAIL = 'Process failed!'
+NO_FACE = "No Face detected. Please try again!"
+FACE_ALIGNMENT_ERROR = "Error during Face Alignment. Please try again!"
+TRY_AGAIN = 'An error has occurred. Please try again!'
+KEEP_IN_FRAME = 'Please keep your face within the frame.'#
+
