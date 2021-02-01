@@ -10,12 +10,6 @@ from utils.constants import ACCESS_DENIED, ACCESS_GRANTED, DB_ACCESS_DENIED, TIT
 password = "1234"
 box_color = (255, 0, 0)
 
-thread = threading.Thread()
-
-start_x, start_y, end_x, end_y, frame = None, None, None, None, None
-access = False
-closest_label = ""
-
 class VerificationThread(threading.Thread):
     def __init__(self):
         super(VerificationThread, self).__init__()
@@ -44,19 +38,24 @@ def init_window():
     return window
 
 
-def thread_verify():
-    global closest_label
-    global access
-    global start_x
-    global start_y
-    global end_x
-    global end_y
-    global frame
-    global closest_label
-
-    if start_x:
-        closest_label, access = verify(frame, start_x, start_y, end_x, end_y)
-
+def thread_verify(frame, start_x, start_y, end_x, end_y, window):
+    global box_color
+    closest_label, check = verify(frame, start_x, start_y, end_x, end_y)
+    if check == "out of frame":
+        print(KEEP_IN_FRAME)
+        window['access_label'].update(KEEP_IN_FRAME)
+        window['access_label'].update(background_color='red')
+        box_color = (0, 0, 255)
+    elif check:
+        print(ACCESS_GRANTED, closest_label)
+        window['access_label'].update('Access Granted')
+        window['access_label'].update(background_color='green')
+        box_color = (0, 255, 0)
+    else:
+        print(ACCESS_DENIED)
+        window['access_label'].update('Access Denied')
+        window['access_label'].update(background_color='red')
+        box_color = (0, 0, 255)
 
 def fps(frame, prev_frame_time):
     new_frame_time = time.time()
@@ -69,20 +68,11 @@ def fps(frame, prev_frame_time):
 
 def main():
     global box_color
-    global access
-    global start_x
-    global start_y
-    global end_x
-    global end_y
-    global frame
-    global closest_label
     window = init_window()
     cap = cv2.VideoCapture(0)
 
     t = 15
 
-    worker = threading.Thread(target=thread_verify)
-    worker.start()
     prev_frame_time = 0
     while True:
         event, values = window.read(timeout=20)
@@ -98,21 +88,15 @@ def main():
         img_bytes = cv2.imencode('.png', frame_resized)[1].tobytes()
         window['image'].update(data=img_bytes)
 
-        if access == "out of frame":
-            print(KEEP_IN_FRAME)
-            window['access_label'].update(KEEP_IN_FRAME)
-            window['access_label'].update(background_color='red')
-            box_color = (0, 0, 255)
-        elif access:
-            print(ACCESS_GRANTED, closest_label)
-            window['access_label'].update('Access Granted')
-            window['access_label'].update(background_color='green')
-            box_color = (0, 255, 0)
-        else:
-            print(ACCESS_DENIED)
-            window['access_label'].update('Access Denied')
-            window['access_label'].update(background_color='red')
-            box_color = (0, 0, 255)
+        if t % 10 == 0:
+            # Face recognition
+
+            if start_x:
+                try:
+                    _worker = threading.Thread(target=thread_verify, args=(frame, start_x, start_y, end_x, end_y, window))
+                    _worker.start()
+                except:
+                    print("Thread error")
 
         # --- FUNCTION BUTTONS ---
         if event == 'Take Shot':
