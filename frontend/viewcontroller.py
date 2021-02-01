@@ -9,7 +9,7 @@ from utils.constants import VERIFY_ENDPOINT, REGISTER_ENDPOINT, WIPE_ENDPOINT, D
 face_detection_model = cv2.dnn.readNetFromCaffe(FACE_DETECTION_PROTOTXT, FACE_DETECTION_MODEL)
 
 
-def make_request(url, method, data):
+def make_request(url, method, data=None):
     try:
         res = requests.request(method, url, json=data)
     except:
