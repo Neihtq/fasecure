@@ -13,6 +13,7 @@ root = join(dirname(abspath(__file__)), '..')
 FACE_DETECTION_PROTOTXT = join(root, "face_detection", "model", "deploy.prototxt")
 FACE_DETECTION_MODEL = join(root, "face_detection", "model", "res10_300x300_ssd_iter_140000.caffemodel")
 SHAPE_PREDICTOR = join(root,'face_detection', 'model', 'shape_predictor_5_face_landmarks.dat')
+LOGO = join(root, '..', 'images', 'logo.png')
 
 DETECTION_THRESHOLD = 0.5
 
@@ -31,5 +32,4 @@ FAIL = 'Process failed!'
 NO_FACE = "No Face detected. Please try again!"
 FACE_ALIGNMENT_ERROR = "Error during Face Alignment. Please try again!"
 TRY_AGAIN = 'An error has occurred. Please try again!'
-KEEP_IN_FRAME = 'Please keep your face within the frame.'#
-
+KEEP_IN_FRAME = 'Out of frame'#

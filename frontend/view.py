@@ -5,33 +5,24 @@ import threading
 import PySimpleGUI as sg
 
 from viewcontroller import wipe_database, take_shot, face_detection, register, verify, get_registered
-from utils.constants import ACCESS_DENIED, ACCESS_GRANTED, DB_ACCESS_DENIED, TITLE, SUCCESS, FAIL, NO_FACE, DB_ACCESS_GRANTED, KEEP_IN_FRAME
+from utils.constants import ACCESS_DENIED, ACCESS_GRANTED, DB_ACCESS_DENIED, TITLE, SUCCESS, FAIL, NO_FACE, DB_ACCESS_GRANTED, KEEP_IN_FRAME, LOGO
 
 password = "1234"
 box_color = (255, 0, 0)
-
-class VerificationThread(threading.Thread):
-    def __init__(self):
-        super(VerificationThread, self).__init__()
-
-    def set_variables(self, frame, start_x, start_y, end_x, end_y, window):
-        self.frame, self.start_x, self.start_y, self.end_x, self.end_y, self.window = frame, start_x, start_y, end_x, end_y, window
-
-    def run(self):
-        verify(self.frame, self.start_x, self.start_y, self.end_x, self.end_y, self.window)
 
 
 def init_window():
     # define the window layout
     # create the window
     sg.theme('Reddit')
+
     layout = [
-        [sg.Text(TITLE, size=(38, 1), justification='center', font='OpenSans-ExtraBold 40')],
-        [sg.Button('Register New Person', size=(23, 1), font='OpenSans-Regular 18'),
-         sg.Button('Database', size=(23, 1), font='OpenSans-Regular 18'),
-         sg.Button('Clear Database', size=(23, 1), font='OpenSans-Regular 18')],
-        [sg.Text('', key='access_label', background_color='blue', size=(38, 1), font='OpenSans-ExtraBold 35')],
-        [sg.Image(filename='', key='image')]
+        [sg.Image(filename='', key='logo'), sg.Text(TITLE, size=(15, 1), justification='center', font='OpenSans-ExtraBold 34')],
+        [sg.Button('Register New Person', size=(17, 1), font='OpenSans-Regular 18'),
+         sg.Button('Database', size=(8, 1), font='OpenSans-Regular 18'),
+         sg.Button('Clear Database', size=(13, 1), font='OpenSans-Regular 18')],
+        [sg.Image(filename='', key='image')],
+        [sg.Text('', key='-TEXT-', justification='center', background_color='blue', size=(22, 1), font='OpenSans-ExtraBold 35')]
     ]
     window = sg.Window('fasecure - Face Recognition', layout, location=(0, 0))
 
@@ -40,22 +31,30 @@ def init_window():
 
 def thread_verify(frame, start_x, start_y, end_x, end_y, window):
     global box_color
-    closest_label, check = verify(frame, start_x, start_y, end_x, end_y)
-    if check == "out of frame":
-        print(KEEP_IN_FRAME)
-        window['access_label'].update(KEEP_IN_FRAME)
-        window['access_label'].update(background_color='red')
-        box_color = (0, 0, 255)
-    elif check:
-        print(ACCESS_GRANTED, closest_label)
-        window['access_label'].update('Access Granted')
-        window['access_label'].update(background_color='green')
-        box_color = (0, 255, 0)
-    else:
+
+    if start_x:
+        closest_label, check = verify(frame, start_x, start_y, end_x, end_y)
+        if check == "out of frame":
+            print(KEEP_IN_FRAME)
+            window['-TEXT-'].update(KEEP_IN_FRAME)
+            window['-TEXT-'].update(background_color='red')
+            box_color = (0, 0, 255)
+        elif check:
+            print(ACCESS_GRANTED, closest_label)
+            window['-TEXT-'].update('Access Granted')
+            window['-TEXT-'].update(background_color='green')
+            box_color = (0, 255, 0)
+        else:
+            print(ACCESS_DENIED)
+            window['-TEXT-'].update('Access Denied')
+            window['-TEXT-'].update(background_color='red')
+            box_color = (0, 0, 255)
+    else: 
         print(ACCESS_DENIED)
-        window['access_label'].update('Access Denied')
-        window['access_label'].update(background_color='red')
+        window['-TEXT-'].update('Access Denied')
+        window['-TEXT-'].update(background_color='red')
         box_color = (0, 0, 255)
+
 
 def fps(frame, prev_frame_time):
     new_frame_time = time.time()
@@ -72,10 +71,17 @@ def main():
     cap = cv2.VideoCapture(0)
 
     t = 15
-
+    set_logo = True
     prev_frame_time = 0
     while True:
         event, values = window.read(timeout=20)
+
+        if set_logo:
+            logo = cv2.imread(LOGO)
+            logo_resized = cv2.resize(logo, (225, 200))
+            img_bytes = cv2.imencode('.png', logo_resized)[1].tobytes()
+            window['logo'].update(data=img_bytes)
+            set_logo = False
 
         _, frame = cap.read()
         h, w = frame.shape[:2]
@@ -84,7 +90,7 @@ def main():
         frame, prev_frame_time = fps(frame, prev_frame_time)
 
         # SHOW WEBCAM
-        frame_resized = cv2.resize(frame, (1010, 570))
+        frame_resized = cv2.resize(frame, (1300, 731))
         img_bytes = cv2.imencode('.png', frame_resized)[1].tobytes()
         window['image'].update(data=img_bytes)
 
@@ -98,17 +104,7 @@ def main():
                 except:
                     print("Thread error")
 
-        # --- FUNCTION BUTTONS ---
-        if event == 'Take Shot':
-            if start_x:
-                directory = '.\images\snap_shot'
-                filename = "testshot_input_pipeline_gui.png"
-
-                take_shot(directory, filename, frame, start_x, start_y, end_x, end_y)
-            else:
-                print(NO_FACE)
-
-        elif event == 'Register New Person':
+        if event == 'Register New Person':
             if start_x:
                 password_dialog = sg.popup_get_text('Password for autenthication required', 'Autenthication')
                 if password_dialog == password:
