@@ -10,9 +10,9 @@ from face_recognition.utils.constants import PRETRAINED_URL, PRETRAINED_MODEL_DI
 
 # change to TRAINED_WEIGHTS_DIR
 def load_weights(weight_path=TRAINED_WEIGHTS_DIR):
-    model = FaceNetResnet(pretrained=True)
+    model = FaceNetResnet()
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model.load_state_dict(torch.load(weight_path, map_location=torch.device(device)))
+    model.load_state_dict(torch.load(weight_path, map_location=torch.device(device))['model_state_dict'])
     
     return model
 
