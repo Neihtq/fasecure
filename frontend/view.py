@@ -8,12 +8,12 @@ from viewcontroller import wipe_database, take_shot, face_detection, register, v
 from utils.constants import ACCESS_DENIED, ACCESS_GRANTED, DB_ACCESS_DENIED, TITLE, SUCCESS, FAIL, NO_FACE, DB_ACCESS_GRANTED, KEEP_IN_FRAME, LOGO
 
 password = "1234"
-box_color = (255, 0, 0)
+box_color = (252, 188, 109)
 
 
 def init_window():
     # define the window layout
-    # create the window
+    # create the window  
     sg.theme('Reddit')
 
     #Thien Layout
@@ -30,12 +30,13 @@ def init_window():
 
     #Cao layout
     layout = [
-        [sg.Image(filename='', key='logo'), sg.Text(TITLE, size=(15, 1), justification='center', font='OpenSans-ExtraBold 34', text_color="RoyalBlue1")],
-        [sg.Button('Register New Person', size=(23, 1), font='OpenSans-Regular 18'),
-         sg.Button('Database', size=(23, 1), font='OpenSans-Regular 18'),
-         sg.Button('Clear Database', size=(23, 1), font='OpenSans-Regular 18')],
+        [sg.Image(filename='', key='logo'), sg.Text(TITLE, size=(20, 1), justification='center', font='OpenSans-ExtraBold 34', text_color="#666666")],
+        [sg.Button('Register New Person', button_color = ('white', '#6DBCFC'), size=(23, 1), font='OpenSans-Regular 18'),
+         sg.Button('Database', button_color = ('white', '#6DBCFC'), size=(23, 1), font='OpenSans-Regular 18'),
+         sg.Button('Clear Database', button_color = ('white', '#6DBCFC'), size=(23, 1), font='OpenSans-Regular 18')],
+
         [sg.Image(filename='', key='image')],
-        [sg.Text('', key='-TEXT-', justification='center', background_color='RoyalBlue1', size=(42, 1), font='OpenSans-ExtraBold 31')]
+        [sg.Text('', key='-TEXT-', justification='center', background_color='#6DBCFC', size=(42, 1), font='OpenSans-ExtraBold 31')]
     ]
     window = sg.Window('fasecure - Face Recognition', layout, location=(0, 0))
 
@@ -50,22 +51,22 @@ def thread_verify(frame, start_x, start_y, end_x, end_y, window):
         if check == "out of frame":
             print(KEEP_IN_FRAME)
             window['-TEXT-'].update(KEEP_IN_FRAME)
-            window['-TEXT-'].update(background_color='red')
+            window['-TEXT-'].update(background_color='#F63E3E')
             box_color = (0, 0, 255)
         elif check:
             print(ACCESS_GRANTED, closest_label)
             window['-TEXT-'].update('Access Granted')
-            window['-TEXT-'].update(background_color='green')
-            box_color = (0, 255, 0)
+            window['-TEXT-'].update(background_color='#56E87C')
+            box_color = (86, 232, 124)
         else:
             print(ACCESS_DENIED)
             window['-TEXT-'].update('Access Denied')
-            window['-TEXT-'].update(background_color='red')
+            window['-TEXT-'].update(background_color='#F63E3E')
             box_color = (0, 0, 255)
     else: 
         print(ACCESS_DENIED)
         window['-TEXT-'].update('Access Denied')
-        window['-TEXT-'].update(background_color='red')
+        window['-TEXT-'].update(background_color='#F63E3E')
         box_color = (0, 0, 255)
 
 
