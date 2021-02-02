@@ -108,3 +108,33 @@ compare_num: 30
 fa_rate:0.000000(0/0), fr_rate:0.500000(15/30), wa_rate:0.000000(0/0), acc:0.5000(15/30)
 compare_num: 40
 fa_rate:0.000000(0/0), fr_rate:0.575000(23/40), wa_rate:0.000000(0/0), acc:0.4250(17/40)
+compare_num: 10
+fa_rate:0.000000(0/0), fr_rate:0.200000(2/10), wa_rate:0.000000(0/0), acc:0.8000(8/10)
+compare_num: 20
+fa_rate:0.000000(0/0), fr_rate:0.400000(8/20), wa_rate:0.000000(0/0), acc:0.6000(12/20)
+compare_num: 30
+fa_rate:0.000000(0/0), fr_rate:0.500000(15/30), wa_rate:0.000000(0/0), acc:0.5000(15/30)
+compare_num: 40
+fa_rate:0.000000(0/0), fr_rate:0.575000(23/40), wa_rate:0.000000(0/0), acc:0.4250(17/40)
+compare_num: 50
+fa_rate:0.000000(0/0), fr_rate:0.620000(31/50), wa_rate:0.000000(0/0), acc:0.3800(19/50)
+compare_num: 60
+fa_rate:0.000000(0/0), fr_rate:0.650000(39/60), wa_rate:0.000000(0/0), acc:0.3500(21/60)
+compare_num: 70
+fa_rate:0.000000(0/0), fr_rate:0.685714(48/70), wa_rate:0.000000(0/0), acc:0.3143(22/70)
+compare_num: 80
+fa_rate:0.000000(0/0), fr_rate:0.725000(58/80), wa_rate:0.000000(0/0), acc:0.2750(22/80)
+compare_num: 90
+fa_rate:0.000000(0/0), fr_rate:0.744444(67/90), wa_rate:0.000000(0/0), acc:0.2556(23/90)
+compare_num: 100
+fa_rate:0.000000(0/0), fr_rate:0.770000(77/100), wa_rate:0.000000(0/0), acc:0.2300(23/100)
+compare_num: 110
+fa_rate:0.000000(0/0), fr_rate:0.790909(87/110), wa_rate:0.000000(0/0), acc:0.2091(23/110)
+compare_num: 120
+fa_rate:0.000000(0/0), fr_rate:0.800000(96/120), wa_rate:0.000000(0/0), acc:0.2000(24/120)
+compare_num: 130
+fa_rate:0.000000(0/0), fr_rate:0.815385(106/130), wa_rate:0.000000(0/0), acc:0.1846(24/130)
+compare_num: 140
+fa_rate:0.000000(0/0), fr_rate:0.828571(116/140), wa_rate:0.000000(0/0), acc:0.1714(24/140)
+compare_num: 150
+fa_rate:0.000000(0/0), fr_rate:0.840000(126/150), wa_rate:0.000000(0/0), acc:0.1600(24/150)
