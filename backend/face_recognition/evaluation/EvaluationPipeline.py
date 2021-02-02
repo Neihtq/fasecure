@@ -20,12 +20,12 @@ class EvaluationPipeline():
         self.evaluation_database = registration_database
 
         # Directly load cropped images for evaluation
-        self.eval_dataset = LFWDataset(self.dataset_path, cropped_faces=True, bias_eval=True)
+        self.eval_dataset = LFWDataset(self.dataset_path, cropped_faces=True)
 
     def run(self):
         # lfw_overall_eval_all: 2.3
         # lfw_overall_eval_female & male: 1.5
-        subset_size = 1.5
+        subset_size = 2.3
         n_samples = int(self.eval_dataset.__len__()/subset_size)
         shuffled_indices = np.random.RandomState(seed=42).permutation(n_samples)
         eval_dataset_shuffled = torch.utils.data.Subset(self.eval_dataset, indices=shuffled_indices)   

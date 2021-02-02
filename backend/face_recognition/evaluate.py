@@ -1,5 +1,5 @@
 from face_recognition.evaluation.evaluations import evaluate_pipeline
-from face_recognition.utils.constants import LFW_CROP_DIR, EVAL_RESULTS_DIR, OVERALL_EVAL_LFW_DIR_ALL, OVERALL_EVAL_LFW_DIR_MALE, OVERALL_EVAL_LFW_DIR_FEMALE, OVERALL_EVAL_RESULTS_DIR
+from face_recognition.utils.constants import LFW_CROP_DIR, EVAL_RESULTS_DIR, OVERALL_EVAL_LFW_DIR_ALL, OVERALL_EVAL_LFW_DIR_MALE, OVERALL_EVAL_LFW_DIR_FEMALE, OVERALL_EVAL_RESULTS_DIR, TRAINED_WEIGHTS_DIR
 import os
 
 if __name__ == '__main__':
@@ -11,4 +11,7 @@ def evaluate():
     # print(OVERALL_EVAL_RESULTS_DIR)
     # os.sys.exit()
 
-    evaluate_pipeline(OVERALL_EVAL_LFW_DIR_FEMALE, OVERALL_EVAL_RESULTS_DIR)
+    # specify path to model, if no path specified, then load pretrained model
+    face_embedding_model_path=TRAINED_WEIGHTS_DIR
+
+    evaluate_pipeline(OVERALL_EVAL_LFW_DIR_ALL, OVERALL_EVAL_RESULTS_DIR,face_embedding_model_path)
