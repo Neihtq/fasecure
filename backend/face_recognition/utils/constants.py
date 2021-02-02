@@ -13,7 +13,7 @@ RESULTS_DIR = os.path.join(root, 'results')
 MODEL_DIR = os.path.join(RESULTS_DIR, 'models')
 PRETRAINED_MODEL_DIR = os.path.join(root, 'pretrained_model')
 CHECKPOINTS_DIR = os.path.join(root, 'checkpoints', 'last_checkpoint')
-TRAINED_WEIGHTS_DIR = os.path.join(root, 'results', 'models', 'presentation_model.pth')
+TRAINED_WEIGHTS_DIR = os.path.join(root, 'results', 'models', 'presentation_model.pt')
 
 
 DATA_DIR = os.path.join(root, "data", "images")
