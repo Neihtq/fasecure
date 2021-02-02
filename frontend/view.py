@@ -106,7 +106,7 @@ def main():
 
         if event == 'Register New Person':
             if start_x:
-                password_dialog = sg.popup_get_text('Password for autenthication required', 'Autenthication')
+                password_dialog = sg.popup_get_text('Password for autenthication required', 'Autenthication', password_char='*')
                 if password_dialog == password:
                     print(DB_ACCESS_GRANTED)
                     label = sg.popup_get_text('Name', 'Registration')
@@ -119,7 +119,7 @@ def main():
                 print(NO_FACE)
 
         elif event == 'Database':
-            password_dialog = sg.popup_get_text('Password for authenthication required', 'Autenthication')
+            password_dialog = sg.popup_get_text('Password for autenthication required', 'Autenthication', password_char='*')
             if password_dialog == password:
                 list_names = get_registered()
                 print(DB_ACCESS_GRANTED)
@@ -130,7 +130,7 @@ def main():
                 print(DB_ACCESS_DENIED)
 
         elif event == 'Clear Database':
-            password_dialog = sg.popup_get_text('Password for autenthication required', 'Autenthication')
+            password_dialog = sg.popup_get_text('Password for autenthication required', 'Autenthication', password_char='*')
             if password_dialog == password:
                 print(DB_ACCESS_GRANTED)
                 response = wipe_database()
