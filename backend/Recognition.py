@@ -6,12 +6,12 @@ from torchvision import transforms
 
 from face_recognition.models.FaceNet import get_model, load_weights
 from face_recognition.database.RegistrationDatabase import RegistrationDatabase
-from face_recognition.utils.data_augmentation import 
-augment_and_normalize
+from face_recognition.utils.data_augmentation import augment_and_normalize
 
 class Recognition:
     def __init__(self):
-        self.model = load_weights()
+        self.model = get_model()
+        #self.model = load_weights()
         self.model.eval()
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model.to(self.device)
