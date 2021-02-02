@@ -18,7 +18,7 @@ LOGO = join(root, '..', 'images', 'logo.png')
 DETECTION_THRESHOLD = 0.5
 
 # strings
-TITLE = 'fasecure'
+TITLE = 'Fasecure'
 
 
 # messages: stdout & std errs
