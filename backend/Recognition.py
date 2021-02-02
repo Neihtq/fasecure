@@ -12,9 +12,9 @@ augment_and_normalize
 class Recognition:
     def __init__(self):
         self.model = load_weights()
-        self.model.eval()
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model.to(self.device)
+        self.model.eval()
         self.normalize = transformer = transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize((224, 224)),  
