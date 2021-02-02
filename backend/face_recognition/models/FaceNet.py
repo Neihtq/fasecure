@@ -8,7 +8,7 @@ from torch.hub import download_url_to_file
 
 from face_recognition.utils.constants import PRETRAINED_URL, PRETRAINED_MODEL_DIR, MODEL_DIR, TRAINED_WEIGHTS_DIR
 
-
+# change to TRAINED_WEIGHTS_DIR
 def load_weights(weight_path=TRAINED_WEIGHTS_DIR):
     model = FaceNetResnet(pretrained=True)
     device = "cuda" if torch.cuda.is_available() else "cpu"

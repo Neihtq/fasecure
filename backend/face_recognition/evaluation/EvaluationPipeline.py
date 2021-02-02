@@ -64,8 +64,14 @@ class EvaluationPipeline():
             augmented_imgs = augment_and_normalize(detected_face)
 
             #detected_face = detected_face.squeeze(0).permute(2, 1, 0).numpy()
-                closest_label, check = self.evaluation_database.face_recognition(embedding)
 
+            embedding = self.face_embedding_model(augmented_imgs[0])
+
+            closest_label, check = self.evaluation_database.face_recognition(embedding)
+
+            # Face recognition
+            if rec_number > 0:
+                closest_label, check = self.evaluation_database.face_recognition(embedding)
                 #print(check)
                 
                 # Allegedly known
