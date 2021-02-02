@@ -47,9 +47,10 @@ class Recognition:
             - img: numpy array
             - name: string
         '''
-        aug_images = augment_and_normalize(img)
+        img_tensor = torch.from_numpy(img).permute(2, 1, 0).unsqueeze(0).float()
+        aug_images = augment_and_normalize(img_tensor)
         for aug_img in aug_images:
-            embedding = self.model(aug_img.to(self.device).unsqueeze(0))
+            embedding = self.model(aug_img.to(self.device))
             self.db.face_registration(name, embedding)
 
         return 0
