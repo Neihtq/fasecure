@@ -15,7 +15,8 @@ class Recognition:
         self.model.eval()
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model.to(self.device)
-        self.normalize = transformer = transforms.Compose([
+        self.model.eval()
+        self.normalize = transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize((224, 224)),  
             transforms.ToTensor(), 
