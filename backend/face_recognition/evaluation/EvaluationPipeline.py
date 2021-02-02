@@ -9,11 +9,7 @@ from scipy import interpolate
 from scipy.optimize import fsolve
 
 from face_recognition.data.datasets import LFWDataset
-<<<<<<< HEAD
 from face_recognition.utils.data_augmentation import augment_and_normalize
-=======
-from face_recognition.utils.data_augmentation import augment
->>>>>>> overall_evaluations_tobias
 
 
 class EvaluationPipeline():
@@ -65,20 +61,9 @@ class EvaluationPipeline():
 
             detected_face = detected_face.to(device)
 
-<<<<<<< HEAD
             augmented_imgs = augment_and_normalize(detected_face)
-=======
+
             #detected_face = detected_face.squeeze(0).permute(2, 1, 0).numpy()
-            augmented_imgs = augment(detected_face)           
-
-            # print("shape: ", augmented_imgs[0].unsqueeze(0).shape)
-            # os.sys.exit()
-
->>>>>>> overall_evaluations_tobias
-            embedding = self.face_embedding_model(augmented_imgs[0])
-
-            # Face recognition
-            if rec_number > 0:
                 closest_label, check = self.evaluation_database.face_recognition(embedding)
 
                 #print(check)

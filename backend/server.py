@@ -1,11 +1,7 @@
-<<<<<<< HEAD
-import numpy as np
+
 
 from flask import Flask, request, jsonify
-=======
-from flask import Flask, request
 from face_recognition.evaluate import evaluate
->>>>>>> overall_evaluations_tobias
 
 from Recognition import Recognition
 
@@ -69,9 +65,6 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
 
 
-<<<<<<< HEAD
-=======
 if __name__=='__main__':
     evaluate()
     #app.run(debug=True)
->>>>>>> overall_evaluations_tobias

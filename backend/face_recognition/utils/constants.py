@@ -3,11 +3,11 @@ import pathlib
 
 # Directory
 abs_path = os.path.dirname(os.path.abspath(__file__))
-<<<<<<< HEAD
+
 root = os.path.join(abs_path, "../")
-=======
-root = os.path.join(abs_path, "..")
->>>>>>> overall_evaluations_tobias
+
+#root = os.path.join(abs_path, "..")
+
 
 RESULTS_DIR = os.path.join(root, 'results')
 MODEL_DIR = os.path.join(RESULTS_DIR, 'models')
