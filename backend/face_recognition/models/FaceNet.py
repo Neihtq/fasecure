@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from torchvision.models import resnet50, inception_v3
+from torchvision.models import resnet50, inception_v3, resnet18
 from torch.hub import download_url_to_file
 
 from face_recognition.utils.constants import PRETRAINED_URL, PRETRAINED_MODEL_DIR, MODEL_DIR, TRAINED_WEIGHTS_DIR
@@ -106,9 +106,9 @@ class FaceNetInceptionV3(nn.Module):
 
 
 class FaceNetResnet(nn.Module):
-    def __init__(self, embedding_dimension=128, pretrained=False):
+    def __init__(self, embedding_dimension=256, pretrained=False):
         super(FaceNetResnet, self).__init__()
-        self.model = resnet50(pretrained=pretrained)
+        self.model = resnet18(pretrained=pretrained)
 
         input_features_fc_layer = self.model.fc.in_features
         self.model.fc = nn.Sequential(
@@ -121,3 +121,5 @@ class FaceNetResnet(nn.Module):
         x = F.normalize(x, p=2, dim=1)
 
         return x
+
+

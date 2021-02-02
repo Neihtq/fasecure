@@ -6,8 +6,8 @@ from torchvision import transforms
 
 from face_recognition.models.FaceNet import get_model, load_weights
 from face_recognition.database.RegistrationDatabase import RegistrationDatabase
-from face_recognition.utils.data_augmentation import augment_and_normalize
-
+from face_recognition.utils.data_augmentation import 
+augment_and_normalize
 
 class Recognition:
     def __init__(self):
@@ -15,7 +15,12 @@ class Recognition:
         self.model.eval()
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model.to(self.device)
-        self.normalize = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        self.normalize = transformer = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.Resize((224, 224)),  
+            transforms.ToTensor(), 
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
         self.db = RegistrationDatabase(fixed_initial_threshold=98.5)
 
     def embed(self, img):
@@ -31,7 +36,9 @@ class Recognition:
         return embedding
 
     def verify(self, img):
-        embedding = self.embed(img)
+        img_tensor = torch.from_numpy(img).permute(2, 1, 0).unsqueeze(0).float()
+        img_tensor = self.normalize(img_tensor)
+        embedding = self.model(img_tensor.to(self.device))
         label, access = self.db.face_recognition(embedding)
 
         return label, bool(access)
