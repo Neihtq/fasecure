@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from torchvision.models import resnet50, inception_v3
 from torch.hub import download_url_to_file
 
+<<<<<<< HEAD
 from face_recognition.utils.constants import PRETRAINED_URL, PRETRAINED_MODEL_DIR, MODEL_DIR, TRAINED_WEIGHTS_DIR
 
 
@@ -15,6 +16,9 @@ def load_weights(weight_path=TRAINED_WEIGHTS_DIR):
     model.load_state_dict(torch.load(weight_path, map_location=torch.device(device)))
     
     return model
+=======
+from face_recognition.utils.constants import PRETRAINED_URL, PRETRAINED_MODEL_DIR, MODEL_DIR
+>>>>>>> overall_evaluations_tobias
 
 
 def load_state():

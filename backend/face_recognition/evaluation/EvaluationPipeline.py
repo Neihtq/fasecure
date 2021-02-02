@@ -4,11 +4,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from os.path import split, join
+import os
 from scipy import interpolate
 from scipy.optimize import fsolve
 
 from face_recognition.data.datasets import LFWDataset
+<<<<<<< HEAD
 from face_recognition.utils.data_augmentation import augment_and_normalize
+=======
+from face_recognition.utils.data_augmentation import augment
+>>>>>>> overall_evaluations_tobias
 
 
 class EvaluationPipeline():
@@ -19,10 +24,12 @@ class EvaluationPipeline():
         self.evaluation_database = registration_database
 
         # Directly load cropped images for evaluation
-        self.eval_dataset = LFWDataset(self.dataset_path, cropped_faces=True)
+        self.eval_dataset = LFWDataset(self.dataset_path, cropped_faces=True, bias_eval=True)
 
     def run(self):
-        subset_size = 10
+        # lfw_overall_eval_all: 2.3
+        # lfw_overall_eval_female & male: 1.5
+        subset_size = 1.5
         n_samples = int(self.eval_dataset.__len__()/subset_size)
         shuffled_indices = np.random.RandomState(seed=42).permutation(n_samples)
         eval_dataset_shuffled = torch.utils.data.Subset(self.eval_dataset, indices=shuffled_indices)   
@@ -34,6 +41,9 @@ class EvaluationPipeline():
                                                     sampler=None,
                                                     collate_fn=None)
 
+        print("length: ",len(eval_loader))
+        # os.sys.exit()
+
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         self.evaluation_database.clean_database()
@@ -44,6 +54,9 @@ class EvaluationPipeline():
         accept = 0
         reject = 0
         rec_number = 0
+
+        #num_people = 0
+
         for i, (label, image) in enumerate(eval_loader):
             label = label[0]
             
@@ -52,12 +65,23 @@ class EvaluationPipeline():
 
             detected_face = detected_face.to(device)
 
+<<<<<<< HEAD
             augmented_imgs = augment_and_normalize(detected_face)
+=======
+            #detected_face = detected_face.squeeze(0).permute(2, 1, 0).numpy()
+            augmented_imgs = augment(detected_face)           
+
+            # print("shape: ", augmented_imgs[0].unsqueeze(0).shape)
+            # os.sys.exit()
+
+>>>>>>> overall_evaluations_tobias
             embedding = self.face_embedding_model(augmented_imgs[0])
 
             # Face recognition
             if rec_number > 0:
                 closest_label, check = self.evaluation_database.face_recognition(embedding)
+
+                #print(check)
                 
                 # Allegedly known
                 # 3 cases with Joe in the image and he gets access:
@@ -77,14 +101,15 @@ class EvaluationPipeline():
                 # 2 cases with Joe in the image and he gets declined
                 # 1) Joe gets declined, although is is registered
                 # 2) Joe gets declined, since he is not registered
-                if check:
+                if not check:
                     reject += 1
                     if self.evaluation_database.contains(label):
                         fr += 1
             
             # Face registration
             if not self.evaluation_database.contains(label):
-                #self.evaluation_database.face_registration(label,embedding)
+                #num_people += 1
+                #print("num people: ", num_people)
                 for aug_img in augmented_imgs:
                     img_embedding_tensor = self.face_embedding_model(aug_img)
                     self.evaluation_database.face_registration(label, img_embedding_tensor)
