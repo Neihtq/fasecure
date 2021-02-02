@@ -11,4 +11,4 @@ def evaluate():
     # print(OVERALL_EVAL_RESULTS_DIR)
     # os.sys.exit()
 
-    evaluate_pipeline(OVERALL_EVAL_LFW_DIR_MALE, OVERALL_EVAL_RESULTS_DIR)
+    evaluate_pipeline(OVERALL_EVAL_LFW_DIR_FEMALE, OVERALL_EVAL_RESULTS_DIR)
