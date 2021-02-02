@@ -1,4 +1,6 @@
-from flask import Flask, request
+import numpy as np
+
+from flask import Flask, request, jsonify
 
 from Recognition import Recognition
 
@@ -8,43 +10,57 @@ model = Recognition()
 
 @app.route('/')
 def hello_world():
+    print("TESTESTSEET")
     return 'Hello World!'
 
 
-@app.route('/verify', method=['POST'])
+@app.route('/verify', methods=['POST'])
 def recognize():
-    image = request.form['image']
+    data = request.json
+    image = np.array(data['image'])
     name,  access = model.verify(image)
     res = {'name': name, 'access': access}
 
-    return res
+    return jsonify(res)
 
 
-@app.route('/register', methods=['PUT'])
+@app.route('/register', methods=['PUT', 'POST'])
 def register():
-    image = request.form['image']
-    name = request.form['name']
+    data = request.json
+    image = np.array(data['image'])
+    name = data['name']
     status = model.register(name, image)
+    res = {'status': status}
 
-    return status
+    return jsonify(res)
 
 
 @app.route('/deregister', methods=['DELETE'])
 def deregister():
-    name = request.form['name']
+    name = request.json['name']
     status = model.deregister(name)
+    res = {'status': status}
 
-    return status
+    return jsonify(res)
 
 
 @app.route('/wipe', methods=['POST'])
 def wipe():
     status = model.wipe_db()
+    res = {'status': status}
 
-    return status
+    return jsonify(res)
+
+
+@app.route('/listAll', methods=['GET'])
+def list_all():
+    label_list = model.list_labels()
+    res = {'names': label_list}
+
+    return jsonify(res)
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
 
 
