@@ -16,6 +16,8 @@ def init_window():
     # create the window
     sg.theme('Reddit')
 
+    #Thien Layout
+    """
     layout = [
         [sg.Image(filename='', key='logo'), sg.Text(TITLE, size=(15, 1), justification='center', font='OpenSans-ExtraBold 34')],
         [sg.Button('Register New Person', size=(17, 1), font='OpenSans-Regular 18'),
@@ -23,6 +25,17 @@ def init_window():
          sg.Button('Clear Database', size=(13, 1), font='OpenSans-Regular 18')],
         [sg.Image(filename='', key='image')],
         [sg.Text('', key='-TEXT-', justification='center', background_color='blue', size=(22, 1), font='OpenSans-ExtraBold 35')]
+    ]
+    """
+
+    #Cao layout
+    layout = [
+        [sg.Image(filename='', key='logo'), sg.Text(TITLE, size=(15, 1), justification='center', font='OpenSans-ExtraBold 34')],
+        [sg.Button('Register New Person', size=(25, 1), font='OpenSans-Regular 18'),
+         sg.Button('Database', size=(25, 1), font='OpenSans-Regular 18'),
+         sg.Button('Clear Database', size=(25, 1), font='OpenSans-Regular 18')],
+        [sg.Image(filename='', key='image')],
+        [sg.Text('', key='-TEXT-', justification='center', background_color='blue', size=(38, 1), font='OpenSans-ExtraBold 35')]
     ]
     window = sg.Window('fasecure - Face Recognition', layout, location=(0, 0))
 
@@ -90,8 +103,8 @@ def main():
         frame, prev_frame_time = fps(frame, prev_frame_time)
 
         # SHOW WEBCAM
-       #frame_resized = cv2.resize(frame, (1300, 731))
-        frame_resized = cv2.resize(frame, (650, 365))
+        #rame_resized = cv2.resize(frame, (1300, 731))
+        frame_resized = cv2.resize(frame, (1010, 570))
         img_bytes = cv2.imencode('.png', frame_resized)[1].tobytes()
         window['image'].update(data=img_bytes)
 
