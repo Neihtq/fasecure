@@ -90,7 +90,8 @@ def main():
         frame, prev_frame_time = fps(frame, prev_frame_time)
 
         # SHOW WEBCAM
-        frame_resized = cv2.resize(frame, (1300, 731))
+       #frame_resized = cv2.resize(frame, (1300, 731))
+        frame_resized = cv2.resize(frame, (650, 365))
         img_bytes = cv2.imencode('.png', frame_resized)[1].tobytes()
         window['image'].update(data=img_bytes)
 
