@@ -13,7 +13,7 @@ box_color = (255, 0, 0)
 
 def init_window():
     # define the window layout
-    # create the window
+    # create the window  
     sg.theme('Reddit')
 
     #Thien Layout
@@ -30,7 +30,7 @@ def init_window():
 
     #Cao layout
     layout = [
-        [sg.Image(filename='', key='logo'), sg.Text(TITLE, size=(15, 1), justification='center', font='OpenSans-ExtraBold 34', text_color="RoyalBlue1")],
+        [sg.Image(filename='', key='logo'), sg.Text(TITLE, size=(15, 1), justification='center', font='OpenSans-ExtraBold 34', text_color="#6DBCFC")],
         [sg.Button('Register New Person', size=(24, 1), font='OpenSans-Regular 18'),
          sg.Button('Database', size=(24, 1), font='OpenSans-Regular 18'),
          sg.Button('Clear Database', size=(24, 1), font='OpenSans-Regular 18')],
