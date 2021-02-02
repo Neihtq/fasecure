@@ -31,11 +31,11 @@ def init_window():
     #Cao layout
     layout = [
         [sg.Image(filename='', key='logo'), sg.Text(TITLE, size=(15, 1), justification='center', font='OpenSans-ExtraBold 34', text_color="RoyalBlue1")],
-        [sg.Button('Register New Person', size=(24, 1), font='OpenSans-Regular 18'),
-         sg.Button('Database', size=(24, 1), font='OpenSans-Regular 18'),
-         sg.Button('Clear Database', size=(24, 1), font='OpenSans-Regular 18')],
+        [sg.Button('Register New Person', size=(23, 1), font='OpenSans-Regular 18'),
+         sg.Button('Database', size=(23, 1), font='OpenSans-Regular 18'),
+         sg.Button('Clear Database', size=(23, 1), font='OpenSans-Regular 18')],
         [sg.Image(filename='', key='image')],
-        [sg.Text('', key='-TEXT-', justification='center', background_color='blue', size=(39, 1), font='OpenSans-ExtraBold 35')]
+        [sg.Text('', key='-TEXT-', justification='center', background_color='RoyalBlue1', size=(42, 1), font='OpenSans-ExtraBold 31')]
     ]
     window = sg.Window('fasecure - Face Recognition', layout, location=(0, 0))
 
