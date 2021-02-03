@@ -14,5 +14,7 @@ def evaluate():
     # specify path to model
     face_embedding_model_path=TRAINED_WEIGHTS_DIR
 
+    # print(TRAINED_WEIGHTS_DIR)
+    # os.sys.exit()
     # if no path specified as third argument, then load pretrained model
-    evaluate_pipeline(OVERALL_EVAL_LFW_DIR_ALL, OVERALL_EVAL_RESULTS_DIR)
+    evaluate_pipeline(OVERALL_EVAL_LFW_DIR_ALL, OVERALL_EVAL_RESULTS_DIR, face_embedding_model_path)

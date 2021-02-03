@@ -104,7 +104,12 @@ class EvaluationPipeline():
                 for aug_img in augmented_imgs:
                     img_embedding_tensor = self.face_embedding_model(aug_img)
                     self.evaluation_database.face_registration(label, img_embedding_tensor)
-                
+
+            # if rec_number == 3:
+            #     print(self.evaluation_database.database)
+            #     os.sys.exit()
+
+
             if (rec_number > 0) and (rec_number % 10 == 0):      
                 self.show_and_save(fa, fr, wa, accept, reject, rec_number, self.eval_log_path)
             

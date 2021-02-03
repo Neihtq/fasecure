@@ -108,8 +108,8 @@ class FaceNetInceptionV3(nn.Module):
 class FaceNetResnet(nn.Module):
     def __init__(self, embedding_dimension=256, pretrained=False):
         super(FaceNetResnet, self).__init__()
-        self.model = resnet50(pretrained=pretrained)
-        #self.model = resnet18(pretrained=pretrained)
+        #self.model = resnet50(pretrained=pretrained)
+        self.model = resnet18(pretrained=pretrained)
 
         input_features_fc_layer = self.model.fc.in_features
         self.model.fc = nn.Sequential(
@@ -120,6 +120,8 @@ class FaceNetResnet(nn.Module):
     def forward(self, x):
         x = self.model(x)
         x = F.normalize(x, p=2, dim=1)
+        alpha = 10
+        x = x * alpha
 
         return x
 
