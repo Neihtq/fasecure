@@ -53,10 +53,10 @@ def evaluate_pipeline(dataset_path, eval_log_path, face_embedding_model_path=Non
     #ref_face_embedding_model = RefFaceEmbeddingModel(dataset_path)
 
 
-    eval_log_path = eval_log_path + "_final_evaluations_thien_model_"
+    eval_log_path = eval_log_path + "_final_evaluations_new_model_"
 
     # loop over different fixed thresholds to find the one resulting in the highest accuracy
-    thresholds = [98.5]
+    thresholds = [0]
     # best threshold 98.5 (compare_num 530: acc: 0.6509)
     for fixed_threshold in thresholds:
         eval_log_path_fix = eval_log_path + str(fixed_threshold) + ".txt"
