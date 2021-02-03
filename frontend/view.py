@@ -55,7 +55,7 @@ def thread_verify(frame, start_x, start_y, end_x, end_y, window):
             box_color = (0, 0, 255)
         elif check:
             print(ACCESS_GRANTED, closest_label)
-            window['-TEXT-'].update('Access Granted')
+            window['-TEXT-'].update('Access Granted: ' + closest_label)
             window['-TEXT-'].update(background_color='#56E87C')
             box_color = (86, 232, 124)
         else:
