@@ -87,6 +87,7 @@ def main():
     t = 15
     set_logo = True
     prev_frame_time = 0
+
     while True:
         event, values = window.read(timeout=20)
 
@@ -114,8 +115,13 @@ def main():
 
             if start_x:
                 try:
-                    _worker = threading.Thread(target=thread_verify, args=(frame, start_x, start_y, end_x, end_y, window))
-                    _worker.start()
+                        print(ACCESS_DENIED)
+                        window['-TEXT-'].update('Access Denied')
+                        window['-TEXT-'].update(background_color='#F63E3E')
+                        box_color = (0, 0, 255)
+
+                        _worker = threading.Thread(target=thread_verify, args=(frame, start_x, start_y, end_x, end_y, window))
+                        _worker.start()
                 except:
                     print("Thread error")
 

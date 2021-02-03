@@ -10,7 +10,8 @@ from face_recognition.utils.data_augmentation import augment_and_normalize
 
 class Recognition:
     def __init__(self):
-        self.model = load_weights()
+        #self.model = load_weights()
+        self.model=get_model()
         self.model.eval()
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model.to(self.device)
@@ -19,9 +20,10 @@ class Recognition:
             transforms.ToPILImage(),
             transforms.Resize((224, 224)),  
             transforms.ToTensor(), 
+            #transforms.Normalize(mean=[0.6068, 0.4517, 0.3800],std=[0.2492, 0.2173, 0.2082])
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
-        self.db = RegistrationDatabase(fixed_initial_threshold=0)
+        self.db = RegistrationDatabase(fixed_initial_threshold=98.5)
 
     def embed(self, img):
         '''
