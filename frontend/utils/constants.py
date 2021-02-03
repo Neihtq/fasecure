@@ -2,10 +2,10 @@ from os.path import join, dirname, abspath
 
 # BACKEND REST API
 URL = "http://127.0.0.1:5000/"
-VERIFY_ENDPOINT = URL + 'verify'
-REGISTER_ENDPOINT = URL + 'register'
-WIPE_ENDPOINT = URL + 'wipe'
-LIST_ALL_ENDPOINT = URL + 'listAll'
+VERIFY_ENDPOINT = "http://facesecure-verify-default.dte-ocp44-kngf35-915b3b336cabec458a7c7ec2aa7c625f-0000.us-east.containers.appdomain.cloud/verify" #URL + 'verify'
+REGISTER_ENDPOINT = "http://facesecure-register-default.dte-ocp44-kngf35-915b3b336cabec458a7c7ec2aa7c625f-0000.us-east.containers.appdomain.cloud/register"#URL + 'register'
+WIPE_ENDPOINT = "http://facesecure-wipe-default.dte-ocp44-kngf35-915b3b336cabec458a7c7ec2aa7c625f-0000.us-east.containers.appdomain.cloud/wipe"#URL + 'wipe'
+LIST_ALL_ENDPOINT = "http://facesecure-listall-default.dte-ocp44-kngf35-915b3b336cabec458a7c7ec2aa7c625f-0000.us-east.containers.appdomain.cloud/listAll" #URL + 'listAll'
 
 # DIRECTORIES
 root = join(dirname(abspath(__file__)), '..')
