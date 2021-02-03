@@ -1,6 +1,7 @@
 
 import os
 from os.path import join
+import numpy as np
 
 from face_recognition.models.FaceNet import get_model
 from face_recognition.models.RefFaceEmbeddingModel import RefFaceEmbeddingModel
@@ -53,10 +54,13 @@ def evaluate_pipeline(dataset_path, eval_log_path, face_embedding_model_path=Non
     #ref_face_embedding_model = RefFaceEmbeddingModel(dataset_path)
 
 
-    eval_log_path = eval_log_path + "_final_evaluations_new_model_"
+    eval_log_path = eval_log_path + "_final_evaluations_new_femaleee_"
 
     # loop over different fixed thresholds to find the one resulting in the highest accuracy
     thresholds = [0]
+    #thresholds = list(np.arange(95,99.9,0.2))
+    # print(thresholds)
+    # os.sys.exit()
     # best threshold 98.5 (compare_num 530: acc: 0.6509)
     for fixed_threshold in thresholds:
         eval_log_path_fix = eval_log_path + str(fixed_threshold) + ".txt"
@@ -64,6 +68,8 @@ def evaluate_pipeline(dataset_path, eval_log_path, face_embedding_model_path=Non
         pipeline_evaluation = EvaluationPipeline(dataset_path, eval_log_path_fix, face_embedding_model, registration_database)
         pipeline_evaluation.run()
         pipeline_evaluation.plot_results()
+        # pipeline_evaluation.compare_evaluations()
+        # os.sys.exit()
 
 if __name__ == '__main__':
     evaluate_results(absolute_dir)

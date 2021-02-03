@@ -20,12 +20,12 @@ class EvaluationPipeline():
         self.evaluation_database = registration_database
 
         # Directly load cropped images for evaluation
-        self.eval_dataset = LFWDataset(self.dataset_path, cropped_faces=True)
+        self.eval_dataset = LFWDataset(self.dataset_path, cropped_faces=True, bias_eval=True)
 
     def run(self):
         # lfw_overall_eval_all: 2.3
         # lfw_overall_eval_female & male: 1.5
-        subset_size = 2.3
+        subset_size = 1
         n_samples = int(self.eval_dataset.__len__()/subset_size)
         shuffled_indices = np.random.RandomState(seed=42).permutation(n_samples)
         eval_dataset_shuffled = torch.utils.data.Subset(self.eval_dataset, indices=shuffled_indices)   
@@ -105,9 +105,9 @@ class EvaluationPipeline():
                     img_embedding_tensor = self.face_embedding_model(aug_img)
                     self.evaluation_database.face_registration(label, img_embedding_tensor)
 
-            # if rec_number == 3:
-            #     print(self.evaluation_database.database)
-            #     os.sys.exit()
+            # if rec_number == 10:
+            #     #print(self.evaluation_database.database)
+            #     return
 
 
             if (rec_number > 0) and (rec_number % 10 == 0):      
