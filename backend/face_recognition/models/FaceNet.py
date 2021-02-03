@@ -108,10 +108,7 @@ class FaceNetInceptionV3(nn.Module):
 class FaceNetResnet(nn.Module):
     def __init__(self, embedding_dimension=256, pretrained=False):
         super(FaceNetResnet, self).__init__()
-<<<<<<< HEAD
         #self.model = resnet50(pretrained=pretrained)
-=======
->>>>>>> 228b0de3ff099df971893db26ca17110b20fcf20
         self.model = resnet18(pretrained=pretrained)
 
         input_features_fc_layer = self.model.fc.in_features
