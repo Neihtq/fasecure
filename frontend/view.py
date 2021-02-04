@@ -28,7 +28,7 @@ def update_detect_label(text, bg_color, new_box_color):
     global box_color
     global window
     window['-TEXT-'].update(text)
-    window['-TEXT-'].update(background_color=new_box_color)
+    window['-TEXT-'].update(background_color=bg_color)
     box_color = new_box_color
     
 
