@@ -95,7 +95,7 @@ def main():
             # Face recognition
             if start_x:
                 try:
-                    _worker = threading.Thread(target=thread_verify, args=(frame, start_x, start_y, end_x, end_y, window))
+                    _worker = threading.Thread(target=thread_verify, args=(frame, start_x, start_y, end_x, end_y))
                     _worker.start()
                 except:
                     print("Thread error")
