@@ -7,11 +7,6 @@ import PySimpleGUI as sg
 from viewcontroller import wipe_database, face_detection, register, verify, get_registered
 from utils.constants import ACCESS_DENIED, ACCESS_GRANTED, DB_ACCESS_DENIED, TITLE, SUCCESS, FAIL, NO_FACE, DB_ACCESS_GRANTED, KEEP_IN_FRAME, LOGO, CLOSE_APP, WAIT_CLOSE_APP
 
-password = "1234"
-box_color = (252, 188, 109)
-window = init_window()
-
-
 def init_window():
     ''' define the window layout and return created window'''
     sg.theme('Reddit')
@@ -152,6 +147,12 @@ def main():
         t += 1
 
     window.close()
+
+
+password = "1234"
+box_color = (252, 188, 109)
+window = init_window()
+
 
 if __name__ == '__main__':
     main()
