@@ -83,10 +83,3 @@ def face_detection(frame, h, w, color):
         cv2.rectangle(frame, (start_x - 30, start_y - 30), (end_x + 30, end_y + 30), color, 3)
 
     return start_x, start_y, end_x, end_y, frame
-
-
-def take_shot(directory, filename, frame, start_x, start_y, end_x, end_y):
-    cropped_img = crop_img(frame, start_x - 20, start_y - 20, end_x + 20, end_y + 20)
-    cropped_aligned_img = align(cropped_img, start_x, start_y, end_x, end_y)
-    write_root = os.path.join(directory, filename)
-    cv2.imwrite(write_root, cropped_aligned_img)

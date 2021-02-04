@@ -58,7 +58,7 @@ def crop_img(img, start_x, start_y, end_x, end_y):
 
 
 def align(frame, start_x, start_y, end_x, end_y):
-    cropped_img = crop_img(frame, start_x - 20, start_y - 20, end_x + 20, end_y + 20)
+    cropped_img = crop_img(frame, start_x - 20, start_y - 20, end_x + 20, end_y + 20)  
     aligned_img = align_img(cropped_img, start_x, start_y, end_x, end_y)
 
     if aligned_img is None:

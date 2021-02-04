@@ -1,6 +1,7 @@
 import numpy as np
 
 from flask import Flask, request, jsonify
+from face_recognition.evaluate import evaluate
 
 from Recognition import Recognition
 
@@ -61,6 +62,4 @@ def list_all():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
-
-
+     app.run(host='0.0.0.0', debug=True)

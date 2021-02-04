@@ -3,18 +3,19 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from torchvision.models import resnet50, inception_v3
+from torchvision.models import resnet50, inception_v3, resnet18
 from torch.hub import download_url_to_file
 
 from face_recognition.utils.constants import PRETRAINED_URL, PRETRAINED_MODEL_DIR, MODEL_DIR, TRAINED_WEIGHTS_DIR
 
-
+# change to TRAINED_WEIGHTS_DIR
 def load_weights(weight_path=TRAINED_WEIGHTS_DIR):
-    model = FaceNetResnet(pretrained=True)
+    model = FaceNetResnet()
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model.load_state_dict(torch.load(weight_path, map_location=torch.device(device)))
+    model.load_state_dict(torch.load(weight_path, map_location=torch.device(device))['model_state_dict'])
     
     return model
+
 
 
 def load_state():
@@ -108,6 +109,7 @@ class FaceNetResnet(nn.Module):
     def __init__(self, embedding_dimension=128, pretrained=False):
         super(FaceNetResnet, self).__init__()
         self.model = resnet50(pretrained=pretrained)
+        #self.model = resnet18(pretrained=pretrained)
 
         input_features_fc_layer = self.model.fc.in_features
         self.model.fc = nn.Sequential(
@@ -118,5 +120,9 @@ class FaceNetResnet(nn.Module):
     def forward(self, x):
         x = self.model(x)
         x = F.normalize(x, p=2, dim=1)
+        alpha = 10
+        x = x * alpha
 
         return x
+
+

@@ -3,22 +3,31 @@ import pathlib
 
 # Directory
 abs_path = os.path.dirname(os.path.abspath(__file__))
+
 root = os.path.join(abs_path, "../")
+
+#root = os.path.join(abs_path, "..")
+
 
 RESULTS_DIR = os.path.join(root, 'results')
 MODEL_DIR = os.path.join(RESULTS_DIR, 'models')
 PRETRAINED_MODEL_DIR = os.path.join(root, 'pretrained_model')
 CHECKPOINTS_DIR = os.path.join(root, 'checkpoints', 'last_checkpoint')
-TRAINED_WEIGHTS_DIR = os.path.join(root, 'results', 'models', 'presentation_model.pth')
+TRAINED_WEIGHTS_DIR = os.path.join(root, 'results', 'models', 'presentation_model.pt')
 
 
-DATA_DIR = os.path.join(root, "images")
+DATA_DIR = os.path.join(root, "data", "images")
 LFW_ALIGNED_DIR = os.path.join(root, 'data', 'images', 'lfw_aligned')
 LFW_DIR = os.path.join(DATA_DIR,"lfw")
 LFW_CROP_DIR = os.path.join(DATA_DIR, "lfw_crop")
 
 RESULTS_DIR = os.path.join(root, "results")
 EVAL_RESULTS_DIR = os.path.join(RESULTS_DIR, "evaluation", "refmodel")
+
+OVERALL_EVAL_LFW_DIR_ALL = os.path.join(DATA_DIR, "lfw_overall_eval_all")
+OVERALL_EVAL_LFW_DIR_MALE = os.path.join(DATA_DIR, "lfw_overall_eval_male")
+OVERALL_EVAL_LFW_DIR_FEMALE = os.path.join(DATA_DIR, "lfw_overall_eval_female")
+OVERALL_EVAL_RESULTS_DIR = os.path.join(RESULTS_DIR, "evaluation", "overall_evaluation")
 
 DATABASE_DIR = os.path.join(root, "database", "reg_database", "database.pkl")
 
