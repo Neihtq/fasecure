@@ -4,7 +4,7 @@ import cv2
 import threading
 import PySimpleGUI as sg
 
-from viewcontroller import wipe_database, take_shot, face_detection, register, verify, get_registered
+from viewcontroller import wipe_database, face_detection, register, verify, get_registered
 from utils.constants import ACCESS_DENIED, ACCESS_GRANTED, DB_ACCESS_DENIED, TITLE, SUCCESS, FAIL, NO_FACE, DB_ACCESS_GRANTED, KEEP_IN_FRAME, LOGO, CLOSE_APP, WAIT_CLOSE_APP
 
 password = "1234"
