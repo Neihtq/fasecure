@@ -36,13 +36,13 @@ from face_recognition.utils.constants import LFW_DIR
 
 # input: tensor 1x3x224x224
 # output: tensor 1x3x224x224
-def augment_and_normalize(tensor_img):
+def augment_and_normalize(tensor_img, aug_mean=[0.6068, 0.4517, 0.3800], aug_std=[0.2492, 0.2173, 0.2082]):
     transformer = transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize((224, 224)),  
             transforms.ToTensor(), 
             #transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-            transforms.Normalize(mean=[0.6068, 0.4517, 0.3800],std=[0.2492, 0.2173, 0.2082])
+            transforms.Normalize(mean=aug_mean,std=aug_std)
         ])
 
     augmentation_techniques = [

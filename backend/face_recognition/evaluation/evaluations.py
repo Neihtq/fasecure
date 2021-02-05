@@ -10,35 +10,39 @@ from face_recognition.database.RegistrationDatabase import RegistrationDatabase
 from face_recognition.models.FaceNet import load_weights
 
 # Evaluate the face embedding model and the overall pipeline
-def evaluate_results(absolute_dir, face_embedding_model_path=None, fixed_initial_registration_threshold=98.5):
-    # FACE EMBEDDING EVALUATION
+def evaluate_overall_pipeline(dataset_path, eval_log_path, pretrained_face_embedding_model_path):
 
-    pass
+    # Load all three face embedding models
+    own_face_embedding_model = get_model().eval()
+    pretrained_face_embedding_model = load_weights(pretrained_face_embedding_model_path).eval() 
+    ref_face_embedding_model = RefFaceEmbeddingModel(dataset_path)
+    
+    eval_log_path = eval_log_path + "_evaluations_"
 
 
-    # # OVERALL EVALUATION
+    # perform overall evaluation for own trained face embedding model
+    eval_log_path_fix = eval_log_path + "own_trained" + ".txt"
+    registration_database = RegistrationDatabase(fixed_initial_threshold=98.9)
+    pipeline_evaluation = EvaluationPipeline(dataset_path, eval_log_path_fix, own_face_embedding_model, registration_database, 
+                                            aug_mean = [0.485, 0.456, 0.406], aug_std = [0.229, 0.224, 0.225])
+    pipeline_evaluation.run()    
 
-    # # Load pretrained model, if no path specified
-    # if face_embedding_model_path is None:
-    #     face_embedding_model = get_model().eval()
-    # else:
-    #     # --- Load model from specified path ---
-    #     pass
+    # perform overall evaluation for pretrained face embedding model
+    eval_log_path_fix = eval_log_path + "pretrained" + ".txt"
+    registration_database = RegistrationDatabase(fixed_initial_threshold=35)
+    pipeline_evaluation = EvaluationPipeline(dataset_path, eval_log_path_fix, pretrained_face_embedding_model, registration_database)
+    pipeline_evaluation.run()   
 
-    # # Load evaluation data for overall evaluation from default path
-    # overall_eval_dataset_path = join(absolute_dir, "data", "lfw_overall_eval_all")
+    # perform overall evaluation for reference face embedding model
+    eval_log_path_fix = eval_log_path + "reference" + ".txt"
+    registration_database = RegistrationDatabase(fixed_initial_threshold=0)
+    pipeline_evaluation = EvaluationPipeline(dataset_path, eval_log_path_fix, ref_face_embedding_model, registration_database,
+                                            aug_mean = [0.485, 0.456, 0.406], aug_std = [0.229, 0.224, 0.225])
+    pipeline_evaluation.run()  
 
-    # # Define the evaluation log path for the overall evaluation with the default path
-    # eval_log_path = join(absolute_dir, "evaluation", "results", "overall_evaluation_logs_")
-    # if not os.path.exists(join(absolute_dir, "evaluation", "results")):
-    #     os.makedirs(join(absolute_dir, "evaluation", "results"))
+    # plot results
+    pipeline_evaluation.compare_evaluations()
 
-    # # Run the overall evaluation
-    # eval_log_path_fix = eval_log_path + str(fixed_initial_registration_threshold) + ".txt"
-    # registration_database = RegistrationDatabase(fixed_initial_threshold=fixed_initial_registration_threshold)
-    # pipeline_evaluation = EvaluationPipeline(overall_eval_dataset_path, eval_log_path_fix, face_embedding_model, registration_database)
-    # pipeline_evaluation.run()
-    # pipeline_evaluation.plot_results()
 
 def evaluate_pipeline(dataset_path, eval_log_path, face_embedding_model_path=None):
     '''Overall evaluation of complete pipeline'''
@@ -54,21 +58,22 @@ def evaluate_pipeline(dataset_path, eval_log_path, face_embedding_model_path=Non
     #ref_face_embedding_model = RefFaceEmbeddingModel(dataset_path)
 
 
-    eval_log_path = eval_log_path + "_final_evaluations_new_femaleee_"
+    eval_log_path = eval_log_path + "_evaluations_"
 
     # loop over different fixed thresholds to find the one resulting in the highest accuracy
-    thresholds = [0]
-    #thresholds = list(np.arange(95,99.9,0.2))
-    # print(thresholds)
-    # os.sys.exit()
-    # best threshold 98.5 (compare_num 530: acc: 0.6509)
+    #thresholds = [98.9]
+    thresholds = list(np.arange(98.5,99,0.1))
+    #thresholds = list(range(96,100))
+
     for fixed_threshold in thresholds:
+        print("current threshold: ", fixed_threshold)
         eval_log_path_fix = eval_log_path + str(fixed_threshold) + ".txt"
         registration_database = RegistrationDatabase(fixed_initial_threshold=fixed_threshold)
-        pipeline_evaluation = EvaluationPipeline(dataset_path, eval_log_path_fix, face_embedding_model, registration_database)
-        pipeline_evaluation.run()
-        pipeline_evaluation.plot_results()
-        # pipeline_evaluation.compare_evaluations()
+        pipeline_evaluation = EvaluationPipeline(dataset_path, eval_log_path_fix, face_embedding_model, registration_database, 
+                                                    aug_mean = [0.485, 0.456, 0.406], aug_std = [0.229, 0.224, 0.225])
+        #pipeline_evaluation.run()
+        #pipeline_evaluation.plot_results()
+        pipeline_evaluation.compare_evaluations()
         # os.sys.exit()
 
 if __name__ == '__main__':
