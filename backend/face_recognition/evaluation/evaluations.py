@@ -3,7 +3,7 @@ import os
 from os.path import join
 import numpy as np
 
-from face_recognition.models.FaceNet import get_model_old
+from face_recognition.models.FaceNet import get_model_old, get_model
 from face_recognition.models.RefFaceEmbeddingModel import RefFaceEmbeddingModel
 from face_recognition.evaluation.EvaluationPipeline import EvaluationPipeline
 from face_recognition.database.RegistrationDatabase import RegistrationDatabase
@@ -14,7 +14,7 @@ def evaluate_overall_pipeline(dataset_path, eval_log_path, pretrained_face_embed
 
     # Load all three face embedding models
     own_face_embedding_model = get_model().eval()
-    pretrained_face_embedding_model = load_weights(pretrained_face_embedding_model_path).eval() 
+    pretrained_face_embedding_model = load_pretrained(pretrained_face_embedding_model_path).eval() 
     ref_face_embedding_model = RefFaceEmbeddingModel(dataset_path)
     
     eval_log_path = eval_log_path + "_evaluations_"
@@ -49,7 +49,7 @@ def evaluate_pipeline(dataset_path, eval_log_path, face_embedding_model_path=Non
 
     # Load pretrained model, if no path specified
     if face_embedding_model_path is None:
-        face_embedding_model = get_model_old().eval()
+        face_embedding_model = get_model().eval()
     else:
         # --- Load model from specified path ---
         face_embedding_model = load_pretrained(face_embedding_model_path).eval()

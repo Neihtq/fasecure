@@ -11,5 +11,5 @@ def evaluate():
     # specify path to model, can load his own when changes path in constant
     pretrained_face_embedding_model_path = TRAINED_WEIGHTS_DIR
 
-    evaluate_pipeline(OVERALL_EVAL_LFW_DIR_ALL, OVERALL_EVAL_RESULTS_DIR)
-    #evaluate_overall_pipeline(OVERALL_EVAL_LFW_DIR_ALL, OVERALL_EVAL_RESULTS_DIR, pretrained_face_embedding_model_path)
+    #evaluate_pipeline(OVERALL_EVAL_LFW_DIR_ALL, OVERALL_EVAL_RESULTS_DIR)
+    evaluate_overall_pipeline(OVERALL_EVAL_LFW_DIR_ALL, OVERALL_EVAL_RESULTS_DIR, pretrained_face_embedding_model_path)
