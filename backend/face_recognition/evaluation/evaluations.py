@@ -7,7 +7,7 @@ from face_recognition.models.FaceNet import get_model
 from face_recognition.models.RefFaceEmbeddingModel import RefFaceEmbeddingModel
 from face_recognition.evaluation.EvaluationPipeline import EvaluationPipeline
 from face_recognition.database.RegistrationDatabase import RegistrationDatabase
-from face_recognition.models.FaceNet import load_weights
+from face_recognition.models.FaceNet import load_pretrained
 
 # Evaluate the face embedding model and the overall pipeline
 def evaluate_overall_pipeline(dataset_path, eval_log_path, pretrained_face_embedding_model_path):
@@ -52,7 +52,7 @@ def evaluate_pipeline(dataset_path, eval_log_path, face_embedding_model_path=Non
         face_embedding_model = get_model().eval()
     else:
         # --- Load model from specified path ---
-        face_embedding_model = load_weights(face_embedding_model_path).eval()
+        face_embedding_model = load_pretrained(face_embedding_model_path).eval()
     
     # Load also reference model (PCA)
     #ref_face_embedding_model = RefFaceEmbeddingModel(dataset_path)
