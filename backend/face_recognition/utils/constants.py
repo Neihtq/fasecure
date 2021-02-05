@@ -50,6 +50,3 @@ UNKNOWN_PERSON = "Person is unkown"
 # Strings
 EUCLIDEAN_DISTANCE = "euclidean_distance"
 INNER_PRODUCT = "inner_product"
-
-# URLs
-PRETRAINED_URL = 'https://github.com/khrlimam/facenet/releases/download/acc-0.92135/model921-af60fb4f.pth'

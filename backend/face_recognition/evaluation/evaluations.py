@@ -3,7 +3,7 @@ import os
 from os.path import join
 import numpy as np
 
-from face_recognition.models.FaceNet import get_model_old, get_model
+from face_recognition.models.FaceNet import get_model
 from face_recognition.models.RefFaceEmbeddingModel import RefFaceEmbeddingModel
 from face_recognition.evaluation.EvaluationPipeline import EvaluationPipeline
 from face_recognition.database.RegistrationDatabase import RegistrationDatabase
@@ -21,7 +21,7 @@ def evaluate_overall_pipeline(dataset_path, eval_log_path, pretrained_face_embed
 
 
     # perform overall evaluation for own trained face embedding model
-    eval_log_path_fix = eval_log_path + "own_trained" + ".txt"
+    eval_log_path_fix = eval_log_path + "own trained" + ".txt"
     registration_database = RegistrationDatabase(fixed_initial_threshold=98.9)
     pipeline_evaluation = EvaluationPipeline(dataset_path, eval_log_path_fix, own_face_embedding_model, registration_database, 
                                             aug_mean = [0.485, 0.456, 0.406], aug_std = [0.229, 0.224, 0.225])
@@ -47,7 +47,6 @@ def evaluate_overall_pipeline(dataset_path, eval_log_path, pretrained_face_embed
 def evaluate_pipeline(dataset_path, eval_log_path, face_embedding_model_path=None):
     '''Overall evaluation of complete pipeline'''
 
-    # Load pretrained model, if no path specified
     if face_embedding_model_path is None:
         face_embedding_model = get_model().eval()
     else:
@@ -71,9 +70,9 @@ def evaluate_pipeline(dataset_path, eval_log_path, face_embedding_model_path=Non
         registration_database = RegistrationDatabase(fixed_initial_threshold=fixed_threshold)
         pipeline_evaluation = EvaluationPipeline(dataset_path, eval_log_path_fix, face_embedding_model, registration_database, 
                                                     aug_mean = [0.485, 0.456, 0.406], aug_std = [0.229, 0.224, 0.225])
-        pipeline_evaluation.run()
+        #pipeline_evaluation.run()
         #pipeline_evaluation.plot_results()
-        #pipeline_evaluation.compare_evaluations()
+        pipeline_evaluation.compare_evaluations()
         # os.sys.exit()
 
 if __name__ == '__main__':
