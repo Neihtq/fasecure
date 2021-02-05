@@ -13,11 +13,13 @@ from face_recognition.utils.data_augmentation import augment_and_normalize
 
 
 class EvaluationPipeline():
-    def __init__(self, dataset_path, eval_log_path, face_embedding_model, registration_database):
+    def __init__(self, dataset_path, eval_log_path, face_embedding_model, registration_database, aug_mean = [0.6068, 0.4517, 0.3800], aug_std = [0.2492, 0.2173, 0.2082]):
         self.dataset_path = dataset_path
         self.eval_log_path = eval_log_path
         self.face_embedding_model = face_embedding_model
         self.evaluation_database = registration_database
+        self.aug_mean = aug_mean
+        self.aug_std = aug_std
 
         # Directly load cropped images for evaluation
         self.eval_dataset = LFWDataset(self.dataset_path, cropped_faces=True)
@@ -36,9 +38,6 @@ class EvaluationPipeline():
                                                     shuffle=False, 
                                                     sampler=None,
                                                     collate_fn=None)
-
-        print("length: ",len(eval_loader))
-        # os.sys.exit()
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -61,11 +60,12 @@ class EvaluationPipeline():
 
             detected_face = detected_face.to(device)
 
-            augmented_imgs = augment_and_normalize(detected_face)
+            augmented_imgs = augment_and_normalize(detected_face, self.aug_mean, self.aug_std)
 
             #detected_face = detected_face.squeeze(0).permute(2, 1, 0).numpy()
 
             embedding = self.face_embedding_model(augmented_imgs[0])
+            #print("shape: ", embedding.shape)
 
             closest_label, check = self.evaluation_database.face_recognition(embedding)
 
@@ -99,15 +99,9 @@ class EvaluationPipeline():
             
             # Face registration
             if not self.evaluation_database.contains(label):
-                #num_people += 1
-                #print("num people: ", num_people)
                 for aug_img in augmented_imgs:
                     img_embedding_tensor = self.face_embedding_model(aug_img)
                     self.evaluation_database.face_registration(label, img_embedding_tensor)
-
-            # if rec_number == 3:
-            #     print(self.evaluation_database.database)
-            #     os.sys.exit()
 
 
             if (rec_number > 0) and (rec_number % 10 == 0):      

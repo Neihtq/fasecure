@@ -6,7 +6,7 @@ from face_recognition.evaluate import evaluate
 from Recognition import Recognition
 
 app = Flask(__name__)
-model = Recognition()
+#model = Recognition()
 
 
 @app.route('/')

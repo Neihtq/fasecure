@@ -64,7 +64,7 @@ class RegistrationDatabase():
         # Calculate and update inner product thresholds
         # Adapt threshold for first embedding (can be deleted?)
         if self.database['label'].nunique() == 1:
-            self.database.iloc[:,2] = 98.0
+            self.database.iloc[:,2] = self.fixed_threshold
         else:
             # Calculate the similarity score between a selected embedding and all the other embeddings
             for i in range(self.len_embeddings_list):
@@ -83,6 +83,7 @@ class RegistrationDatabase():
                     closest_embedding_dist = np.max(inner_products) # Inner product threshold
                     if closest_embedding_dist > self.fixed_threshold:
                         self.database.iloc[i,2] = closest_embedding_dist
+                        # code change here: closest_embedding_dist
                     else:
                         self.database.iloc[i,2] = self.fixed_threshold
 
