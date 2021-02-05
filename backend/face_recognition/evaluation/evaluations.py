@@ -3,7 +3,7 @@ import os
 from os.path import join
 import numpy as np
 
-from face_recognition.models.FaceNet import get_model
+from face_recognition.models.FaceNet import get_model_old
 from face_recognition.models.RefFaceEmbeddingModel import RefFaceEmbeddingModel
 from face_recognition.evaluation.EvaluationPipeline import EvaluationPipeline
 from face_recognition.database.RegistrationDatabase import RegistrationDatabase
@@ -49,7 +49,7 @@ def evaluate_pipeline(dataset_path, eval_log_path, face_embedding_model_path=Non
 
     # Load pretrained model, if no path specified
     if face_embedding_model_path is None:
-        face_embedding_model = get_model().eval()
+        face_embedding_model = get_model_old().eval()
     else:
         # --- Load model from specified path ---
         face_embedding_model = load_pretrained(face_embedding_model_path).eval()
@@ -61,8 +61,8 @@ def evaluate_pipeline(dataset_path, eval_log_path, face_embedding_model_path=Non
     eval_log_path = eval_log_path + "_evaluations_"
 
     # loop over different fixed thresholds to find the one resulting in the highest accuracy
-    #thresholds = [98.9]
-    thresholds = list(np.arange(98.5,99,0.1))
+    thresholds = [98.9]
+    #thresholds = list(np.arange(98.5,99,0.1))
     #thresholds = list(range(96,100))
 
     for fixed_threshold in thresholds:
@@ -71,9 +71,9 @@ def evaluate_pipeline(dataset_path, eval_log_path, face_embedding_model_path=Non
         registration_database = RegistrationDatabase(fixed_initial_threshold=fixed_threshold)
         pipeline_evaluation = EvaluationPipeline(dataset_path, eval_log_path_fix, face_embedding_model, registration_database, 
                                                     aug_mean = [0.485, 0.456, 0.406], aug_std = [0.229, 0.224, 0.225])
-        #pipeline_evaluation.run()
+        pipeline_evaluation.run()
         #pipeline_evaluation.plot_results()
-        pipeline_evaluation.compare_evaluations()
+        #pipeline_evaluation.compare_evaluations()
         # os.sys.exit()
 
 if __name__ == '__main__':
