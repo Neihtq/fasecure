@@ -1,6 +1,7 @@
 import os
-import torch
+import random
 import glob
+import torch
 import multiprocessing as mp
 
 from random import shuffle
@@ -23,6 +24,57 @@ class TupleDataset(Dataset):
         return min(len(d) for d in self.datasets)
     
     
+class VGGTripletDataset(Dataset):
+    def __init__(self, root, num_triplets, transform=None):
+        self.root = root
+        self.transform = transform
+        self.class_dict = {}
+        for folder in os.listdir(self.root):
+            self.class_dict[folder] = []
+            folder_path = os.path.join(self.root, folder)
+            for img in os.listdir(folder_path):
+                img_path = os.path.join(self.root, folder, img)
+                self.class_dict[folder].append(img_path)
+
+        self.classes = list(class_dict.keys())
+        with mp.Pool(processes=os.cpu_count()) as pool:
+            self.triplets = pool.map(self.aggregate_triplets, range(num_triplets))
+        
+
+    def aggregate_triplets(self, i):
+        anch_class, neg_class = random.sample(self.classes, 2)
+        while len(self.class_dict[anch_class]) < 2:
+            anch_class, neg_class = random.sample(self.classes, 2)
+
+        anchor, positive = random.sample(self.class_dict[anch_class], 2)
+        negative = random.choice(self.class_dict[neg_class])
+
+        return (anchor, positive, negative)
+
+    def __len__(self):
+        return len(self.triplets)
+
+    def __getitem__(self, idx):
+        triplet = self.triplets[idx]
+        
+        anchor, positive, negative = None, None, None
+        for i, sample in enumerate(triplet):
+            img = Image.open(triplet).convert('RGB')
+            if self.transform:
+                img = self.transform(img)
+            if not torch.is_tensor(img):        
+                img = transforms.ToTensor()(img)
+            
+            if i == 0:
+                anchor = img
+            elif i == 1:
+                positive = img
+            else:
+                negative = img
+
+        return anchor, positive, negative
+
+
 class ImageDataset(Dataset):
     '''Regular Dataset where images are stored like this:
         path_to_data/

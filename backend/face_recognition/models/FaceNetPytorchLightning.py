@@ -1,13 +1,17 @@
+import torch
 import numpy as np
 import pytorch_lightning as pl
 
 from torch import optim
-from torch.nn import PairwiseDistance
+from torch.nn import PairwiseDistance, TripletMarginLoss
+from torch.nn.modules.distance import PairwiseDistance
 from pytorch_lightning.metrics import Metric
 from pytorch_metric_learning import miners, losses
 from sklearn.model_selection import KFold
 from sklearn.metrics import auc
 from scipy import interpolate
+
+l2_dist = PairwiseDistance(2)
 
 
 class LightningFaceNet(pl.LightningModule):
@@ -17,17 +21,29 @@ class LightningFaceNet(pl.LightningModule):
         self.model = model
         self.val_metric = LFWEvalAccuracy()
         self.test_metric = LFWEvalAccuracy()
-        self.miner = miners.TripletMarginMiner(type_of_triplets='semihard')
-        self.loss_func = losses.TripletMarginLoss(margin=self.hparams['margin'])
+        self.loss_func = TripletMarginLoss(margin=self.hparams['margin'])
 
     def forward(self, x):
         return self.model(x)
 
+    def mine_semihard(self, anc, pos, neg):
+        dist_pos = l2_dist(anc, pos)
+        dist_neg = l2_dist(anc, neg)
+
+        hard_cond = torch.flatten((dist_neg - dist_pos < self.hparams['margin']))
+        semihard_cond = torch.flatten((dist_pos < dist_neg))
+        all_embeds = torch.logical_and(hard_cond, semihard_cond).cpu().numpy()
+        triplets = torch.from_numpy(np.where(all_embeds == 1))
+        
+        return anc[triplets], pos[triplets], neg[triplets]
+
     def general_step(self, batch):
-        labels, data = batch
-        embeddings = self.forward(data)
-        triplets = self.miner(embeddings, labels)
-        loss = self.loss_func(embeddings, labels, triplets)
+        anc, pos, neg = batch
+        anc_embed = self.forward(anc)
+        pos_embed = self.forward(pos)
+        neg_embed = self.forward(neg)
+        anc_embed, pos_embed, neg_embed = self.mine_semihard(anc_embed, pos_embed, neg_embed)
+        loss = loss_func(anc_embed, pos_embed, neg_embed)
 
         return loss
 
@@ -72,15 +88,7 @@ class LightningFaceNet(pl.LightningModule):
         self.log("roc_auc", roc_auc, logger=True)
 
     def configure_optimizers(self):
-        if self.hparams['optimizer'] == "sgd":
-            optimizer = optim.SGD(
-                params=self.model.parameters(),
-                lr=self.hparams['lr'],
-                momentum=0.9,
-                dampening=0,
-                nesterov=False
-            )
-        elif self.hparams['optimizer'] == "adagrad":
+        if self.hparams['optimizer'] == "adagrad":
             optimizer = optim.Adagrad(
                 params=self.model.parameters(),
                 lr=self.hparams['lr'],
@@ -88,16 +96,8 @@ class LightningFaceNet(pl.LightningModule):
                 initial_accumulator_value=0.1,
                 eps=1e-10
             )
-        elif self.hparams['optimizer'] == "rmsprop":
-            optimizer = optim.RMSprop(
-                params=self.model.parameters(),
-                lr=self.hparams['lr'],
-                alpha=0.99,
-                eps=1e-08,
-                momentum=0,
-                centered=False
-            )
-        elif self.hparams['optimizer'] == "adam":
+        else:
+            # self.hparams['optimizer'] == "adam"
             optimizer = optim.Adam(
                 params=self.model.parameters(),
                 lr=self.hparams['lr'],
@@ -134,7 +134,7 @@ class LFWEvalAccuracy(Metric):
         labels = np.array([sublabel for label in self.labels for sublabel in label])
         distances = np.array([subdist for distance in self.distances for subdist in distance])
         # Calculate ROC metrics
-        thresholds_roc = np.arange(0, 4, 0.01)
+        thresholds_roc = np.arange(0, 5, 0.1)
         true_positive_rate, false_positive_rate, precision, recall, accuracy, best_distances = self.calculate_roc_values(
             thresholds=thresholds_roc, distances=distances, labels=labels, num_folds=num_folds
         )
@@ -142,7 +142,7 @@ class LFWEvalAccuracy(Metric):
         roc_auc = auc(false_positive_rate, true_positive_rate)
 
         # Calculate validation rate
-        thresholds_val = np.arange(0, 4, 0.001)
+        thresholds_val = np.arange(0, 50, 0.001)
         tar, far = self.calculate_val(
             thresholds_val=thresholds_val, distances=distances, labels=labels, far_target=far_target,
             num_folds=num_folds

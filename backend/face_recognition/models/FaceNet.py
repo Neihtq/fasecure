@@ -18,15 +18,15 @@ def load_pretrained(weight_path=TRAINED_WEIGHTS_DIR):
 
 
 def get_model(pretrained=True):
-    model = FaceNet2(pretrained)
+    model = FaceNet(pretrained)
     model.load_state_dict(torch.load(FACESECURE_MODEL, map_location=torch.device(device)))
 
     return model
 
 
-class FaceNet2(nn.Module):
+class FaceNet(nn.Module):
     def __init__(self, pretrained=False, embedding_size=128):
-        super(FaceNet2, self).__init__()
+        super(FaceNet, self).__init__()
         resnet = resnet50(pretrained)
         self.backbone = nn.Sequential(
             resnet.conv1,
@@ -51,10 +51,6 @@ class FaceNet2(nn.Module):
         x = x * 10  # alpha = 10
 
         return x
-
-class Flatten(nn.Module):
-    def forward(self, x):
-        return x.view(x.size(0), -1)
 
 
 class FaceNetResnet(nn.Module):
