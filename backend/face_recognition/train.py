@@ -14,7 +14,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from face_recognition.models.MetricsCallback import MetricsCallback
 from face_recognition.models.FaceNetPytorchLightning import LightningFaceNet
 from face_recognition.models.FaceNet import FaceNetResnet
-from face_recognition.data.datasets import ImageDataset, LFWValidationDataset, TupleDataset
+from face_recognition.data.datasets import LFWValidationDataset, TupleDataset, VGGTripletDataset
 from face_recognition.utils.constants import MODEL_DIR, CHECKPOINTS_DIR
 
 parser = argparse.ArgumentParser(description='Face Recognition using Triplet Loss')
@@ -22,16 +22,16 @@ parser = argparse.ArgumentParser(description='Face Recognition using Triplet Los
 parser.add_argument('--num-epochs', default=200, type=int, metavar='NE',
                     help='Number of epochs to train (default: 200)')
 
+parser.add_argument('--num-triplets', default=100000, type=int, metavar='NTT',
+                    help='Number of triplets for training (default: 10000)')
+
 parser.add_argument('--batch-size', default=16, type=int, metavar='BS',
                     help='Batch size (default: 16)')
-
-parser.add_argument('--num-workers', default=os.cpu_count(), type=int, metavar='NW',
-                    help='Number of workers (default: os.cpu_count() - Your max. amount of cpus)')
 
 parser.add_argument('--learning-rate', default=0.05, type=float, metavar='LR',
                     help='Learning rate (default: 0.05)')
 
-parser.add_argument('--margin', default=0.02, type=float, metavar='MG',
+parser.add_argument('--margin', default=0.2, type=float, metavar='MG',
                     help='Margin for TripletLoss (default: 0.02)')
 
 parser.add_argument('--train-data-dir', default=None, type=str,
@@ -46,7 +46,7 @@ parser.add_argument('--val-labels-dir', default=None, type=str,
 parser.add_argument('--model-dir', default=MODEL_DIR, type=str,
                     help='Path where model will be saved')
 
-parser.add_argument('--optimizer', default='adagrad', type=str,
+parser.add_argument('--optimizer', default='adam', type=str,
                     help='Optimizer Algorithm for learning (default: adagrad')
 
 parser.add_argument('--weight-decay', default=1e-5, type=float, metavar='SZ',
@@ -60,11 +60,10 @@ args = parser.parse_args()
 
 def get_dataloader(dataset, train=False):
     batch_size = args.batch_size
-    num_workers = args.num_workers
 
     phase = "training" if train else 'validation'
     print(f"Initialize {phase} dataloader.")
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=os.cpu_count())
 
     return dataloader
 
@@ -74,10 +73,10 @@ def init_datasets():
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-    )
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
 
-    train_set = ImageDataset(train_dir, transform=transform)
+    train_set = VGGTripletDataset(train_dir, args.num_triplets, transform=transform)
 
     val_loader = None
     if args.val_data_dir and args.val_labels_dir:
@@ -88,7 +87,7 @@ def init_datasets():
         train_set, val_set = random_split(train_set, [len_train_set, len_lfw_set])
 
         tuple_set = TupleDataset(lfw_set, val_set)
-        val_loader = get_dataloader(tuple_set, train)
+        val_loader = get_dataloader(tuple_set)
 
     train_loader = get_dataloader(train_set, train=True)
 
@@ -128,13 +127,13 @@ def train():
         mode='max',
         save_top_k=1
     )
-    logger = TensorBoardLogger('tb_logs', name='FaceNet InceptionV3')
-    print("Initialize resnet50 backbone")
+    logger = TensorBoardLogger('tb_logs', name='facesecure_training')
+    print("Initialize FaceNet + Resnet")
     backbone = FaceNetResnet(pretrained=True)
     model = LightningFaceNet(hparams, backbone)
 
     if load_checkpoint:
-        model = LightningFaceNet.load_from_checkpoint(load_checkpoint, hparams=hparams, model=inception)
+        model = LightningFaceNet.load_from_checkpoint(load_checkpoint, hparams=hparams, model=model)
 
     trainer = pl.Trainer(
         gpus=1 if torch.cuda.is_available() else 0,
