@@ -36,7 +36,7 @@ class VGGTripletDataset(Dataset):
                 img_path = os.path.join(self.root, folder, img)
                 self.class_dict[folder].append(img_path)
 
-        self.classes = list(class_dict.keys())
+        self.classes = list(self.class_dict.keys())
         with mp.Pool(processes=os.cpu_count()) as pool:
             self.triplets = pool.map(self.aggregate_triplets, range(num_triplets))
         
@@ -59,7 +59,7 @@ class VGGTripletDataset(Dataset):
         
         anchor, positive, negative = None, None, None
         for i, sample in enumerate(triplet):
-            img = Image.open(triplet).convert('RGB')
+            img = Image.open(sample).convert('RGB')
             if self.transform:
                 img = self.transform(img)
             if not torch.is_tensor(img):        
@@ -74,7 +74,7 @@ class VGGTripletDataset(Dataset):
 
         return anchor, positive, negative
 
-
+    
 class ImageDataset(Dataset):
     '''Regular Dataset where images are stored like this:
         path_to_data/

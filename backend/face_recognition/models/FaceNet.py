@@ -48,6 +48,7 @@ class FaceNet(nn.Module):
         x = self.backbone(x)
         x = self.embedder(x)
         x = F.normalize(x, p=2, dim=1)
+        
         x = x * 10  # alpha = 10
 
         return x

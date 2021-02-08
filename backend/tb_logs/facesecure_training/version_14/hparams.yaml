@@ -1,0 +1,4 @@
+lr: 0.001
+margin: 0.2
+optimizer: adagrad
+weight_decay: 1.0e-05

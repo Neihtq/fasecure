@@ -73,10 +73,10 @@ def init_datasets():
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-    )
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
 
-    train_set = VGGTripletDataset(train_dir, args.num_triplets, transfor=transform)
+    train_set = VGGTripletDataset(train_dir, args.num_triplets, transform=transform)
 
     val_loader = None
     if args.val_data_dir and args.val_labels_dir:
@@ -87,7 +87,7 @@ def init_datasets():
         train_set, val_set = random_split(train_set, [len_train_set, len_lfw_set])
 
         tuple_set = TupleDataset(lfw_set, val_set)
-        val_loader = get_dataloader(tuple_set, train)
+        val_loader = get_dataloader(tuple_set)
 
     train_loader = get_dataloader(train_set, train=True)
 
