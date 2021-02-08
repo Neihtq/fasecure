@@ -35,14 +35,18 @@ class LightningFaceNet(pl.LightningModule):
         all_embeds = torch.logical_and(hard_cond, semihard_cond).cpu().numpy()
         triplets = np.where(all_embeds == 1)
         
-        return anc[triplets], pos[triplets], neg[triplets]
+        return triplets
 
     def general_step(self, batch):
         anc, pos, neg = batch
         anc_embed = self.forward(anc)
         pos_embed = self.forward(pos)
         neg_embed = self.forward(neg)
-        anc_embed, pos_embed, neg_embed = self.mine_semihard(anc_embed, pos_embed, neg_embed)
+        triplets = self.mine_semihard(anc_embed, pos_embed, neg_embed)
+        if len(triplets[0]) == 0:
+            return None
+        
+        anc_embed, pos_embed, neg_embed = anc_embed[triplets], pos_embed[triplets], neg_embed[triplets]
         loss = self.loss_func(anc_embed, pos_embed, neg_embed)
         
         return loss
