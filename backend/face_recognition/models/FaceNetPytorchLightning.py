@@ -44,17 +44,20 @@ class LightningFaceNet(pl.LightningModule):
         neg_embed = self.forward(neg)
         triplets = self.mine_semihard(anc_embed, pos_embed, neg_embed)
         if len(triplets[0]) != 0:
-            anc_embed, pos_embed, neg_embed = anc_embed[triplets], pos_embed[triplets], neg_embed[triplets]
+            return None
         
+        anc_embed, pos_embed, neg_embed = anc_embed[triplets], pos_embed[triplets], neg_embed[triplets]
         loss = self.loss_func(anc_embed, pos_embed, neg_embed)
         
         return loss
 
     def training_step(self, batch, batch_idx):
         loss = self.general_step(batch)
-        self.log("train_loss", loss)
+        if loss:
+            self.log("train_loss", loss)
+            return {"loss": loss}
         
-        return {"loss": loss}
+        return None
 
     def validation_step(self, batch, batch_idx):
         lfw_batch, loss_batch = batch
@@ -64,9 +67,11 @@ class LightningFaceNet(pl.LightningModule):
         self.val_metric(enc_1, enc_2, same)
 
         loss = self.general_step(loss_batch)
-        self.log("val_loss", loss)
-
-        return {"val_loss": loss}
+        if loss:
+            self.log("val_loss", loss)
+            return {"val_loss": loss}
+       
+        return None
 
     def validation_epoch_end(self, validation_step_outputs):
         acc = self.val_metric.compute()

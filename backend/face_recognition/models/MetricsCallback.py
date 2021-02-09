@@ -17,7 +17,6 @@ class MetricsCallback(Callback):
         self.fp_rate = []
         self.tp_rate = []
         self.roc_auc = []
-        self.epochs = 0
 
     def on_validation_epoch_end(self, trainer, pl_module):
         metrics = trainer.logged_metrics
@@ -25,7 +24,6 @@ class MetricsCallback(Callback):
         self.val_acc.append(float(metrics["val_acc"]))
 
     def on_epoch_end(self, trainer, pl_module):
-        self.epochs += 1
         metrics = trainer.logged_metrics
         self.loss.append(metrics['train_loss'])
 
@@ -42,7 +40,11 @@ class MetricsCallback(Callback):
         train_loss = self.loss
         val_loss = self.val_loss
         fig = plt.figure()
-        epochs = self.epochs
+        epochs = len(train_loss)
+        if epochs < len(val_loss):
+            start = len(val_loss) - epochs
+            val_loss = val_loss[start:]
+        
         plt.plot(range(epochs), train_loss, color='red', label='Train Loss on VGG')
         plt.plot(range(epochs), val_loss, color='blue', label='Val Loss on VGG')
         plt.ylim(bottom=0)
