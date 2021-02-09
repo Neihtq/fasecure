@@ -25,10 +25,10 @@ parser.add_argument('--num-epochs', default=200, type=int, metavar='NE',
 parser.add_argument('--num-triplets', default=100000, type=int, metavar='NTT',
                     help='Number of triplets for training (default: 10000)')
 
-parser.add_argument('--batch-size', default=16, type=int, metavar='BS',
-                    help='Batch size (default: 16)')
+parser.add_argument('--batch-size', default=256, type=int, metavar='BS',
+                    help='Batch size (default: 256)')
 
-parser.add_argument('--learning-rate', default=0.05, type=float, metavar='LR',
+parser.add_argument('--learning-rate', default=0.001, type=float, metavar='LR',
                     help='Learning rate (default: 0.05)')
 
 parser.add_argument('--margin', default=0.2, type=float, metavar='MG',
@@ -47,7 +47,7 @@ parser.add_argument('--model-dir', default=MODEL_DIR, type=str,
                     help='Path where model will be saved')
 
 parser.add_argument('--optimizer', default='adam', type=str,
-                    help='Optimizer Algorithm for learning (default: adagrad')
+                    help='Optimizer Algorithm for learning (default: adam')
 
 parser.add_argument('--weight-decay', default=1e-5, type=float, metavar='SZ',
                     help='Decay learning rate (default: 1e-5)')
@@ -60,7 +60,6 @@ args = parser.parse_args()
 
 def get_dataloader(dataset, train=False):
     batch_size = args.batch_size
-
     phase = "training" if train else 'validation'
     print(f"Initialize {phase} dataloader.")
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=os.cpu_count())
