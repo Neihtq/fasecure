@@ -68,6 +68,7 @@ def get_dataloader(dataset, train=False):
 
 
 def init_datasets():
+    print("Initialize datasets...")
     train_dir = os.path.expanduser(args.train_data_dir)
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
