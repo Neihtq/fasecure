@@ -20,7 +20,6 @@ def face_spoofing_live():
     face_spoofing_model = joblib.load('./pretrained_model/face_spoofing.pkl')
     cap = cv2.VideoCapture(1)
 
-
     sample_number = 7
     count = 0
     measures = np.zeros(sample_number, dtype=np.float)

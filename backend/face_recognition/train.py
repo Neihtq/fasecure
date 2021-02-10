@@ -47,16 +47,16 @@ parser.add_argument('--model-dir', default=MODEL_DIR, type=str,
                     help='Path where model will be saved')
 
 parser.add_argument('--optimizer', default='adam', type=str,
-                    help='Optimizer Algorithm for learning (default: adam')
+                    help='Optimizer Algorithm for learning (default: adam, can also choose adagrad)')
 
 parser.add_argument('--weight-decay', default=1e-5, type=float, metavar='SZ',
                     help='Decay learning rate (default: 1e-5)')
 
 parser.add_argument('--load-checkpoint', default=None, type=str,
-                    help='Path to checkpoint.')
+                    help='Path to checkpoint')
 
 parser.add_argument('--num-workers', default=os.cpu_count(), type=int, metavar='NM',
-                    help='Number of workers for dataloader (default: amount of cpu core')
+                    help='Number of workers for dataloader (default: amount of cpu core)')
 
 args = parser.parse_args()
 

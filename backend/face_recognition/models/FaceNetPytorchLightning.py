@@ -6,7 +6,6 @@ from torch import optim
 from torch.nn import PairwiseDistance, TripletMarginLoss
 from torch.nn.modules.distance import PairwiseDistance
 from pytorch_lightning.metrics import Metric
-from pytorch_metric_learning import miners, losses
 from sklearn.model_selection import KFold
 from sklearn.metrics import auc
 from scipy import interpolate

@@ -1,4 +1,0 @@
-lr: 0.05
-margin: 0.2
-optimizer: adam
-weight_decay: 1.0e-05

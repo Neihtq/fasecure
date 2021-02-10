@@ -4,7 +4,7 @@
     <img src="images/logo.png" alt="Logo" width="200" height="200">
   </a>
 
-  <h3 align="center">Face Recognition with FaceNet</h3>
+  <h3 align="center">Facesecure</h3>
 
   <p align="center">
     <a href="https://github.com/Neihtq/IBM-labcourse">View Demo</a>
@@ -61,10 +61,10 @@
 
 <!-- ABOUT THE PROJECT -->
 # About The Project
+![Product Name Screen Shot][product-screenshot]
+Facsecure is an application that simulates an access control system through face recognition. This project provides the whole training pipeline for training a model with an own selected dataset. On top of this, an application utilizes the model as the core of the facial recognition backend logic.
 
-This project was developed in the context of the advanced practical course "Application Challenges for Machine Learning on the example of IBM Power AI" at the Technical University of Munich. Our task was to build a complete face recognition system.
-
-During the project we came up with an additional pseudo real world use case. The idea is to use face recognition to let the a computer or laptop automatically lock if the registered owneder does not appear in front of the camera within a given time frame. While this makes it more comfortable for the user, it is also helpful against data theft.
+Facesecure was developed in the context of the advanced practical course "Application Challenges for Machine Learning on the example of IBM Power AI" at the Technical University of Munich. Our mian task was to build a complete facial recognition system.
 
 ## Face Recognition Pipeline
 The main focus of this project is implementation of the face verification. For that we used the implementation described in the paper ["FaceNet: A Unified Embedding for Face Recognition and Clustering"](https://arxiv.org/abs/1503.03832). 
@@ -73,15 +73,14 @@ Additionally, we implemented all tasks in which face recognition can be broken d
 
 
 ## Built With
-* [Python](https://www.python.org/)
+* [Python3](https://www.python.org/)
 * [PyTorch](https://pytorch.org/)
 * [PyTorchLightning](https://www.pytorchlightning.ai/)
-* [Pytorch Metric Learning](https://github.com/KevinMusgrave/pytorch-metric-learning)
 * [NumPy](https://numpy.org/)
 * [pandas](https://pandas.pydata.org/)
 * [OpenCV](https://github.com/skvark/opencv-python)
-
-* [PyQt](https://www.riverbankcomputing.com/software/pyqt/)
+* [dlib](https://github.com/davisking/dlib)
+* [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/)
 * [Flask](https://flask.palletsprojects.com/en/1.1.x/)
 
 
@@ -98,78 +97,31 @@ Simply run:
 ```sh
 pip install -r requirements.txt
 ```
+followed by 
+```sh
+pip install -e ./backend/
+```
+to install the Facesecure model.
 
 # Training data
-The [Labeled Faces in the Wild](http://vis-www.cs.umass.edu/lfw/) dataset has been used for training. Thie data set consists of total of 13233 images over 5749 identities. Additionally, we preprocessed the imags with [DeepFace](https://github.com/serengil/deepface) beforehand cropping and aligning the faces on each image.
-
-This repository provides a script for downloading the processed data. It can be executed by running:
-
-```sh
-python download_LFW_aligned.py
-```
+The [VGG Face Dataset](https://www.robots.ox.ac.uk/~vgg/data/vgg_face/) consists of multiple images from 2622 distinct identities. Overall the dataset took 69 GB of storage. Triplets were generated and fed into [Triplet Loss Function](https://pytorch.org/docs/stable/generated/torch.nn.TripletMarginLoss.html) for learning.
 
 # Training
 
-## Triplet loss training
+Please refer to the [wiki page](https://github.com/Neihtq/facesecure/wiki/Training) on how to train the model.
 
-The whole architecture is based on a siamese network and one shot learning with online triplet mining. Therefore we use the [Triplet Loss Function](https://pytorch.org/docs/stable/generated/torch.nn.TripletMarginLoss.html) in order for the network to create accurate face embeddings.
 
-### Dataset structure
+# Evaluation Data
+[Labeled Face in the Wild](http://vis-www.cs.umass.edu/lfw/) was used evaluating both embedding and recognition pipeline. On our local machines, we used [DeepFace](https://github.com/serengil/deepface) beforehand for cropping and aligning the faces on each image.
 
-1. It is assumed that the training dataset is arrangedas below, i.e. where each class is a subdirectory containing the training samples belong to that class.
-```
-Aaron_Eckhart
-    Aaron_Eckhart_001.jpg
+# Evaluation
 
-Aaron_Guiel
-    Aaron_Guiel_0001.jpg
 
-Aarong_Patterson
-    Aaron_Patterson_0001.jpg
-
-Aaron_Peirsol
-    Aaron_Peirsol_0001.jpg
-    Aaron_Peirsol_0002.jpg
-    Aaron_Peirsol_0003.jpg
-    ...
-```
-2. The ```main.py``` script will initiate the training. Following flags are available to setup the process:
-```
---num-epochs: Number of epochs to train(default: 200)
-
---batch-size: Batch Size for dataset (default: 220)
-
---num-workers: Number of worker for DataLoader (default: 0)
-
---learning-rate: Learning Rate (default: 0.001)
-
---margin: Margin for TripletLoss (default: 0.02)
-
---train-data-dir: Path to dataset (default: ```'./data/images/lfw_crop'```)
-
---model-dir: Path where trained model should be save (default: ```./models/results```)
-
---weight-decay: Decay learning rate (default: 0)
-
---pretrained: Will load pretrained model, if set.
-
---load-last: Start training from last checkpoint, if set.
-```
-
-3. Execute the script with desired parameters, e.g.:
-```sh
-python face_recognition/train.py --num-epochs 2 --batch-size 256 --learning-rate 0.001 --train-data-dir ./face_recognition/data/images/vgg-cropped/ --num-triplets 100000 --val-data-dir ./face_recognition/data/images/lfw_aligned/ --val-labels-dir ./face_recognition/data/images/pairs.txt
-```
 
 ## Face Embedding FaceNet with ResNet50 backbone
 
-The FaceNet architecture includes a deep neural network followed by a 128 dimensional linear layer. We chose for the deep neural network [ResNet50](https://arxiv.org/abs/1512.03385), which also already included in PyTorch.
+The FaceNet architecture includes a deep neural network followed by a 128 dimensional linear layer. We chose for the deep neural network [ResNet50](https://arxiv.org/abs/1512.03385), which is also already included in PyTorch.
 
-## Face Verification with KNN and Adaptive Thresholding
-TBD
-
-# Performance
-TBD
 
 
 # Issues
@@ -209,3 +161,5 @@ Tobias Zeulner - [@Zeulni](https://github.com/Zeulni) - ge93yan@mytum.de - <a hr
 * [Face Recognition using Tensorflow](https://github.com/davidsandberg/facenet)
 * [Best-README-Template](https://github.com/othneildrew/Best-README-Template)
 * [Pretrained Weight for Face Recognition, also heavily inspired in terms of building the archecture](https://github.com/tbmoon/facenet)
+
+[product-screenshot]: images/preview_screenshot.png
