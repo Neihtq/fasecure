@@ -158,7 +158,7 @@ Aaron_Peirsol
 
 3. Execute the script with desired parameters, e.g.:
 ```sh
-python main.py --num-epochs 175 --batch-size 128 learning-rate 0.005 --train-data-dir ./data/images/lfw_crop
+python face_recognition/train.py --num-epochs 2 --batch-size 256 --learning-rate 0.001 --train-data-dir ./face_recognition/data/images/vgg-cropped/ --num-triplets 100000 --val-data-dir ./face_recognition/data/images/lfw_aligned/ --val-labels-dir ./face_recognition/data/images/pairs.txt
 ```
 
 ## Face Embedding FaceNet with ResNet50 backbone

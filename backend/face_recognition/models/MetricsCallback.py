@@ -20,12 +20,14 @@ class MetricsCallback(Callback):
 
     def on_validation_epoch_end(self, trainer, pl_module):
         metrics = trainer.logged_metrics
-        self.val_loss.append(float(metrics['val_loss']))
-        self.val_acc.append(float(metrics["val_acc"]))
+        if 'val_loss' in metrics:            
+            self.val_loss.append(float(metrics['val_loss']))
+            self.val_acc.append(float(metrics["val_acc"]))
 
     def on_epoch_end(self, trainer, pl_module):
         metrics = trainer.logged_metrics
-        self.loss.append(metrics['train_loss'])
+        if 'train_loss' in metrics:
+            self.loss.append(metrics['train_loss'])
 
     def on_test_end(self, trainer, pl_module):
         metrics = trainer.logged_metrics
