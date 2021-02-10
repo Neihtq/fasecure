@@ -49,6 +49,9 @@
         <ul>
             <li><a href="#evaluation">Evaluation</a></li>
         </ul>
+        <ul>
+            <li><a href="#face-spoofing">Face Spoofing</a></li>
+        </ul>
     </li>
     <li><a href="#running-facesecure">Running Facesecure</a>
       <ul>
@@ -130,6 +133,15 @@ Please refer to the [wiki page](https://github.com/Neihtq/facesecure/wiki/Traini
 ### Evaluation
 
 Please refer to the [wiki page](https://github.com/Neihtq/facesecure/wiki/Evaluation) on how to evaluate the pipeline and its model.
+
+## Face Spoofing
+
+We came also up with the idea of integrating face spoofing/liveness detection into the pipeline. However, we did not have enough time to develop a model with sufficient accuracy. Nonetheless, the face spoofing module can be tested sperately:
+
+```sh
+$ cd backend
+$ python face_recognition/face_spoofing.py
+```
 
 # Running Facesecure
 
