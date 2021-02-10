@@ -19,7 +19,7 @@ root = join(dirname(abspath(__file__)), '..')
 FACE_DETECTION_PROTOTXT = join(root, "face_detection", "model", "deploy.prototxt")
 FACE_DETECTION_MODEL = join(root, "face_detection", "model", "res10_300x300_ssd_iter_140000.caffemodel")
 SHAPE_PREDICTOR = join(root,'face_detection', 'model', 'shape_predictor_5_face_landmarks.dat')
-LOGO = join(root, '..', 'images', 'logo.png')
+LOGO = join(root, '..', 'images', 'logo.jpeg')
 
 # Parameters
 DETECTION_THRESHOLD = 0.5
@@ -29,7 +29,7 @@ TITLE = 'Fasecure'
 
 # stdout & std errs
 ACCESS_DENIED = "User not recognized - Access Denied!"
-ACCESS_GRANTED = "User recognized Access Granted for: "
+ACCESS_GRANTED = "User recognized: "
 BACKEND_UNREACHABLE = "Could not reach backend."
 DB_ACCESS_DENIED = "Password incorrect - Access to data base denied"
 DB_ACCESS_GRANTED = "Password correct - Access to database granted"

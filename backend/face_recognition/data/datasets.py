@@ -39,7 +39,6 @@ class VGGTripletDataset(Dataset):
         self.classes = list(self.class_dict.keys())
         with mp.Pool(processes=os.cpu_count()) as pool:
             self.triplets = pool.map(self.aggregate_triplets, range(num_triplets))
-        
 
     def aggregate_triplets(self, i):
         anch_class, neg_class = random.sample(self.classes, 2)

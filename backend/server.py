@@ -6,7 +6,7 @@ from face_recognition.evaluate import evaluate
 from Recognition import Recognition
 
 app = Flask(__name__)
-#model = Recognition()
+model = Recognition()
 
 
 @app.route('/')
@@ -62,5 +62,4 @@ def list_all():
 
 
 if __name__ == '__main__':
-     #app.run(host='0.0.0.0', debug=True)
-     evaluate()
+     app.run(host='0.0.0.0', debug=True)

@@ -55,14 +55,18 @@ parser.add_argument('--weight-decay', default=1e-5, type=float, metavar='SZ',
 parser.add_argument('--load-checkpoint', default=None, type=str,
                     help='Path to checkpoint.')
 
+parser.add_argument('--num-workers', default=os.cpu_count(), type=int, metavar='NM',
+                    help='Number of workers for dataloader (default: amount of cpu core')
+
 args = parser.parse_args()
 
 
 def get_dataloader(dataset, train=False):
     batch_size = args.batch_size
+    num_workers = args.num_workers
     phase = "training" if train else 'validation'
     print(f"Initialize {phase} dataloader.")
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=os.cpu_count())
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
 
     return dataloader
 
