@@ -94,7 +94,7 @@ Additionally, we implemented all tasks in which face recognition can be broken d
 
 # Getting Started
 ```sh 
-git clone https://github.com/Neihtq/IBM-labcourse.git
+$ git clone https://github.com/Neihtq/IBM-labcourse.git
 ``` 
 and you are ready to go.
 
@@ -103,11 +103,12 @@ You can install all dependencies easily with [pip](https://pypi.org/project/pip/
 Simply run:
 
 ```sh
-pip install -r requirements.txt
+$ pip install -r requirements.txt
 ```
 followed by 
 ```sh
-pip install -e ./backend/
+$ cd backend
+$ pip install -e .
 ```
 to install the Facesecure model.
 
@@ -142,9 +143,9 @@ Run:
 ## Frontend
 Run:
 ```sh
- $ cd frontend
- $ python view.py
- ``` 
+$ cd frontend
+$ python view.py
+``` 
 
 
 # Issues
