@@ -35,21 +35,29 @@
         <li><a href="#prerequisites">Prerequisites</a></li>
       </ul>
     </li>
-    <li><a href="#training-data">Training Data</a></li>
     <li>
-    <a href="#training">Training</a>
+    <a href="#training-and-evaluation">Training and Evaluation</a>
         <ul>
-            <li><a href="#triplet-loss-training">Triplet Loss Training</a></li>
+            <li><a href="#training-data">Training Data</a></li>
         </ul>
         <ul>
-            <li><a href="#face-embedding-facenet-with-resnet50-backbone">Face Embedding FaceNet with ResNet50 backbone</a></li>
+            <li><a href="#training">Training</a></li>
         </ul>
         <ul>
-            <li><a href="#face-verification-with-knn-and-adaptive-thresholding
-">Face Face Verification with KNN and Adaptive Thresholding</a></li>
+            <li><a href="#evaluation-data">Evaluation Data</a></li>
+        </ul>
+        <ul>
+            <li><a href="#evaluation">Evaluation</a></li>
         </ul>
     </li>
-    <li><a href="#performance">Performance</a></li>
+    <li><a href="#running-facesecure">Running Facesecure</a>
+      <ul>
+        <li><a href="#backend">Backend</a></li>
+      </ul>
+      <ul>
+        <li><a href="#frontend">Frontend</a></li>
+      </ul>
+    </li>
     <li><a href="#issues">Issues</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -103,25 +111,40 @@ pip install -e ./backend/
 ```
 to install the Facesecure model.
 
-# Training data
+Also make sure to have a working webcam.
+
+# Training and Evaluation
+
+## Training data
 The [VGG Face Dataset](https://www.robots.ox.ac.uk/~vgg/data/vgg_face/) consists of multiple images from 2622 distinct identities. Overall the dataset took 69 GB of storage. Triplets were generated and fed into [Triplet Loss Function](https://pytorch.org/docs/stable/generated/torch.nn.TripletMarginLoss.html) for learning.
 
-# Training
+### Training
 
 Please refer to the [wiki page](https://github.com/Neihtq/facesecure/wiki/Training) on how to train the model.
 
 
-# Evaluation Data
+## Evaluation Data
 [Labeled Face in the Wild](http://vis-www.cs.umass.edu/lfw/) was used evaluating both embedding and recognition pipeline. On our local machines, we used [DeepFace](https://github.com/serengil/deepface) beforehand for cropping and aligning the faces on each image.
 
-# Evaluation
+### Evaluation
 
+Please refer to the [wiki page](https://github.com/Neihtq/facesecure/wiki/Evaluation) on how to evaluate the pipeline and its model.
 
+# Running Facesecure
 
-## Face Embedding FaceNet with ResNet50 backbone
+## Backend
+Run:
+ ```sh
+ $ cd backend
+ $ python server.py
+ ``` 
 
-The FaceNet architecture includes a deep neural network followed by a 128 dimensional linear layer. We chose for the deep neural network [ResNet50](https://arxiv.org/abs/1512.03385), which is also already included in PyTorch.
-
+## Frontend
+Run:
+```sh
+ $ cd frontend
+ $ python view.py
+ ``` 
 
 
 # Issues
@@ -155,11 +178,11 @@ Tobias Zeulner - [@Zeulni](https://github.com/Zeulni) - ge93yan@mytum.de - <a hr
 </a>
 
 
-## Acknowledgements
-* Special thanks to Omar Shouman for giving his best effort to support us during this course
+# Acknowledgements
+* Special thanks to [Omar Shouman](https://www.linkedin.com/in/omar-shouman/) for giving his best effort to support us during this course
 * Special thanks for IBM to provides us with the IBM POWER Architecture for training
 * [Face Recognition using Tensorflow](https://github.com/davidsandberg/facenet)
 * [Best-README-Template](https://github.com/othneildrew/Best-README-Template)
-* [Pretrained Weight for Face Recognition, also heavily inspired in terms of building the archecture](https://github.com/tbmoon/facenet)
+* We were heavily inspired by [tamerthamoqa's implementation](https://github.com/tamerthamoqa/facenet-pytorch-vggface2t)
 
 [product-screenshot]: images/preview_screenshot.png
