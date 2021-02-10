@@ -43,7 +43,7 @@ class LightningFaceNet(pl.LightningModule):
         pos_embed = self.forward(pos)
         neg_embed = self.forward(neg)
         triplets = self.mine_semihard(anc_embed, pos_embed, neg_embed)
-        if len(triplets[0]) != 0:
+        if len(triplets[0]) == 0:
             return None
         
         anc_embed, pos_embed, neg_embed = anc_embed[triplets], pos_embed[triplets], neg_embed[triplets]
