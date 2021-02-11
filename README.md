@@ -4,7 +4,7 @@
     <img src="images/logo.png" alt="Logo" width="200" height="200">
   </a>
 
-  <h3 align="center">Facesecure</h3>
+  <h3 align="center">Fasecure</h3>
 
   <p align="center">
     <a href="https://github.com/Neihtq/IBM-labcourse">View Demo</a>
@@ -53,7 +53,7 @@
             <li><a href="#face-spoofing">Face Spoofing</a></li>
         </ul>
     </li>
-    <li><a href="#running-facesecure">Running Facesecure</a>
+    <li><a href="#running-fasecure">Running Fasecure</a>
       <ul>
         <li><a href="#backend">Backend</a></li>
       </ul>
@@ -75,7 +75,7 @@
 ![Product Name Screen Shot][product-screenshot]
 Facsecure is an application that simulates an access control system through face recognition. This project provides the whole training pipeline for training a model with an own selected dataset. On top of this, an application utilizes the model as the core of the facial recognition backend logic.
 
-Facesecure was developed in the context of the advanced practical course "Application Challenges for Machine Learning on the example of IBM Power AI" at the Technical University of Munich. Our mian task was to build a complete facial recognition system.
+Fasecure was developed in the context of the advanced practical course "Application Challenges for Machine Learning on the example of IBM Power AI" at the Technical University of Munich. Our mian task was to build a complete facial recognition system.
 
 ## Face Recognition Pipeline
 The main focus of this project is implementation of the face verification. For that we used the implementation described in the paper ["FaceNet: A Unified Embedding for Face Recognition and Clustering"](https://arxiv.org/abs/1503.03832). 
@@ -113,7 +113,7 @@ followed by
 $ cd backend
 $ pip install -e .
 ```
-to install the Facesecure model.
+to install the Fasecure model.
 
 Also make sure to have a working webcam.
 
@@ -143,7 +143,7 @@ $ cd backend
 $ python face_recognition/face_spoofing.py
 ```
 
-# Running Facesecure
+# Running Fasecure
 
 ## Backend
 Run:
