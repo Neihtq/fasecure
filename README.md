@@ -16,9 +16,9 @@
 </p>
 
 
-- Our trained model can be downloaded[here]()
+- Our trained model can be downloaded[here](https://drive.google.com/file/d/1FYhgSwUQyOr9JtHUA8JhXWQYFUQ3Ll6Y/view?usp=sharing)
 - The pretrained model can be downloaded [here](https://github.com/tamerthamoqa/facenet-pytorch-vggface2)
-- The dataset we used for evaluation can be downloaded [here]()
+- The dataset we used for evaluation can be downloaded [here](https://drive.google.com/file/d/1YMmTYqmHnpcnRb5mdd1eUYNW1lADKt89/view?usp=sharing)
 
 
 <details open="open">
