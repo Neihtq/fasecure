@@ -16,6 +16,9 @@
 </p>
 
 
+- The pretrained model can be downloaded [here]()
+- The dataset we used for evaluation can be downloaded [here]()
+
 
 <details open="open">
   <summary>Table of Contents</summary>
