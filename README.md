@@ -16,7 +16,8 @@
 </p>
 
 
-- The pretrained model can be downloaded [here]()
+- Our trained model can be downloaded[here]()
+- The pretrained model can be downloaded [here](https://github.com/tamerthamoqa/facenet-pytorch-vggface2)
 - The dataset we used for evaluation can be downloaded [here]()
 
 
@@ -199,6 +200,6 @@ Tobias Zeulner - [@Zeulni](https://github.com/Zeulni) - ge93yan@mytum.de - <a hr
 * Special thanks for IBM to provides us with the IBM POWER Architecture for training
 * [Face Recognition using Tensorflow](https://github.com/davidsandberg/facenet)
 * [Best-README-Template](https://github.com/othneildrew/Best-README-Template)
-* We were heavily inspired by [tamerthamoqa's implementation](https://github.com/tamerthamoqa/facenet-pytorch-vggface2t)
+* We were heavily inspired by [tamerthamoqa's implementation](https://github.com/tamerthamoqa/facenet-pytorch-vggface2)
 
 [product-screenshot]: images/preview_screenshot.png
