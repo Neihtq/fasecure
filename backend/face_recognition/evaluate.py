@@ -10,6 +10,9 @@ parser = argparse.ArgumentParser(description='Evaluation of Facesecure')
 parser.add_argument('--model-dir', default=FACESECURE_MODEL, type=str,
                     help=f'Path to model (default: {FACESECURE_MODEL})')
 
+parser.add_argument('--pretrained-dir', default=FACESECURE_MODEL, type=str,
+                    help=f'Path to pretrained model (default: {FACESECURE_MODEL})')
+
 parser.add_argument('--eval-data', default=OVERALL_EVAL_LFW_DIR_ALL, type=str,
                     help=f'Path to evaluation data (default: {OVERALL_EVAL_LFW_DIR_ALL})')
 
@@ -18,7 +21,8 @@ args = parser.parse_args()
 
 if __name__ == '__main__':
     model_dir = args.model_dir
+    pretrained_dir = args.pretrained_dir
     eval_data = args.eval_data
-    evaluate_overall_pipeline(eval_data, OVERALL_EVAL_RESULTS_DIR, model_dir)
+    evaluate_overall_pipeline(eval_data, OVERALL_EVAL_RESULTS_DIR, pretrained_dir, model_dir)
     print(f"Results are stored in {OVERALL_EVAL_RESULTS_DIR}")
     sys.exit()

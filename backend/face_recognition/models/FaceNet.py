@@ -17,9 +17,9 @@ def load_pretrained(weight_path=TRAINED_WEIGHTS_DIR):
     return model
 
 
-def get_model(pretrained=True):
+def get_model(pretrained=True, model_path=FACESECURE_MODEL):
     model = FaceNet(pretrained)
-    model.load_state_dict(torch.load(FACESECURE_MODEL, map_location=torch.device(device)))
+    model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
 
     return model
 
