@@ -12,7 +12,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 def load_pretrained(weight_path=TRAINED_WEIGHTS_DIR):
     model = FaceNetResnet()
-    model.load_state_dict(torch.load(weight_path, map_location=torch.device(device)))
+    model.load_state_dict(torch.load(weight_path, map_location=torch.device(device))['model_state_dict'])
     
     return model
 

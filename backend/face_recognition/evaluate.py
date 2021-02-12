@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(description='Evaluation of Facesecure')
 parser.add_argument('--model-dir', default=FACESECURE_MODEL, type=str,
                     help=f'Path to model (default: {FACESECURE_MODEL})')
 
-parser.add_argument('--pretrained-dir', default=FACESECURE_MODEL, type=str,
+parser.add_argument('--pretrained-dir', default=TRAINED_WEIGHTS_DIR, type=str,
                     help=f'Path to pretrained model (default: {TRAINED_WEIGHTS_DIR})')
 
 parser.add_argument('--eval-data', default=OVERALL_EVAL_LFW_DIR_ALL, type=str,
