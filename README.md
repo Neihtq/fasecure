@@ -150,6 +150,9 @@ $ python face_recognition/face_spoofing.py
 # Running Fasecure
 
 ## Backend
+
+Make sure to place the model for face recognition in ```backend/face_recognition/results/models/```.
+
 Run:
  ```sh
  $ cd backend
