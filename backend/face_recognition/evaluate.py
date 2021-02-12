@@ -3,7 +3,7 @@ import sys
 import argparse
 
 from face_recognition.evaluation.evaluations import evaluate_pipeline, evaluate_overall_pipeline
-from face_recognition.utils.constants import LFW_CROP_DIR, EVAL_RESULTS_DIR, OVERALL_EVAL_LFW_DIR_ALL, OVERALL_EVAL_LFW_DIR_MALE, OVERALL_EVAL_LFW_DIR_FEMALE, OVERALL_EVAL_RESULTS_DIR, FACESECURE_MODEL
+from face_recognition.utils.constants import LFW_CROP_DIR, EVAL_RESULTS_DIR, OVERALL_EVAL_LFW_DIR_ALL, OVERALL_EVAL_LFW_DIR_MALE, OVERALL_EVAL_LFW_DIR_FEMALE, OVERALL_EVAL_RESULTS_DIR, FACESECURE_MODEL, TRAINED_WEIGHTS_DIR
 
 parser = argparse.ArgumentParser(description='Evaluation of Facesecure')
 
@@ -11,7 +11,7 @@ parser.add_argument('--model-dir', default=FACESECURE_MODEL, type=str,
                     help=f'Path to model (default: {FACESECURE_MODEL})')
 
 parser.add_argument('--pretrained-dir', default=FACESECURE_MODEL, type=str,
-                    help=f'Path to pretrained model (default: {FACESECURE_MODEL})')
+                    help=f'Path to pretrained model (default: {TRAINED_WEIGHTS_DIR})')
 
 parser.add_argument('--eval-data', default=OVERALL_EVAL_LFW_DIR_ALL, type=str,
                     help=f'Path to evaluation data (default: {OVERALL_EVAL_LFW_DIR_ALL})')
